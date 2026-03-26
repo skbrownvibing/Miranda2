@@ -21,8 +21,8 @@ from datetime import datetime, timezone, timedelta
 
 APPLE_EPOCH      = datetime(2001, 1, 1, tzinfo=timezone.utc)
 LOOKBACK_DAYS    = 90
-PERSONAL_DAYS    = 30
-PERSONAL_THRESH  = 5   # messages exchanged in PERSONAL_DAYS to count as personal
+PERSONAL_DAYS    = 90
+PERSONAL_THRESH  = 3   # messages exchanged in PERSONAL_DAYS to count as personal (fallback)
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -120,7 +120,7 @@ SPAM_WORDS = [
     'account suspended', 'account on hold', 'verify your account',
 ]
 
-def categorize(handle, contact_name, messages, msg_count_30d):
+def categorize(handle, contact_name, in_contacts, messages, msg_count_lookback):
     digits = re.sub(r'\D', '', handle or '')
 
     # Short codes (5–6 digits) → spam
@@ -130,6 +130,7 @@ def categorize(handle, contact_name, messages, msg_count_30d):
     name_lower   = (contact_name or '').lower()
     handle_lower = (handle or '').lower()
 
+    # Known delivery service sender names
     for svc in DELIVERY_SENDERS:
         if svc in name_lower or svc in handle_lower:
             return 'delivery'
@@ -144,7 +145,12 @@ def categorize(handle, contact_name, messages, msg_count_30d):
         if kw in sample:
             return 'spam'
 
-    if msg_count_30d >= PERSONAL_THRESH:
+    # Saved in contacts → personal (strongest signal for real people)
+    if in_contacts:
+        return 'personal'
+
+    # Enough recent back-and-forth → personal
+    if msg_count_lookback >= PERSONAL_THRESH:
         return 'personal'
 
     return 'uncategorized'
@@ -208,6 +214,7 @@ def main():
         primary      = handles[0] if handles else (chat_identifier or '')
         phone_norm   = norm_phone(primary)
 
+        in_contacts  = bool(contacts.get(phone_norm) or contacts.get(primary.lower()))
         contact_name = (
             contacts.get(phone_norm) or
             contacts.get(primary.lower()) or
@@ -245,7 +252,7 @@ def main():
             for t, fm, d in rows
         ]
 
-        msg_count_30d = sum(1 for _, _, d in rows if d > cut_30d)
+        msg_count_lookback = sum(1 for _, _, d in rows if d > cut_90d)
         last = msg_list[0]
 
         conversations.append({
@@ -254,11 +261,11 @@ def main():
             'phone':             primary,
             'is_group':          is_group,
             'group_name':        display_name if is_group else None,
-            'category':          categorize(primary, contact_name, msg_list, msg_count_30d),
+            'category':          categorize(primary, contact_name, in_contacts, msg_list, msg_count_lookback),
             'last_message_at':   last['date'],
             'last_message_text': last['text'],
             'i_replied_last':    last['from_me'],
-            'message_count_30d': msg_count_30d,
+            'message_count_30d': msg_count_lookback,
             'messages':          list(reversed(msg_list[:5])),   # chronological, last 5
         })
 
