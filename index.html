@@ -184,6 +184,12 @@ body {
   display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;
 }
 .trend-title { font-size:14px;font-weight:600;color:#fff; }
+.trend-toggle {
+  font-family:inherit;font-size:12px;font-weight:500;color:var(--text2);
+  background:none;border:1px solid var(--border);border-radius:8px;
+  padding:5px 10px;cursor:pointer;transition:all .12s;
+}
+.trend-toggle:hover { border-color:var(--text3);color:var(--text); }
 .trend-stats { display:flex;gap:16px; }
 .trend-stat { text-align:center; }
 .trend-stat-value { font-size:18px;font-weight:700;font-family:'DM Mono',monospace; }
@@ -348,6 +354,9 @@ body {
     <div class="trend-card">
       <div class="trend-header">
         <span class="trend-title">Your trend</span>
+        <button class="trend-toggle" id="trend-toggle" onclick="toggleTrend()">Show score history</button>
+      </div>
+      <div id="trend-body" style="display:none">
         <div class="trend-stats">
           <div class="trend-stat">
             <div class="trend-stat-value" id="trend-best" style="color:var(--green)">--</div>
@@ -362,29 +371,29 @@ body {
             <div class="trend-stat-label">Sessions</div>
           </div>
         </div>
-      </div>
-      <div class="trend-chart" id="trend-chart"></div>
-      <div class="trend-dates" id="trend-dates"></div>
-      <div class="streak-row">
-        <div class="streak-badge">
-          <div class="streak-icon">🔥</div>
-          <div class="streak-info">
-            <div class="streak-value" id="streak-current">0</div>
-            <div class="streak-label">Day streak</div>
+        <div class="trend-chart" id="trend-chart"></div>
+        <div class="trend-dates" id="trend-dates"></div>
+        <div class="streak-row">
+          <div class="streak-badge">
+            <div class="streak-icon">🔥</div>
+            <div class="streak-info">
+              <div class="streak-value" id="streak-current">0</div>
+              <div class="streak-label">Day streak</div>
+            </div>
           </div>
-        </div>
-        <div class="streak-badge">
-          <div class="streak-icon">⚡</div>
-          <div class="streak-info">
-            <div class="streak-value" id="streak-longest">0</div>
-            <div class="streak-label">Longest streak</div>
+          <div class="streak-badge">
+            <div class="streak-icon">⚡</div>
+            <div class="streak-info">
+              <div class="streak-value" id="streak-longest">0</div>
+              <div class="streak-label">Longest streak</div>
+            </div>
           </div>
-        </div>
-        <div class="streak-badge">
-          <div class="streak-icon">📈</div>
-          <div class="streak-info">
-            <div class="streak-value" id="trend-delta">--</div>
-            <div class="streak-label">vs last</div>
+          <div class="streak-badge">
+            <div class="streak-icon">📈</div>
+            <div class="streak-info">
+              <div class="streak-value" id="trend-delta">--</div>
+              <div class="streak-label">vs last</div>
+            </div>
           </div>
         </div>
       </div>
@@ -425,6 +434,7 @@ body {
 const S = {
   conversations: [], overrides: {}, dismissed: {}, newIds: new Set(),
   selectedId: null, actionFilter: 'all', reviewCat: 'spam', reviewOpen: false,
+  trendOpen: false,
   nameSignalFirst: '', nameSignalEditing: false,
   filter: { timelineAfter: null, timelineBefore: null },
 };
@@ -860,6 +870,12 @@ function setActionFilter(f){S.actionFilter=f;
 function toggleExpand(id){S.selectedId=S.selectedId===id?null:id;renderActions();}
 function dismissConvo(id){S.dismissed[id]=true;
   try{localStorage.setItem(DISMISS_KEY,JSON.stringify(S.dismissed));}catch(_){}renderAll();}
+
+function toggleTrend(){
+  S.trendOpen=!S.trendOpen;
+  document.getElementById('trend-body').style.display=S.trendOpen?'block':'none';
+  document.getElementById('trend-toggle').textContent=S.trendOpen?'Hide score history':'Show score history';
+}
 
 // ── Review categories ────────────────────────────────────────────────────────
 function toggleReview(){
