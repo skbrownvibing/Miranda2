@@ -2,6 +2,12 @@
 
 ## Current development cycle
 
+### 2026-03-27 — Returning-user recovery + quieter trend UI
+- Fixed returning-user detection so "Continue with last export" appears whenever saved conversation data exists, even if saved metadata is missing or invalid.
+- Added a safe fallback label for recovered saved exports when metadata is unavailable.
+- Collapsed score history/trend behind a reveal button so it is less prominent by default.
+- Added copy clarifying that trend history grows across days of app use and is not backfilled from all historical message dates.
+
 ### 2026-03-27 — Product definition refresh
 - Added a repo PRD documenting the current product scope, decision rules, scoring model, and future directions.
 - Standardized product framing around responsiveness tracking rather than inbox triage.
