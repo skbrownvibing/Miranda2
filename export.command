@@ -252,12 +252,24 @@ def main():
                 return t
             return '📎 Attachment' if has_att else ''
 
-        msg_list = [
-            {'text': msg_text(t, att), 'from_me': bool(fm), 'date': fmt(apple_ts(d))}
+        # Keep only relevant conversational rows:
+        # - non-empty text after trimming
+        # - or attachment-only messages
+        relevant_rows = [
+            (t, fm, d, att)
             for t, fm, d, att in rows
+            if ((t or '').strip() != '') or bool(att)
         ]
 
-        msg_count_lookback = sum(1 for _, _, d, _ in rows if d > cut_90d)
+        if not relevant_rows:
+            continue
+
+        msg_list = [
+            {'text': msg_text(t, att), 'from_me': bool(fm), 'date': fmt(apple_ts(d))}
+            for t, fm, d, att in relevant_rows
+        ]
+
+        msg_count_lookback = sum(1 for _, _, d, _ in relevant_rows if d > cut_90d)
         last = msg_list[0]
 
         conversations.append({
