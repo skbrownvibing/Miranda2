@@ -7,6 +7,7 @@
 - Standardized product framing around responsiveness tracking rather than inbox triage.
 - Clarified taxonomy so Logistics refers to automated or transactional texts, while human logistics messages remain in scope.
 - Clarified longer-term direction around in-product reply workflows, while noting Apple platform constraints around real-time sync and import flow.
+- Collapsed the score history/trend panel by default and added a Show/Hide score history toggle.
 
 ### v0.11 — Category Review Panel (Mar 26, 2026)
 - Added a review workflow for auto-filtered texts below the action list.
