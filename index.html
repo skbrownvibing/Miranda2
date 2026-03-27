@@ -882,9 +882,7 @@ function otherTexts(){
   return S.conversations.filter(c=>{
     if(!inTimeline(c))return false;
     const cat=getCategory(c);
-    if(cat==='spam'||cat==='delivery')return false;
-    if(needsResponse(c))return false;
-    return true;
+    return cat==='uncategorized';
   });
 }
 
