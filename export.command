@@ -281,6 +281,8 @@ def main():
         msg_count_lookback = sum(1 for _, _, d, _ in relevant_rows if d > cut_90d)
         last_signal_at = fmt(apple_ts(last_signal_date))
         last_signal_preview = msg_text(last_signal_text, last_signal_att)
+        msg_count_lookback = sum(1 for _, _, d, _ in relevant_rows if d > cut_90d)
+        last = msg_list[0]
 
         conversations.append({
             'id':                guid,
