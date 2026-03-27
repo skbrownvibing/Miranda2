@@ -879,11 +879,7 @@ function renderActions(){
 }
 
 function otherTexts(){
-  return S.conversations.filter(c=>{
-    if(!inTimeline(c))return false;
-    const cat=getCategory(c);
-    return cat==='uncategorized';
-  });
+  return reviewConvos('uncategorized');
 }
 
 function renderOtherTexts(){
