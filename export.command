@@ -221,9 +221,19 @@ def main():
             (display_name if is_group else None)
         )
 
-        # Messages in lookback window (no text filter — attachments/reactions have text=NULL)
+        # Messages in lookback window (no text filter yet; we validate row trustworthiness below)
         cur.execute("""
-            SELECT m.text, m.is_from_me, m.date, m.cache_has_attachments
+            SELECT
+                m.text,
+                m.is_from_me,
+                m.date,
+                m.cache_has_attachments,
+                EXISTS(
+                    SELECT 1
+                    FROM message_attachment_join maj
+                    JOIN attachment a ON a.ROWID = maj.attachment_id
+                    WHERE maj.message_id = m.ROWID
+                ) AS has_attachment_join
             FROM message m
             JOIN chat_message_join cmj ON m.ROWID = cmj.message_id
             WHERE cmj.chat_id = ? AND m.date > ?
@@ -235,7 +245,17 @@ def main():
         # Fall back to most recent messages if nothing in window
         if not rows:
             cur.execute("""
-                SELECT m.text, m.is_from_me, m.date, m.cache_has_attachments
+                SELECT
+                    m.text,
+                    m.is_from_me,
+                    m.date,
+                    m.cache_has_attachments,
+                    EXISTS(
+                        SELECT 1
+                        FROM message_attachment_join maj
+                        JOIN attachment a ON a.ROWID = maj.attachment_id
+                        WHERE maj.message_id = m.ROWID
+                    ) AS has_attachment_join
                 FROM message m
                 JOIN chat_message_join cmj ON m.ROWID = cmj.message_id
                 WHERE cmj.chat_id = ?
@@ -247,42 +267,37 @@ def main():
         if not rows:
             continue
 
-        def msg_text(t, has_att):
-            if t:
-                return t
-            return '📎 Attachment' if has_att else ''
+        def msg_text(t, has_attachment_join):
+            trimmed = (t or '').strip()
+            if trimmed:
+                return trimmed
+            return '📎 Attachment' if has_attachment_join else ''
 
-        # Keep only relevant conversational rows:
+        # Keep only trustworthy conversational rows:
         # - non-empty text after trimming
-        # - or attachment-only messages
+        # - OR rows with confirmed message↔attachment linkage
         relevant_rows = [
-            (t, fm, d, att)
-            for t, fm, d, att in rows
-            if ((t or '').strip() != '') or bool(att)
+            (t, fm, d, cache_att, has_att_join)
+            for t, fm, d, cache_att, has_att_join in rows
+            if ((t or '').strip() != '') or bool(has_att_join)
         ]
 
         if not relevant_rows:
             continue
 
         msg_list = [
-            {'text': msg_text(t, att), 'from_me': bool(fm), 'date': fmt(apple_ts(d))}
-            for t, fm, d, att in relevant_rows
+            {'text': msg_text(t, has_att_join), 'from_me': bool(fm), 'date': fmt(apple_ts(d))}
+            for t, fm, d, _cache_att, has_att_join in relevant_rows
         ]
 
         # Recent context window for action-needed logic and last-message signal.
         recent_relevant_rows = relevant_rows[:5]
-        last_text_row = next(
-            ((t, fm, d, att) for t, fm, d, att in recent_relevant_rows if (t or '').strip() != ''),
-            None
-        )
-        last_signal_row = last_text_row if last_text_row is not None else recent_relevant_rows[0]
-        last_signal_text, last_signal_from_me, last_signal_date, last_signal_att = last_signal_row
+        last_signal_row = recent_relevant_rows[0]
+        last_signal_text, last_signal_from_me, last_signal_date, _last_signal_cache_att, last_signal_has_attachment_join = last_signal_row
 
-        msg_count_lookback = sum(1 for _, _, d, _ in relevant_rows if d > cut_90d)
+        msg_count_lookback = sum(1 for _, _, d, _, _ in relevant_rows if d > cut_90d)
         last_signal_at = fmt(apple_ts(last_signal_date))
-        last_signal_preview = msg_text(last_signal_text, last_signal_att)
-        msg_count_lookback = sum(1 for _, _, d, _ in relevant_rows if d > cut_90d)
-        last = msg_list[0]
+        last_signal_preview = msg_text(last_signal_text, last_signal_has_attachment_join)
 
         conversations.append({
             'id':                guid,
