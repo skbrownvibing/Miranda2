@@ -512,6 +512,8 @@ function recategorize(){
 }
 
 function getCategory(c){
+  // Phone-keyed override persists across re-exports
+  if(c.phone&&S.overrides[c.phone])return S.overrides[c.phone];
   if(S.overrides[c.id])return S.overrides[c.id];
   const raw=c.category||'uncategorized';
   if(c.contact_name&&(raw==='delivery'||raw==='spam'))return'personal';
@@ -786,6 +788,8 @@ function renderActions(){
         <div class="detail-actions">
           ${phone?`<a class="btn-reply" href="${smsHref}">Reply in Messages ↗</a>`:''}
           <button class="btn-dismiss" onclick="dismissConvo('${esc(c.id)}')">No reply needed</button>
+          <button class="btn-dismiss" onclick="reclassify('${esc(c.id)}','delivery');event.stopPropagation()">→ Logistics</button>
+          <button class="btn-dismiss" onclick="reclassify('${esc(c.id)}','spam');event.stopPropagation()">→ Spam</button>
         </div>
       </div>
     </div>`;
@@ -859,20 +863,11 @@ function renderReview(){
     const name=c.contact_name||c.phone||'Unknown';
     const preview=(c.last_message_text||'').slice(0,60);
     const cat=S.reviewCat;
-    // Show reclassify buttons based on current category
-    let buttons='';
-    if(cat==='spam'||cat==='uncategorized'){
-      buttons+=`<button class="review-btn" onclick="reclassify('${esc(c.id)}','personal');event.stopPropagation()">→ Personal</button>`;
-    }
-    if(cat==='delivery'||cat==='uncategorized'){
-      buttons+=`<button class="review-btn to-spam" onclick="reclassify('${esc(c.id)}','spam');event.stopPropagation()">→ Spam</button>`;
-    }
-    if(cat==='spam'||cat==='delivery'){
-      // no need to move to other, that's less useful
-    }
-    if(cat!=='delivery'&&cat!=='spam'){
-      buttons+=`<button class="review-btn to-spam" onclick="reclassify('${esc(c.id)}','spam');event.stopPropagation()">→ Spam</button>`;
-    }
+    const CAT_LABELS={personal:'Personal',delivery:'Logistics',spam:'Spam',uncategorized:'Other'};
+    const hasOverride=(c.phone&&S.overrides[c.phone])||S.overrides[c.id];
+    const buttons=['personal','delivery','spam','uncategorized'].filter(cc=>cc!==cat).map(cc=>
+      `<button class="review-btn" onclick="reclassify('${esc(c.id)}','${cc}');event.stopPropagation()">→ ${CAT_LABELS[cc]}</button>`
+    ).join('')+(hasOverride?` <button class="review-btn" onclick="reclassify('${esc(c.id)}','auto');event.stopPropagation()" style="opacity:.5">↺ Reset</button>`:'');
     return`<div class="review-item">
       <span class="review-name">${esc(name)}</span>
       <span class="review-preview">${esc(preview)}</span>
@@ -882,7 +877,10 @@ function renderReview(){
 }
 
 function reclassify(id,newCat){
-  S.overrides[id]=newCat;
+  const conv=S.conversations.find(c=>c.id===id);
+  const key=conv?.phone||id;
+  if(newCat==='auto'){delete S.overrides[key];delete S.overrides[id];}
+  else S.overrides[key]=newCat;
   try{localStorage.setItem(OVERRIDE_KEY,JSON.stringify(S.overrides));}catch(_){}
   renderAll();
 }
