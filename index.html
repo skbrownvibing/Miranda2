@@ -181,15 +181,14 @@ body {
   padding:20px;
 }
 .trend-header {
-  display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;
+  display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-bottom:16px;
 }
-.trend-title { font-size:14px;font-weight:600;color:#fff; }
-.trend-toggle {
+.trend-toggle-row {
   font-family:inherit;font-size:12px;font-weight:500;color:var(--text2);
-  background:none;border:1px solid var(--border);border-radius:8px;
-  padding:5px 10px;cursor:pointer;transition:all .12s;
+  cursor:pointer;user-select:none;
 }
-.trend-toggle:hover { border-color:var(--text3);color:var(--text); }
+.trend-toggle-row:hover { color:var(--text); }
+.trend-preview { font-size:11px;color:var(--text3); }
 .trend-stats { display:flex;gap:16px; }
 .trend-stat { text-align:center; }
 .trend-stat-value { font-size:18px;font-weight:700;font-family:'DM Mono',monospace; }
@@ -353,8 +352,10 @@ body {
   <div class="trend-section">
     <div class="trend-card">
       <div class="trend-header">
-        <span class="trend-title">Your trend</span>
-        <button class="trend-toggle" id="trend-toggle" onclick="toggleTrend()">Show score history</button>
+        <div class="trend-toggle-row" id="trend-toggle" onclick="toggleTrend()">
+          <span id="trend-toggle-label">Score history ▾</span>
+        </div>
+        <div class="trend-preview" id="trend-preview">Last score: --</div>
       </div>
       <div id="trend-body" style="display:none">
         <div class="trend-stats">
@@ -694,6 +695,8 @@ function renderTrend(){
   const history=getHistory();
   const chart=document.getElementById('trend-chart');
   const dates=document.getElementById('trend-dates');
+  const latest=history.length?history[history.length-1].score:'--';
+  document.getElementById('trend-preview').textContent=`Last score: ${latest}`;
 
   if(history.length<2){
     chart.innerHTML='<div class="trend-empty">Run the export on different days to build your trend</div>';
@@ -874,7 +877,7 @@ function dismissConvo(id){S.dismissed[id]=true;
 function toggleTrend(){
   S.trendOpen=!S.trendOpen;
   document.getElementById('trend-body').style.display=S.trendOpen?'block':'none';
-  document.getElementById('trend-toggle').textContent=S.trendOpen?'Hide score history':'Show score history';
+  document.getElementById('trend-toggle-label').textContent=S.trendOpen?'Score history ▴':'Score history ▾';
 }
 
 // ── Review categories ────────────────────────────────────────────────────────
