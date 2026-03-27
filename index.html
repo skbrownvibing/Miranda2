@@ -167,6 +167,13 @@ body {
 
 .action-empty { text-align:center;padding:48px 20px;color:var(--text3);font-size:14px; }
 .action-empty-icon { font-size:36px;margin-bottom:12px; }
+.other-section { padding:0 24px 40px;max-width:640px;width:100%;margin:0 auto; }
+.other-list { display:flex;flex-direction:column;gap:6px; }
+.other-item {
+  display:flex;align-items:center;gap:12px;padding:12px;
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+}
+.other-item:hover { background:var(--surface2);border-color:#3a3a4a; }
 
 ::-webkit-scrollbar { width:5px;height:5px; }
 ::-webkit-scrollbar-track { background:transparent; }
@@ -181,15 +188,14 @@ body {
   padding:20px;
 }
 .trend-header {
-  display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;
+  display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-bottom:16px;
 }
-.trend-title { font-size:14px;font-weight:600;color:#fff; }
-.trend-toggle {
+.trend-toggle-row {
   font-family:inherit;font-size:12px;font-weight:500;color:var(--text2);
-  background:none;border:1px solid var(--border);border-radius:8px;
-  padding:5px 10px;cursor:pointer;transition:all .12s;
+  cursor:pointer;user-select:none;
 }
-.trend-toggle:hover { border-color:var(--text3);color:var(--text); }
+.trend-toggle-row:hover { color:var(--text); }
+.trend-preview { font-size:11px;color:var(--text3); }
 .trend-stats { display:flex;gap:16px; }
 .trend-stat { text-align:center; }
 .trend-stat-value { font-size:18px;font-weight:700;font-family:'DM Mono',monospace; }
@@ -353,8 +359,10 @@ body {
   <div class="trend-section">
     <div class="trend-card">
       <div class="trend-header">
-        <span class="trend-title">Your trend</span>
-        <button class="trend-toggle" id="trend-toggle" onclick="toggleTrend()">Show score history</button>
+        <div class="trend-toggle-row" id="trend-toggle" onclick="toggleTrend()">
+          <span id="trend-toggle-label">Score history ▾</span>
+        </div>
+        <div class="trend-preview" id="trend-preview">Last score: --</div>
       </div>
       <div id="trend-body" style="display:none">
         <div class="trend-stats">
@@ -402,7 +410,7 @@ body {
 
   <div class="action-section">
     <div class="action-header">
-      <span class="action-title">Needs your reply</span>
+      <span class="action-title">Action needed</span>
       <span class="action-count" id="action-count"></span>
     </div>
     <div class="action-filters" id="action-filters">
@@ -413,17 +421,24 @@ body {
     <div class="action-list" id="action-list"></div>
   </div>
 
+  <div class="other-section">
+    <div class="action-header">
+      <span class="action-title">Other texts</span>
+      <span class="action-count" id="other-count"></span>
+    </div>
+    <div class="other-list" id="other-list"></div>
+  </div>
+
   <!-- Category review -->
   <div class="review-section">
     <button class="review-toggle" id="review-toggle" onclick="toggleReview()">
-      <span id="review-toggle-label">Review auto-filtered texts</span>
+      <span id="review-toggle-label">Auto-filtered texts</span>
       <span class="review-arrow" id="review-arrow">▾</span>
     </button>
     <div class="review-body" id="review-body" style="display:none">
       <div class="review-tabs" id="review-tabs">
         <button class="review-tab active" data-cat="spam" onclick="setReviewCat('spam')">Spam <span id="review-count-spam" class="review-tab-count"></span></button>
         <button class="review-tab" data-cat="delivery" onclick="setReviewCat('delivery')">Logistics <span id="review-count-delivery" class="review-tab-count"></span></button>
-        <button class="review-tab" data-cat="uncategorized" onclick="setReviewCat('uncategorized')">Other <span id="review-count-other" class="review-tab-count"></span></button>
       </div>
       <div class="review-list" id="review-list"></div>
     </div>
@@ -620,8 +635,11 @@ function relTime(d){if(!d)return'';const ms=Date.now()-new Date(d).getTime(),m=M
 function fullTime(d){if(!d)return'';return new Date(d).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});}
 function displayName(c){if(c.is_group&&c.group_name&&c.group_name.trim())return c.group_name.trim();return c.contact_name||c.phone||'Unknown';}
 function initial(c){return displayName(c).trim()[0].toUpperCase();}
+function recentPreviewMessages(c){
+  return (c.messages||[]).slice(-5);
+}
 function lastMsgs(c){
-  const msgs=c.messages||[],ATT='📎 Attachment';
+  const msgs=recentPreviewMessages(c),ATT='📎 Attachment';
   let theirsText=null,theirsAttach=null,mineText=null;
   for(let i=msgs.length-1;i>=0;i--){
     const txt=String(msgs[i]?.text??'').trim();
@@ -640,7 +658,7 @@ function lastMsgs(c){
 }
 
 // ── Render ───────────────────────────────────────────────────────────────────
-function renderAll(){renderScore();saveScoreHistory();renderTrend();renderActions();renderReview();}
+function renderAll(){renderScore();saveScoreHistory();renderTrend();renderActions();renderOtherTexts();renderReview();}
 
 // ── Score history ────────────────────────────────────────────────────────────
 function getHistory(){
@@ -694,6 +712,8 @@ function renderTrend(){
   const history=getHistory();
   const chart=document.getElementById('trend-chart');
   const dates=document.getElementById('trend-dates');
+  const latest=history.length?history[history.length-1].score:'--';
+  document.getElementById('trend-preview').textContent=`Last score: ${latest}`;
 
   if(history.length<2){
     chart.innerHTML='<div class="trend-empty">Run the export on different days to build your trend</div>';
@@ -826,7 +846,7 @@ function renderActions(){
   if(!list.length){el.innerHTML='<div class="action-empty"><div class="action-empty-icon">✨</div><div>You\'re all caught up!</div></div>';return;}
   el.innerHTML=list.map(c=>{
     const name=displayName(c),lm=lastMsgs(c),phone=c.phone||'',smsHref=phone?'sms:'+phone.replace(/\s/g,''):'#';
-    const msgs=c.messages||[],exp=c.id===S.selectedId;
+    const msgs=recentPreviewMessages(c),exp=c.id===S.selectedId;
     let prevTheirs='',prevMine='';
     if(lm.theirs!==null)prevTheirs=`<div class="action-preview"><span class="preview-label">Them:</span> ${esc(lm.theirs)}</div>`;
     if(lm.mine!==null)prevMine=`<div class="action-preview-mine"><span class="preview-label">You:</span> ${esc(lm.mine)}</div>`;
@@ -858,6 +878,35 @@ function renderActions(){
   }).join('');
 }
 
+function otherTexts(){
+  return reviewConvos('uncategorized');
+}
+
+function renderOtherTexts(){
+  const list=otherTexts().sort((a,b)=>{
+    const at=a.last_message_at?new Date(a.last_message_at).getTime():0;
+    const bt=b.last_message_at?new Date(b.last_message_at).getTime():0;
+    return bt-at;
+  });
+  document.getElementById('other-count').textContent=list.length===1?'1 text':list.length+' texts';
+  const el=document.getElementById('other-list');
+  if(!list.length){el.innerHTML='<div class="review-empty">Nothing here</div>';return;}
+  el.innerHTML=list.map(c=>{
+    const name=displayName(c),lm=lastMsgs(c);
+    const preview=lm.theirs!==null?lm.theirs:lm.mine!==null?lm.mine:(c.last_message_text||'');
+    return `<div class="other-item">
+      <div class="action-avatar">${esc(initial(c))}</div>
+      <div class="action-body">
+        <div class="action-name">${esc(name)}</div>
+        <div class="action-preview">${esc(preview)}</div>
+      </div>
+      <div class="action-right">
+        <span class="action-time">${esc(relTime(c.last_message_at))}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 // ── Actions ──────────────────────────────────────────────────────────────────
 function handleTimeline(val){
   if(!val){S.filter.timelineAfter=null;S.filter.timelineBefore=null;}
@@ -874,7 +923,7 @@ function dismissConvo(id){S.dismissed[id]=true;
 function toggleTrend(){
   S.trendOpen=!S.trendOpen;
   document.getElementById('trend-body').style.display=S.trendOpen?'block':'none';
-  document.getElementById('trend-toggle').textContent=S.trendOpen?'Hide score history':'Show score history';
+  document.getElementById('trend-toggle-label').textContent=S.trendOpen?'Score history ▴':'Score history ▾';
 }
 
 // ── Review categories ────────────────────────────────────────────────────────
@@ -1018,12 +1067,10 @@ function renderReview(){
   // Update counts
   const spamCount=reviewConvos('spam').length;
   const delivCount=reviewConvos('delivery').length;
-  const otherCount=reviewConvos('uncategorized').length;
   document.getElementById('review-count-spam').textContent=spamCount;
   document.getElementById('review-count-delivery').textContent=delivCount;
-  document.getElementById('review-count-other').textContent=otherCount;
   document.getElementById('review-toggle-label').textContent=
-    `Review auto-filtered texts (${spamCount+delivCount+otherCount})`;
+    `Auto-filtered texts (${spamCount+delivCount})`;
 
   if(!S.reviewOpen)return;
 
