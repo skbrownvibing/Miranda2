@@ -257,7 +257,7 @@ def main():
             for t, fm, d, att in rows
         ]
 
-        msg_count_lookback = sum(1 for _, _, d in rows if d > cut_90d)
+        msg_count_lookback = sum(1 for _, _, d, _ in rows if d > cut_90d)
         last = msg_list[0]
 
         conversations.append({
