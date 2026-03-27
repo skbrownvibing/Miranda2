@@ -221,12 +221,12 @@ def main():
             (display_name if is_group else None)
         )
 
-        # Messages in lookback window
+        # Messages in lookback window (no text filter — attachments/reactions have text=NULL)
         cur.execute("""
-            SELECT m.text, m.is_from_me, m.date
+            SELECT m.text, m.is_from_me, m.date, m.cache_has_attachments
             FROM message m
             JOIN chat_message_join cmj ON m.ROWID = cmj.message_id
-            WHERE cmj.chat_id = ? AND m.date > ? AND m.text IS NOT NULL
+            WHERE cmj.chat_id = ? AND m.date > ?
             ORDER BY m.date DESC
             LIMIT 100
         """, (chat_id, cut_90d))
@@ -235,10 +235,10 @@ def main():
         # Fall back to most recent messages if nothing in window
         if not rows:
             cur.execute("""
-                SELECT m.text, m.is_from_me, m.date
+                SELECT m.text, m.is_from_me, m.date, m.cache_has_attachments
                 FROM message m
                 JOIN chat_message_join cmj ON m.ROWID = cmj.message_id
-                WHERE cmj.chat_id = ? AND m.text IS NOT NULL
+                WHERE cmj.chat_id = ?
                 ORDER BY m.date DESC
                 LIMIT 10
             """, (chat_id,))
@@ -247,9 +247,14 @@ def main():
         if not rows:
             continue
 
+        def msg_text(t, has_att):
+            if t:
+                return t
+            return '📎 Attachment' if has_att else ''
+
         msg_list = [
-            {'text': t, 'from_me': bool(fm), 'date': fmt(apple_ts(d))}
-            for t, fm, d in rows
+            {'text': msg_text(t, att), 'from_me': bool(fm), 'date': fmt(apple_ts(d))}
+            for t, fm, d, att in rows
         ]
 
         msg_count_lookback = sum(1 for _, _, d in rows if d > cut_90d)
