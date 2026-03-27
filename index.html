@@ -640,7 +640,9 @@ function lastMsgs(c){
     }
     if(theirsText!==null&&mineText!==null)break;
   }
-  return{theirs:theirsText!==null?theirsText:theirsAttach,mine:mineText};
+  // Only show attachment fallback when there is no usable recent text in the preview window.
+  const hasUsableText=theirsText!==null||mineText!==null;
+  return{theirs:theirsText!==null?theirsText:(hasUsableText?null:theirsAttach),mine:mineText};
 }
 
 // ── Render ───────────────────────────────────────────────────────────────────

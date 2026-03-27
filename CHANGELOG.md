@@ -9,6 +9,7 @@
 - Clarified longer-term direction around in-product reply workflows, while noting Apple platform constraints around real-time sync and import flow.
 - Collapsed the score history/trend panel by default and added a Show/Hide score history toggle.
 - Fixed Action Needed previews so attachments are only shown when they are inside the same last-5-message preview window (older attachments are no longer pulled into the preview).
+- Fixed Action Needed row previews to prefer any usable text in the same last-5-message preview window and only fall back to “📎 Attachment” when no usable text exists in that window.
 
 ### v0.11 — Category Review Panel (Mar 26, 2026)
 - Added a review workflow for auto-filtered texts below the action list.
