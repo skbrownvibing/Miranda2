@@ -251,6 +251,20 @@ body {
 .review-btn.to-spam { }
 .review-btn.to-spam:hover { border-color:var(--red);color:var(--red); }
 .review-empty { color:var(--text3);font-size:12px;text-align:center;padding:20px 0; }
+.other-section { margin-top:18px; }
+.other-header { display:flex;justify-content:space-between;align-items:center;margin-bottom:10px; }
+.other-title { font-size:16px;font-weight:600;color:#fff; }
+.other-count { color:var(--text3);font-size:12px; }
+.other-list { display:flex;flex-direction:column;gap:6px; }
+.other-meta { font-size:11px;color:var(--text3);margin-top:4px;display:flex;flex-wrap:wrap;gap:8px; }
+.other-explain { font-size:12px;color:var(--text2);margin-bottom:8px; }
+.other-label-row { display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px; }
+.other-label-chip { font-size:11px;color:var(--text2);border:1px solid var(--border);padding:3px 8px;border-radius:999px; }
+.other-label-input {
+  width:150px;padding:5px 8px;border:1px solid var(--border);border-radius:8px;
+  background:var(--bg);color:var(--text);font-size:12px;
+}
+.other-history { max-height:220px;overflow:auto;padding-right:4px; }
 
 @media (max-width:600px) {
   .contributors { grid-template-columns:1fr; }
@@ -379,7 +393,7 @@ body {
 
   <div class="action-section">
     <div class="action-header">
-      <span class="action-title">Needs your reply</span>
+      <span class="action-title">Action needed</span>
       <span class="action-count" id="action-count"></span>
     </div>
     <div class="action-filters" id="action-filters">
@@ -388,6 +402,14 @@ body {
       <button class="filter-chip" data-filter="today" onclick="setActionFilter('today')">Today</button>
     </div>
     <div class="action-list" id="action-list"></div>
+  </div>
+
+  <div class="other-section">
+    <div class="other-header">
+      <span class="other-title">Other texts</span>
+      <span class="other-count" id="other-count"></span>
+    </div>
+    <div class="other-list" id="other-list"></div>
   </div>
 
   <!-- Category review -->
@@ -400,7 +422,6 @@ body {
       <div class="review-tabs" id="review-tabs">
         <button class="review-tab active" data-cat="spam" onclick="setReviewCat('spam')">Spam <span id="review-count-spam" class="review-tab-count"></span></button>
         <button class="review-tab" data-cat="delivery" onclick="setReviewCat('delivery')">Logistics <span id="review-count-delivery" class="review-tab-count"></span></button>
-        <button class="review-tab" data-cat="uncategorized" onclick="setReviewCat('uncategorized')">Other <span id="review-count-other" class="review-tab-count"></span></button>
       </div>
       <div class="review-list" id="review-list"></div>
     </div>
@@ -411,14 +432,17 @@ body {
 const S = {
   conversations: [], overrides: {}, dismissed: {}, newIds: new Set(),
   selectedId: null, actionFilter: 'all', reviewCat: 'spam', reviewOpen: false,
+  otherSelectedId: null, otherEditingId: null, localLabels: {},
   filter: { timelineAfter: null, timelineBefore: null },
 };
 const OVERRIDE_KEY='miranda2_overrides_v1', DISMISS_KEY='miranda2_dismissed_v1',
-      DATA_KEY='miranda2_data_v1', META_KEY='miranda2_meta_v1', HISTORY_KEY='miranda2_history_v1';
+      DATA_KEY='miranda2_data_v1', META_KEY='miranda2_meta_v1', HISTORY_KEY='miranda2_history_v1',
+      LOCAL_LABEL_KEY='miranda2_local_labels_v1';
 
 function init() {
   try { const r=localStorage.getItem(OVERRIDE_KEY); if(r) S.overrides=JSON.parse(r); } catch(_){}
   try { const r=localStorage.getItem(DISMISS_KEY); if(r) S.dismissed=JSON.parse(r); } catch(_){}
+  try { const r=localStorage.getItem(LOCAL_LABEL_KEY); if(r) S.localLabels=JSON.parse(r)||{}; } catch(_){}
   checkSavedData();
   const ds=document.getElementById('drop-screen');
   ds.addEventListener('dragover',e=>{e.preventDefault();ds.classList.add('drag-over');});
@@ -598,7 +622,7 @@ function lastMsgs(c){const msgs=c.messages||[];let t=null,m=null;
     if(m===null&&msgs[i].from_me)m=msgs[i].text||'';if(t!==null&&m!==null)break;}return{theirs:t,mine:m};}
 
 // ── Render ───────────────────────────────────────────────────────────────────
-function renderAll(){renderScore();saveScoreHistory();renderTrend();renderActions();renderReview();}
+function renderAll(){renderScore();saveScoreHistory();renderTrend();renderActions();renderOtherTexts();renderReview();}
 
 // ── Score history ────────────────────────────────────────────────────────────
 function getHistory(){
@@ -851,16 +875,194 @@ function reviewConvos(cat){
   });
 }
 
+function normLocalLabel(s){
+  const raw=String(s||'').trim();
+  if(!raw)return'';
+  return raw.replace(/[^a-zA-Z\s'-]/g,'').replace(/\s+/g,' ').trim().slice(0,40);
+}
+
+function localLabelKey(c){return c.phone||c.id;}
+function getLocalLabel(c){return S.localLabels[localLabelKey(c)]||'';}
+
+function saveLocalLabels(){
+  try{localStorage.setItem(LOCAL_LABEL_KEY,JSON.stringify(S.localLabels));}catch(_){}
+}
+
+function setOtherLabelEdit(id,on){
+  S.otherEditingId=on?id:null;
+  renderOtherTexts();
+}
+
+function saveOtherLabel(id){
+  const input=document.getElementById(`other-label-input-${id}`);
+  if(!input)return;
+  const conv=S.conversations.find(c=>c.id===id);
+  if(!conv)return;
+  const key=localLabelKey(conv);
+  const val=normLocalLabel(input.value);
+  if(val)S.localLabels[key]=val;
+  else delete S.localLabels[key];
+  saveLocalLabels();
+  S.otherEditingId=null;
+  renderOtherTexts();
+}
+
+function clearOtherLabel(id){
+  const conv=S.conversations.find(c=>c.id===id);
+  if(!conv)return;
+  delete S.localLabels[localLabelKey(conv)];
+  saveLocalLabels();
+  S.otherEditingId=null;
+  renderOtherTexts();
+}
+
+function recentInboundText(c){
+  const msgs=(c.messages||[]).filter(m=>!m.from_me).slice(-6);
+  return msgs.map(m=>String(m.text||'')).join(' ').toLowerCase();
+}
+
+function looksConversational(c){
+  const msgs=(c.messages||[]).slice(-5);
+  const inbound=msgs.filter(m=>!m.from_me).length;
+  const outbound=msgs.filter(m=>m.from_me).length;
+  const text=msgs.map(m=>String(m.text||'')).join(' ').toLowerCase();
+  let s=0;
+  if(inbound>0&&outbound>0)s+=2;
+  if((text.match(/\?/g)||[]).length>0)s+=1;
+  if(/\b(i|you|we|me|my|your)\b/.test(text))s+=1;
+  return s;
+}
+
+function otherRankScore(c){
+  let score=0;
+  const now=Date.now();
+  const lastAt=c.last_message_at?new Date(c.last_message_at).getTime():0;
+  const ageH=lastAt?((now-lastAt)/3600000):9999;
+  if(!c.i_replied_last){
+    if(ageH<=24)score+=3;
+    else if(ageH<=24*7)score+=2;
+    else if(ageH<=24*14)score+=1;
+  }
+  const txt=recentInboundText(c);
+  const introHint=/\b(this is|i'?m|my name is|who is this|nice to meet|met you|intro)\b/.test(txt);
+  if(introHint)score+=2;
+  const conv=looksConversational(c);
+  if(conv>=3)score+=2;
+  else if(conv>=2)score+=1;
+
+  const txn=/\b(code|verification|appointment|receipt|order|delivery|unsubscribe|stop|promo|offer|payment due|bill)\b/.test(txt);
+  if(txn)score-=3;
+  return score;
+}
+
+function suggestedLocalLabel(c){
+  const incoming=(c.messages||[]).filter(m=>!m.from_me).slice(-5).map(m=>String(m.text||''));
+  for(const t of incoming){
+    const m=t.match(/\b(?:this is|i am|i'm)\s+([A-Z][a-z]{2,})(?:\s+([A-Z][a-z]{2,}))?\b/);
+    if(!m)continue;
+    const name=[m[1],m[2]].filter(Boolean).join(' ');
+    if(name.length<3)continue;
+    return {label:name,confidence:'high'};
+  }
+  return null;
+}
+
+function actionReason(c){
+  if(!inTimeline(c))return'Not in Action needed: outside selected timeline.';
+  const cat=getCategory(c);
+  if(cat==='spam'||cat==='delivery')return'Not in Action needed: in auto-filtered category.';
+  if(c.is_group)return'Not in Action needed: group chat.';
+  if(c.i_replied_last)return'Not in Action needed: you replied last.';
+  if(S.dismissed[c.id])return'Not in Action needed: marked "No reply needed".';
+  return'Would appear in Action needed.';
+}
+
+function otherConvos(){
+  return S.conversations.filter(c=>getCategory(c)==='uncategorized'&&inTimeline(c));
+}
+
+function toggleOtherExpand(id){
+  S.otherSelectedId=S.otherSelectedId===id?null:id;
+  S.otherEditingId=null;
+  renderOtherTexts();
+}
+
+function renderOtherTexts(){
+  let list=otherConvos();
+  list.sort((a,b)=>{
+    const as=otherRankScore(a),bs=otherRankScore(b);
+    if(bs!==as)return bs-as;
+    const at=a.last_message_at?new Date(a.last_message_at).getTime():0;
+    const bt=b.last_message_at?new Date(b.last_message_at).getTime():0;
+    return bt-at;
+  });
+  document.getElementById('other-count').textContent=list.length===1?'1 thread':`${list.length} threads`;
+  const el=document.getElementById('other-list');
+  if(!list.length){
+    el.innerHTML='<div class="action-empty"><div class="action-empty-icon">🗂️</div><div>No Other texts in this timeline.</div></div>';
+    return;
+  }
+  el.innerHTML=list.slice(0,50).map(c=>{
+    const exp=c.id===S.otherSelectedId;
+    const name=displayName(c);
+    const local=getLocalLabel(c);
+    const showName=local||name;
+    const sug=suggestedLocalLabel(c);
+    const msgs=(c.messages||[]).slice(-12);
+    const history=msgs.map(m=>{
+      const side=m.from_me?'mine':'theirs';
+      return`<div class="msg-row ${side}"><div class="msg-bubble ${side}">${esc(m.text||'')}</div><div class="msg-time">${esc(fullTime(m.date))}</div></div>`;
+    }).join('');
+    const editing=S.otherEditingId===c.id;
+    const labelRow=editing
+      ?`<div class="other-label-row">
+          <span class="other-label-chip">Local label</span>
+          <input id="other-label-input-${esc(c.id)}" class="other-label-input" type="text" maxlength="40" value="${esc(local)}" placeholder="Local label">
+          <button class="review-btn" onclick="saveOtherLabel('${esc(c.id)}');event.stopPropagation()">Save</button>
+          <button class="review-btn" onclick="setOtherLabelEdit('${esc(c.id)}',false);event.stopPropagation()">Cancel</button>
+          ${local?`<button class="review-btn" onclick="clearOtherLabel('${esc(c.id)}');event.stopPropagation()">Clear</button>`:''}
+        </div>`
+      :`<div class="other-label-row">
+          <span class="other-label-chip">Local label: ${esc(local||'none')}</span>
+          <button class="review-btn" onclick="setOtherLabelEdit('${esc(c.id)}',true);event.stopPropagation()">${local?'Edit':'Add'}</button>
+          ${local?`<button class="review-btn" onclick="clearOtherLabel('${esc(c.id)}');event.stopPropagation()">Clear</button>`:''}
+          ${(!local&&sug&&sug.confidence==='high')?`<span class="other-label-chip">Suggested local label: ${esc(sug.label)}</span>`:''}
+        </div>`;
+    const CAT_LABELS={personal:'Personal',delivery:'Logistics',spam:'Spam',uncategorized:'Other'};
+    const cat=getCategory(c);
+    const buttons=['personal','delivery','spam','uncategorized'].filter(cc=>cc!==cat).map(cc=>
+      `<button class="review-btn" onclick="reclassify('${esc(c.id)}','${cc}');event.stopPropagation()">→ ${CAT_LABELS[cc]}</button>`
+    ).join('');
+    return`<div class="action-item${exp?' expanded':''}" onclick="toggleOtherExpand('${esc(c.id)}')">
+      <div class="action-item-top">
+        <div class="action-avatar">${esc(initial(c))}</div>
+        <div class="action-body">
+          <div class="action-name">${esc(showName)}</div>
+          <div class="action-preview">${esc(c.last_message_text||'')}</div>
+          <div class="other-meta">
+            <span>${esc(fullTime(c.last_message_at))}</span>
+            <span>${esc(actionReason(c))}</span>
+          </div>
+        </div>
+      </div>
+      <div class="action-detail" onclick="event.stopPropagation()">
+        <div class="other-explain">${esc(actionReason(c))}</div>
+        ${labelRow}
+        <div class="other-history">${msgs.length===0?'<div style="color:var(--text3);font-size:12px;text-align:center;padding:12px 0">No messages in export window</div>':history}</div>
+        <div class="detail-actions">${buttons}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function renderReview(){
   // Update counts
   const spamCount=reviewConvos('spam').length;
   const delivCount=reviewConvos('delivery').length;
-  const otherCount=reviewConvos('uncategorized').length;
   document.getElementById('review-count-spam').textContent=spamCount;
   document.getElementById('review-count-delivery').textContent=delivCount;
-  document.getElementById('review-count-other').textContent=otherCount;
   document.getElementById('review-toggle-label').textContent=
-    `Review auto-filtered texts (${spamCount+delivCount+otherCount})`;
+    `Review auto-filtered texts (${spamCount+delivCount})`;
 
   if(!S.reviewOpen)return;
 
