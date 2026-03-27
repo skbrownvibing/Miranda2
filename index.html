@@ -251,6 +251,20 @@ body {
 .review-btn.to-spam { }
 .review-btn.to-spam:hover { border-color:var(--red);color:var(--red); }
 .review-empty { color:var(--text3);font-size:12px;text-align:center;padding:20px 0; }
+.other-signal-bar {
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin-bottom:8px;padding:8px 10px;border:1px solid var(--border);
+  border-radius:10px;background:var(--surface);
+}
+.other-signal-meta { display:flex;flex-direction:column;gap:2px;min-width:0; }
+.other-signal-status { font-size:12px;color:var(--text2);font-weight:600; }
+.other-signal-help { font-size:11px;color:var(--text3); }
+.other-signal-actions { display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end; }
+.review-btn.secondary:hover { border-color:var(--text3);color:var(--text2); }
+.other-signal-input {
+  width:120px;padding:5px 8px;border:1px solid var(--border);border-radius:8px;
+  background:var(--bg);color:var(--text);font-size:12px;
+}
 
 @media (max-width:600px) {
   .contributors { grid-template-columns:1fr; }
@@ -411,14 +425,17 @@ body {
 const S = {
   conversations: [], overrides: {}, dismissed: {}, newIds: new Set(),
   selectedId: null, actionFilter: 'all', reviewCat: 'spam', reviewOpen: false,
+  nameSignalFirst: '', nameSignalEditing: false,
   filter: { timelineAfter: null, timelineBefore: null },
 };
 const OVERRIDE_KEY='miranda2_overrides_v1', DISMISS_KEY='miranda2_dismissed_v1',
-      DATA_KEY='miranda2_data_v1', META_KEY='miranda2_meta_v1', HISTORY_KEY='miranda2_history_v1';
+      DATA_KEY='miranda2_data_v1', META_KEY='miranda2_meta_v1', HISTORY_KEY='miranda2_history_v1',
+      NAME_SIGNAL_KEY='miranda2_name_signal_v1';
 
 function init() {
   try { const r=localStorage.getItem(OVERRIDE_KEY); if(r) S.overrides=JSON.parse(r); } catch(_){}
   try { const r=localStorage.getItem(DISMISS_KEY); if(r) S.dismissed=JSON.parse(r); } catch(_){}
+  try { const r=localStorage.getItem(NAME_SIGNAL_KEY); if(r) S.nameSignalFirst=JSON.parse(r).firstName||''; } catch(_){}
   checkSavedData();
   const ds=document.getElementById('drop-screen');
   ds.addEventListener('dragover',e=>{e.preventDefault();ds.classList.add('drag-over');});
@@ -851,6 +868,121 @@ function reviewConvos(cat){
   });
 }
 
+function normFirstName(s){
+  const raw=String(s||'').trim();
+  if(!raw)return'';
+  return raw.split(/\s+/)[0].replace(/[^a-zA-Z'-]/g,'').slice(0,30);
+}
+
+function saveNameSignal(){
+  try{localStorage.setItem(NAME_SIGNAL_KEY,JSON.stringify({firstName:S.nameSignalFirst||''}));}catch(_){}
+}
+
+function setNameSignalEdit(on){
+  S.nameSignalEditing=!!on;
+  renderReview();
+}
+
+function saveNameSignalFromInput(){
+  const input=document.getElementById('other-name-input');
+  if(!input)return;
+  S.nameSignalFirst=normFirstName(input.value);
+  S.nameSignalEditing=false;
+  saveNameSignal();
+  renderReview();
+}
+
+function clearNameSignal(){
+  S.nameSignalFirst='';
+  S.nameSignalEditing=false;
+  saveNameSignal();
+  renderReview();
+}
+
+function recentInboundText(c){
+  const msgs=(c.messages||[]).filter(m=>!m.from_me).slice(-3);
+  return msgs.map(m=>String(m.text||'')).join(' ').toLowerCase();
+}
+
+function looksConversational(c){
+  const msgs=(c.messages||[]).slice(-5);
+  const inbound=msgs.filter(m=>!m.from_me).length;
+  const outbound=msgs.filter(m=>m.from_me).length;
+  const text=msgs.map(m=>String(m.text||'')).join(' ').toLowerCase();
+  let s=0;
+  if(inbound>0&&outbound>0)s+=2;
+  if((text.match(/\?/g)||[]).length>0)s+=1;
+  if(/\b(i|you|we|me|my|your)\b/.test(text))s+=1;
+  return s;
+}
+
+function otherRankScore(c){
+  let score=0;
+  const now=Date.now();
+  const lastAt=c.last_message_at?new Date(c.last_message_at).getTime():0;
+  const ageH=lastAt?((now-lastAt)/3600000):9999;
+  if(!c.i_replied_last){
+    if(ageH<=24)score+=3;
+    else if(ageH<=24*7)score+=2;
+    else if(ageH<=24*14)score+=1;
+  }
+  const txt=recentInboundText(c);
+  const introHint=/\b(this is|i'?m|my name is|who is this|nice to meet|met you|intro)\b/.test(txt);
+  if(introHint)score+=2;
+  const conv=looksConversational(c);
+  if(conv>=3)score+=2;
+  else if(conv>=2)score+=1;
+
+  const first=normFirstName(S.nameSignalFirst).toLowerCase();
+  if(first&&new RegExp(`\\b${first.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\b`,'i').test(txt)){
+    score+=2;
+    if(!introHint&&conv<2)score-=1; // keep name signal weak without conversational context
+  }
+
+  const txn=/\b(code|verification|appointment|receipt|order|delivery|unsubscribe|stop|promo|offer|payment due|bill)\b/.test(txt);
+  if(txn)score-=3;
+  return score;
+}
+
+function renderOtherSignalControl(){
+  const status=S.nameSignalFirst?'Using name signal':'Name signal off';
+  const safe=esc(S.nameSignalFirst||'');
+  if(S.nameSignalEditing){
+    return `<div class="other-signal-bar">
+      <div class="other-signal-meta">
+        <div class="other-signal-status">${status}</div>
+        <div class="other-signal-help">Only affects ordering in Other.</div>
+      </div>
+      <div class="other-signal-actions">
+        <input id="other-name-input" class="other-signal-input" type="text" maxlength="30" placeholder="First name" value="${safe}">
+        <button class="review-btn secondary" onclick="saveNameSignalFromInput()">Save</button>
+        <button class="review-btn secondary" onclick="setNameSignalEdit(false)">Cancel</button>
+      </div>
+    </div>`;
+  }
+  if(S.nameSignalFirst){
+    return `<div class="other-signal-bar">
+      <div class="other-signal-meta">
+        <div class="other-signal-status">Using name signal</div>
+        <div class="other-signal-help">Only affects ordering in Other.</div>
+      </div>
+      <div class="other-signal-actions">
+        <button class="review-btn secondary" onclick="setNameSignalEdit(true)">Edit</button>
+        <button class="review-btn secondary" onclick="clearNameSignal()">Clear</button>
+      </div>
+    </div>`;
+  }
+  return `<div class="other-signal-bar">
+    <div class="other-signal-meta">
+      <div class="other-signal-status">Name signal off</div>
+      <div class="other-signal-help">Only affects ordering in Other.</div>
+    </div>
+    <div class="other-signal-actions">
+      <button class="review-btn secondary" onclick="setNameSignalEdit(true)">Add</button>
+    </div>
+  </div>`;
+}
+
 function renderReview(){
   // Update counts
   const spamCount=reviewConvos('spam').length;
@@ -873,13 +1005,24 @@ function renderReview(){
   }
 
   // Sort most recent first
-  list.sort((a,b)=>{
-    const at=a.last_message_at?new Date(a.last_message_at).getTime():0;
-    const bt=b.last_message_at?new Date(b.last_message_at).getTime():0;
-    return bt-at;
-  });
+  if(S.reviewCat==='uncategorized'){
+    list.sort((a,b)=>{
+      const as=otherRankScore(a),bs=otherRankScore(b);
+      if(bs!==as)return bs-as;
+      const at=a.last_message_at?new Date(a.last_message_at).getTime():0;
+      const bt=b.last_message_at?new Date(b.last_message_at).getTime():0;
+      return bt-at;
+    });
+  }else{
+    list.sort((a,b)=>{
+      const at=a.last_message_at?new Date(a.last_message_at).getTime():0;
+      const bt=b.last_message_at?new Date(b.last_message_at).getTime():0;
+      return bt-at;
+    });
+  }
 
-  el.innerHTML=list.slice(0,50).map(c=>{
+  const control=S.reviewCat==='uncategorized'?renderOtherSignalControl():'';
+  el.innerHTML=control+list.slice(0,50).map(c=>{
     const name=c.contact_name||c.phone||'Unknown';
     const preview=(c.last_message_text||'').slice(0,60);
     const cat=S.reviewCat;
