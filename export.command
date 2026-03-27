@@ -269,6 +269,18 @@ def main():
             for t, fm, d, att in relevant_rows
         ]
 
+        # Recent context window for action-needed logic and last-message signal.
+        recent_relevant_rows = relevant_rows[:5]
+        last_text_row = next(
+            ((t, fm, d, att) for t, fm, d, att in recent_relevant_rows if (t or '').strip() != ''),
+            None
+        )
+        last_signal_row = last_text_row if last_text_row is not None else recent_relevant_rows[0]
+        last_signal_text, last_signal_from_me, last_signal_date, last_signal_att = last_signal_row
+
+        msg_count_lookback = sum(1 for _, _, d, _ in relevant_rows if d > cut_90d)
+        last_signal_at = fmt(apple_ts(last_signal_date))
+        last_signal_preview = msg_text(last_signal_text, last_signal_att)
         msg_count_lookback = sum(1 for _, _, d, _ in relevant_rows if d > cut_90d)
         last = msg_list[0]
 
@@ -279,9 +291,9 @@ def main():
             'is_group':          is_group,
             'group_name':        display_name if is_group else None,
             'category':          categorize(primary, contact_name, in_contacts, msg_list, msg_count_lookback),
-            'last_message_at':   last['date'],
-            'last_message_text': last['text'],
-            'i_replied_last':    last['from_me'],
+            'last_message_at':   last_signal_at,
+            'last_message_text': last_signal_preview,
+            'i_replied_last':    bool(last_signal_from_me),
             'message_count_30d': msg_count_lookback,
             'messages':          list(reversed(msg_list[:5])),   # chronological, last 5
         })
