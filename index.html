@@ -473,6 +473,20 @@ function resetData(){
 }
 
 // ── Recategorize ─────────────────────────────────────────────────────────────
+function hasManualOverride(c){
+  return !!((c.phone&&S.overrides[c.phone])||S.overrides[c.id]);
+}
+
+function isEligiblePersonalRecheck(c){
+  return c.category==='personal'&&!c.contact_name&&!c.is_group&&!hasManualOverride(c);
+}
+
+function isHighConfidenceRideshare(t){
+  const BRAND=['lyft','uber'];
+  const TXN=['your driver','trip with','arriving in','arriving now','look for','license plate','pickup spot'];
+  return BRAND.some(k=>t.includes(k))&&TXN.some(k=>t.includes(k));
+}
+
 function recategorize(){
   const SPAM=['trump','democrat','republican','midterm','gop ','dems ','vote yes','vote no','vote for',
     'polling','campaign','petition','volunteer','election day','ballot',
@@ -501,8 +515,14 @@ function recategorize(){
     'verification code','login code','security code','one-time code','one-time password',
     'use code:','your code is','your code:','authorize a login','clover.com','square.com','toast tab'];
   S.conversations.forEach(c=>{
-    if(c.category!=='uncategorized'||c.contact_name||S.overrides[c.id])return;
+    const uncategorizedEligible=c.category==='uncategorized'&&!c.contact_name&&!hasManualOverride(c);
+    const personalRecheck=isEligiblePersonalRecheck(c);
+    if(!uncategorizedEligible&&!personalRecheck)return;
     const t=(c.messages||[]).map(m=>(m.text||'').toLowerCase()).join(' ');
+    if(personalRecheck){
+      if(isHighConfidenceRideshare(t))c.category='delivery';
+      return;
+    }
     const ph=(c.phone||'').replace(/[\+\-\s]/g,'');
     if((ph.length<=6&&ph.length>0)||(c.phone||'').includes('@')){
       c.category=DELIV.some(k=>t.includes(k))?'delivery':'spam';return;}
