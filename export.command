@@ -48,23 +48,85 @@ def norm_phone(p):
         d = d[1:]
     return d
 
+def _uid_int(obj):
+    if isinstance(obj, plistlib.UID):
+        return obj.data
+    if isinstance(obj, dict):
+        return obj.get('CF$UID')
+    return None
+
+# PyObjC is optional — used for the most reliable streamtyped decoding.
+try:
+    from Foundation import NSData, NSUnarchiver
+    _PYOBJC_OK = True
+except ImportError:
+    _PYOBJC_OK = False
+
+def _extract_streamtyped(raw):
+    """Extract plain text from an NSArchiver streamtyped blob."""
+    if _PYOBJC_OK:
+        try:
+            ns_data = NSData.dataWithBytes_length_(raw, len(raw))
+            obj = NSUnarchiver.unarchiveObjectWithData_(ns_data)
+            if obj is not None:
+                s = str(obj.string()).strip() if hasattr(obj, 'string') else str(obj).strip()
+                return s or None
+        except Exception:
+            pass
+
+    # Fallback: scan for the first plausible UTF-8 string in the binary blob.
+    _meta = {
+        'streamtyped', 'NSString', 'NSMutableString', 'NSAttributedString',
+        'NSMutableAttributedString', 'NSObject', 'NSArray', 'NSMutableArray',
+        'NSDictionary', 'NSMutableDictionary', 'NSColor', 'NSFont',
+        'NSParagraphStyle', 'NSValue', 'NSNumber', 'NSData', 'NSShadow',
+        'NSOriginalFont',
+    }
+    _cls_prefixes = ('NS', 'UI', 'CK', 'IM', '__', '$')
+    i = 0
+    while i < len(raw):
+        b = raw[i]
+        if 0x20 <= b <= 0x7e or b >= 0xc2:
+            j = i + 1
+            while j < len(raw):
+                bj = raw[j]
+                if 0x20 <= bj <= 0x7e or 0x80 <= bj <= 0xbf or bj >= 0xc2:
+                    j += 1
+                else:
+                    break
+            try:
+                s = raw[i:j].decode('utf-8').strip().lstrip('+')
+                if len(s) >= 4 and s not in _meta:
+                    if ' ' in s or not any(s.startswith(p) for p in _cls_prefixes):
+                        return s
+            except UnicodeDecodeError:
+                pass
+            i = j
+        else:
+            i += 1
+    return None
+
 def extract_attributed_body(blob):
-    """Pull plain text from an NSKeyedArchiver-encoded NSAttributedString blob."""
+    """Pull plain text from an NSAttributedString attributedBody blob."""
     if not blob:
         return None
+    raw = bytes(blob)
+
+    # NSArchiver streamtyped format — what iMessage actually writes.
+    if raw.startswith(b'\x04\x0bstreamtyped'):
+        return _extract_streamtyped(raw)
+
+    # NSKeyedArchiver plist format — fallback for non-streamtyped blobs.
     try:
-        plist   = plistlib.loads(bytes(blob))
+        plist   = plistlib.loads(raw)
         objects = plist.get('$objects', [])
 
-        # Structured path: $top → root → NSString
         try:
-            top_ref = plist.get('$top', {}).get('root')
-            top_idx = top_ref.data if isinstance(top_ref, plistlib.UID) else (top_ref or {}).get('CF$UID')
+            top_idx = _uid_int(plist.get('$top', {}).get('root'))
             if top_idx is not None:
                 top_obj = objects[top_idx]
                 if isinstance(top_obj, dict):
-                    ns_ref  = top_obj.get('NSString')
-                    ns_idx  = ns_ref.data if isinstance(ns_ref, plistlib.UID) else (ns_ref or {}).get('CF$UID')
+                    ns_idx = _uid_int(top_obj.get('NSString'))
                     if ns_idx is not None:
                         s = objects[ns_idx]
                         if isinstance(s, str) and s.strip():
@@ -76,7 +138,6 @@ def extract_attributed_body(blob):
         except Exception:
             pass
 
-        # Fallback: first non-metadata string in objects
         _meta = {
             '$null', 'NSString', 'NSMutableString', 'NSAttributedString',
             'NSMutableAttributedString', 'NSColor', 'NSFont', 'NSParagraphStyle',
