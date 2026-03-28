@@ -171,13 +171,8 @@ body[data-theme="dark"] {
 .action-detail { display:none;padding:12px 0 4px;border-top:1px solid var(--border);margin-top:12px; }
 .action-item.expanded .action-detail { display:block; }
 .detail-messages { display:flex;flex-direction:column;gap:6px;margin-bottom:12px;max-height:240px;overflow-y:auto; }
-.msg-bubble { padding:8px 12px;border-radius:14px;font-size:13px;line-height:1.4;max-width:80%;word-break:break-word; }
-.msg-bubble.mine { background:var(--blue);color:#fff;align-self:flex-end;border-bottom-right-radius:4px; }
-.msg-bubble.theirs { background:var(--surface2);color:var(--text);align-self:flex-start;border-bottom-left-radius:4px; }
+.detail-messages > div { background:none;border:0;border-radius:0;padding:0;margin:0;text-align:left; }
 .msg-time { font-size:10px;color:var(--text3);margin-top:2px;padding:0 4px; }
-.msg-row { display:flex;flex-direction:column; }
-.msg-row.mine { align-items:flex-end; }
-.msg-row.theirs { align-items:flex-start; }
 .detail-actions { display:flex;gap:8px;align-items:center; }
 .btn-reply {
   font-family:inherit;font-size:12px;font-weight:600;padding:7px 16px;border:none;border-radius:10px;
@@ -927,8 +922,9 @@ function renderActions(){
     if(lm.theirs!==null)prevTheirs=`<div class="action-preview"><span class="preview-label">Them:</span> ${esc(lm.theirs)}</div>`;
     if(lm.mine!==null)prevMine=`<div class="action-preview-mine"><span class="preview-label">You:</span> ${esc(lm.mine)}</div>`;
     if(!prevTheirs&&!prevMine)prevTheirs=`<div class="action-preview">${esc(latestEventText(c))}</div>`;
-    const bubbles=msgs.map(m=>{const side=m.from_me?'mine':'theirs';
-      return`<div class="msg-row ${side}"><div class="msg-bubble ${side}">${esc(m.text||'')}</div><div class="msg-time">${esc(fullTime(m.date))}</div></div>`;}).join('');
+    const textRows=msgs
+      .filter(m=>String(m?.text??'').trim())
+      .map(m=>`<div><div>${esc(String(m.text).trim())}</div><div class="msg-time">${esc(fullTime(m.date))}</div></div>`).join('');
     return`<div class="action-item${exp?' expanded':''}" onclick="toggleExpand('${esc(c.id)}')">
       <div class="action-item-top">
         <div class="action-avatar">${esc(initial(c))}</div>
@@ -942,7 +938,7 @@ function renderActions(){
         </div>
       </div>
       <div class="action-detail" onclick="event.stopPropagation()">
-        <div class="detail-messages">${msgs.length===0?'<div style="color:var(--text3);font-size:12px;text-align:center;padding:12px 0">No messages in export window</div>':bubbles}</div>
+        <div class="detail-messages">${textRows?textRows:'<div style="color:var(--text3);font-size:12px;text-align:center;padding:12px 0">No messages in export window</div>'}</div>
         <div class="detail-actions">
           ${phone?`<a class="btn-reply" href="${smsHref}">Reply in Messages ↗</a>`:''}
           <button class="btn-dismiss" onclick="dismissConvo('${esc(c.id)}')">No reply needed</button>
@@ -974,8 +970,9 @@ function renderOtherTexts(){
     if(lm.theirs!==null)prevTheirs=`<div class="action-preview"><span class="preview-label">Them:</span> ${esc(lm.theirs)}</div>`;
     if(lm.mine!==null)prevMine=`<div class="action-preview-mine"><span class="preview-label">You:</span> ${esc(lm.mine)}</div>`;
     if(!prevTheirs&&!prevMine)prevTheirs=`<div class="action-preview">${esc(latestEventText(c))}</div>`;
-    const bubbles=msgs.map(m=>{const side=m.from_me?'mine':'theirs';
-      return`<div class="msg-row ${side}"><div class="msg-bubble ${side}">${esc(m.text||'')}</div><div class="msg-time">${esc(fullTime(m.date))}</div></div>`;}).join('');
+    const textRows=msgs
+      .filter(m=>String(m?.text??'').trim())
+      .map(m=>`<div><div>${esc(String(m.text).trim())}</div><div class="msg-time">${esc(fullTime(m.date))}</div></div>`).join('');
     return `<div class="action-item${exp?' expanded':''}" onclick="toggleExpand('${esc(c.id)}')">
       <div class="action-item-top">
         <div class="action-avatar">${esc(initial(c))}</div>
@@ -988,7 +985,7 @@ function renderOtherTexts(){
         </div>
       </div>
       <div class="action-detail" onclick="event.stopPropagation()">
-        <div class="detail-messages">${msgs.length===0?'<div style="color:var(--text3);font-size:12px;text-align:center;padding:12px 0">No messages in export window</div>':bubbles}</div>
+        <div class="detail-messages">${textRows?textRows:'<div style="color:var(--text3);font-size:12px;text-align:center;padding:12px 0">No messages in export window</div>'}</div>
         <div class="detail-actions">
           ${phone?`<a class="btn-reply" href="${smsHref}">Reply in Messages ↗</a>`:''}
           <button class="btn-dismiss" onclick="dismissConvo('${esc(c.id)}')">No reply needed</button>
