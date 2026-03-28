@@ -95,8 +95,15 @@ def _extract_streamtyped(raw):
                 else:
                     break
             try:
-                s = raw[i:j].decode('utf-8', errors='ignore').strip().lstrip('+')
-                if len(s) >= 4 and s not in _meta:
+                s = raw[i:j].decode('utf-8', errors='ignore').strip().lstrip('+$')
+                # Strip NSArchiver length-prefix byte: its ASCII value equals the string length
+                if len(s) >= 1 and not s[0].isalpha() and not s[0].isdigit():
+                    if abs(ord(s[0]) - len(s)) <= 2:
+                        s = s[1:]
+                # Strip leading object-replacement char (inline attachment placeholder)
+                if s.startswith('\ufffc'):
+                    s = s[1:].strip()
+                if len(s) >= 1 and s not in _meta:
                     if ' ' in s or not any(s.startswith(p) for p in _cls_prefixes):
                         return s
             except UnicodeDecodeError:
