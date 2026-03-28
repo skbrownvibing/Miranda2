@@ -502,6 +502,7 @@ const S = {
   nameSignalFirst: '', nameSignalEditing: false,
   filter: { timelineAfter: null, timelineBefore: null },
   exportTimestamp: null, exportTimestampSource: null, lastUpdatedTimer: null,
+  replyAssistById: {}, // { [threadId]: { isGenerating, suggestedReply, wasSkipped, copied } }
 };
 const OVERRIDE_KEY='miranda2_overrides_v1', DISMISS_KEY='miranda2_dismissed_v1',
       DATA_KEY='miranda2_data_v1', META_KEY='miranda2_meta_v1', HISTORY_KEY='miranda2_history_v1',
@@ -787,6 +788,89 @@ function previewRows(c){
     }));
 }
 
+function getReplyAssistState(threadId){
+  if(!S.replyAssistById[threadId]){
+    S.replyAssistById[threadId]={
+      isGenerating:false,
+      suggestedReply:'',
+      wasSkipped:false,
+      copied:false
+    };
+  }
+  return S.replyAssistById[threadId];
+}
+
+function buildReplyContext(thread){
+  const msgs=(thread?.messages||[])
+    .map(m=>({
+      speaker:m?.from_me?'Me':'Them',
+      text:String(m?.text??'').trim()
+    }))
+    .filter(m=>m.text.length>0);
+
+  // Gather the latest context window (up to 15; can be fewer if thread is short)
+  return msgs.slice(-15);
+}
+
+function generateSuggestedReply(context){
+  const SKIP_MSG='Too complex to suggest a reply';
+  if(!Array.isArray(context)||!context.length){
+    return { skipped:true, reply:SKIP_MSG };
+  }
+
+  const last=context[context.length-1];
+  const lastText=String(last?.text||'').trim();
+  if(!lastText){
+    return { skipped:true, reply:SKIP_MSG };
+  }
+
+  // Attachment-dependent / reference-dependent signals
+  const attachmentRef=/\b(see this|see attached|attached|attachment|photo|image|screenshot|video|doc|file)\b/i;
+  if(attachmentRef.test(lastText)){
+    return { skipped:true, reply:SKIP_MSG };
+  }
+
+  // Minimal deterministic ambiguity guardrail:
+  // if last 3 messages are long, skip.
+  const lastThree=context.slice(-3);
+  const longCount=lastThree.filter(m=>m.text.length>=140).length;
+  if(longCount>=2){
+    return { skipped:true, reply:SKIP_MSG };
+  }
+
+  // Stub generation behavior (no external AI):
+  if(/[?]\s*$/.test(lastText)){
+    return { skipped:false, reply:'yes, that works for me' };
+  }
+
+  return { skipped:true, reply:SKIP_MSG };
+}
+
+function renderSuggestedReplyUI(thread){
+  const st=getReplyAssistState(thread.id);
+
+  if(st.isGenerating){
+    return `<button class="btn-dismiss" disabled>Generating\u2026</button>`;
+  }
+
+  if(st.suggestedReply){
+    return `
+      <div style="font-size:12px;color:var(--text2);padding:8px 10px;border:1px solid var(--border);border-radius:10px;max-width:100%;">
+        ${esc(st.suggestedReply)}
+      </div>
+      <button class="btn-dismiss" onclick="copySuggestedReply(${JSON.stringify(thread.id)});event.stopPropagation()">
+        ${st.copied?'Copied':'Copy'}
+      </button>
+    `;
+  }
+
+  if(st.wasSkipped){
+    return `<div style="font-size:12px;color:var(--text3);">Too complex to suggest a reply</div>`;
+  }
+
+  return `<button class="btn-dismiss" onclick="generateReplyForThread(${JSON.stringify(thread.id)});event.stopPropagation()">Generate reply</button>`;
+}
+
 // ── Render ───────────────────────────────────────────────────────────────────
 function renderAll(){renderScore();saveScoreHistory();renderTrend();renderActions();renderOtherTexts();renderReview();}
 
@@ -1017,6 +1101,7 @@ function renderActions(){
           <button class="btn-dismiss" onclick="dismissConvo('${esc(c.id)}')">No reply needed</button>
           <button class="btn-dismiss" onclick="reclassify('${esc(c.id)}','delivery');event.stopPropagation()">→ Logistics</button>
           <button class="btn-dismiss" onclick="reclassify('${esc(c.id)}','spam');event.stopPropagation()">→ Spam</button>
+          ${renderSuggestedReplyUI(c)}
         </div>
       </div>
     </div>`;
@@ -1080,6 +1165,57 @@ function setActionFilter(f){S.actionFilter=f;
 function toggleExpand(id){S.selectedId=S.selectedId===id?null:id;renderActions();renderOtherTexts();}
 function dismissConvo(id){S.dismissed[id]=true;
   try{localStorage.setItem(DISMISS_KEY,JSON.stringify(S.dismissed));}catch(_){}renderAll();}
+
+async function generateReplyForThread(id){
+  const thread=S.conversations.find(c=>c.id===id);
+  if(!thread)return;
+  if(thread.is_group)return; // strict 1:1 only safeguard
+  if(!actionable().some(c=>c.id===id))return; // Needs Action threads only
+
+  const st=getReplyAssistState(id);
+  if(st.isGenerating||st.suggestedReply||st.wasSkipped)return; // no regenerate
+
+  st.isGenerating=true;
+  st.copied=false;
+  renderActions();
+
+  // Small UX delay so "Generating…" is visible
+  await new Promise(r=>setTimeout(r,350));
+
+  const context=buildReplyContext(thread);
+  const result=generateSuggestedReply(context);
+
+  st.isGenerating=false;
+  if(result.skipped){
+    st.wasSkipped=true;
+    st.suggestedReply='';
+  }else{
+    st.wasSkipped=false;
+    st.suggestedReply=String(result.reply||'').trim();
+  }
+
+  renderActions();
+}
+
+async function copySuggestedReply(id){
+  const st=getReplyAssistState(id);
+  const txt=String(st.suggestedReply||'').trim();
+  if(!txt)return;
+
+  try{
+    await navigator.clipboard.writeText(txt);
+    st.copied=true;
+    renderActions();
+    setTimeout(()=>{
+      st.copied=false;
+      renderActions();
+    },1500);
+  }catch(_){
+    // Keep UI stable on clipboard errors
+    st.copied=false;
+    renderActions();
+  }
+}
 
 function toggleTrend(){
   S.trendOpen=!S.trendOpen;
