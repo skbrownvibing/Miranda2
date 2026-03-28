@@ -17,7 +17,8 @@
 - Collapsed the score history/trend panel by default and added a Show/Hide score history toggle.
 - Fixed Action Needed previews so attachments are only shown when they are inside the same last-5-message preview window (older attachments are no longer pulled into the preview).
 - Added a new top-level Other texts section between Action needed and Auto-filtered texts, and limited Auto-filtered texts to Spam and Logistics only.
-- Fixed Other texts routing so it only shows uncategorized conversations (within timeline) instead of all non-filtered non-action threads.
+- Fixed Other texts routing to read the uncategorized bucket directly rather than routing through review panel logic, preventing accidental broadening or narrowing from changes to shared helpers.
+- Hide the Other texts section entirely when there are no uncategorized conversations.
 
 ### v0.11 — Category Review Panel (Mar 26, 2026)
 - Added a review workflow for auto-filtered texts below the action list.
