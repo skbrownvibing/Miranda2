@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-03-28 — Score history now uses a fixed local 7-day snapshot
+- Standardized score history saves to always compute from a fixed trailing 7-day window, independent of the currently selected UI timeline filter.
+- Kept one score snapshot per local calendar day with same-day overwrite behavior (latest save wins).
+- Switched the daily history key from UTC date to local date to avoid wrong-day saves around midnight.
+
 ### 2026-03-28 — Fix: preview rows now use true last 1–2 chronological messages
 - Root cause: preview rows were built as "latest from Them" plus "latest from You", then rendered in fixed sender order, which could imply the wrong person replied last.
 - Fixed by selecting the last 1–2 actual non-empty message events from each thread and rendering them oldest-first with `Them:` / `You:` labels based on each event's sender.
