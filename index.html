@@ -699,22 +699,16 @@ function latestEventAt(c){return c.last_message_at||null;}
 function latestEventText(c){return c.last_message_text||'';}
 function literalRecentEvents(c){return(c.messages||[]).slice(-5);}
 function lastMsgs(c){
-  const msgs=literalRecentEvents(c),ATT='📎 Attachment';
-  let theirsText=null,theirsAttach=null,mineText=null;
+  const msgs=literalRecentEvents(c);
+  let theirs=null,mine=null;
   for(let i=msgs.length-1;i>=0;i--){
     const txt=String(msgs[i]?.text??'').trim();
-    if(!txt)continue;
-    if(msgs[i].from_me){
-      // Compact "You" preview should only surface useful outbound text.
-      if(mineText===null&&txt!==ATT)mineText=txt;
-    }else{
-      // Compact "Them" preview is more permissive: text preferred, attachment fallback.
-      if(theirsText===null&&txt!==ATT)theirsText=txt;
-      if(theirsAttach===null&&txt===ATT)theirsAttach=txt;
-    }
-    if(theirsText!==null&&mineText!==null)break;
+    if(!txt||txt==='💬')continue;
+    if(msgs[i].from_me){if(mine===null)mine=txt;}
+    else{if(theirs===null)theirs=txt;}
+    if(theirs!==null&&mine!==null)break;
   }
-  return{theirs:theirsText!==null?theirsText:theirsAttach,mine:mineText};
+  return{theirs,mine};
 }
 
 // ── Render ───────────────────────────────────────────────────────────────────
