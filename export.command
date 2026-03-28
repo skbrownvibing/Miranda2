@@ -59,14 +59,32 @@ _att_body_stats  = {'parsed': 0, 'failed': 0}
 _att_body_samples = []   # up to 5 failure samples
 _ATT_BODY_MAX_SAMPLES = 5
 
+# Try to import PyObjC Foundation once at startup.
+try:
+    from Foundation import NSData, NSUnarchiver
+    _PYOBJC_OK = True
+except ImportError:
+    _PYOBJC_OK = False
+
+
 def extract_typedstream_string(raw):
     """Extract plain text from an NSArchiver streamtyped blob.
 
-    iMessage stores attributedBody in this older binary format rather than
-    the NSKeyedArchiver plist format that plistlib understands.  The message
-    text is the first non-metadata string embedded in the byte stream.
+    Tries Apple's own NSUnarchiver first (via PyObjC), which handles the
+    format correctly.  Falls back to a byte scan if PyObjC is unavailable.
     """
-    # Exact class/framework names embedded as descriptors in the blob
+    # ── Primary: let macOS decode its own format ──────────────────────────────
+    if _PYOBJC_OK:
+        try:
+            ns_data = NSData.dataWithBytes_length_(raw, len(raw))
+            obj = NSUnarchiver.unarchiveObjectWithData_(ns_data)
+            if obj is not None:
+                s = str(obj.string()).strip() if hasattr(obj, 'string') else str(obj).strip()
+                return s or None
+        except Exception:
+            pass
+
+    # ── Fallback: scan for the first plausible UTF-8 string ──────────────────
     _meta = {
         'streamtyped', 'NSString', 'NSMutableString', 'NSAttributedString',
         'NSMutableAttributedString', 'NSObject', 'NSArray', 'NSMutableArray',
@@ -74,13 +92,10 @@ def extract_typedstream_string(raw):
         'NSParagraphStyle', 'NSValue', 'NSNumber', 'NSData', 'NSShadow',
         'NSOriginalFont',
     }
-    # Framework identifier prefixes — skip spaceless tokens that start with these
     _cls_prefixes = ('NS', 'UI', 'CK', 'IM', '__', '$')
-
     i = 0
     while i < len(raw):
         b = raw[i]
-        # Start of a printable ASCII or UTF-8 multibyte sequence
         if 0x20 <= b <= 0x7e or b >= 0xc2:
             j = i + 1
             while j < len(raw):
@@ -91,9 +106,8 @@ def extract_typedstream_string(raw):
                     break
             try:
                 s = raw[i:j].decode('utf-8').strip().lstrip('+')
-                if s and s not in _meta:
-                    # Strings with spaces are almost certainly real text.
-                    # Spaceless tokens starting with framework prefixes are metadata.
+                # Require at least 4 chars to avoid binary noise like "il"
+                if len(s) >= 4 and s not in _meta:
                     if ' ' in s or not any(s.startswith(p) for p in _cls_prefixes):
                         return s
             except UnicodeDecodeError:
