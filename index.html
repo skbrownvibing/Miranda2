@@ -167,6 +167,13 @@ body {
 
 .action-empty { text-align:center;padding:48px 20px;color:var(--text3);font-size:14px; }
 .action-empty-icon { font-size:36px;margin-bottom:12px; }
+.other-section { padding:0 24px 40px;max-width:640px;width:100%;margin:0 auto; }
+.other-list { display:flex;flex-direction:column;gap:6px; }
+.other-item {
+  display:flex;align-items:center;gap:12px;padding:12px;
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+}
+.other-item:hover { background:var(--surface2);border-color:#3a3a4a; }
 
 ::-webkit-scrollbar { width:5px;height:5px; }
 ::-webkit-scrollbar-track { background:transparent; }
@@ -403,7 +410,7 @@ body {
 
   <div class="action-section">
     <div class="action-header">
-      <span class="action-title">Needs your reply</span>
+      <span class="action-title">Action needed</span>
       <span class="action-count" id="action-count"></span>
     </div>
     <div class="action-filters" id="action-filters">
@@ -414,17 +421,24 @@ body {
     <div class="action-list" id="action-list"></div>
   </div>
 
+  <div class="other-section">
+    <div class="action-header">
+      <span class="action-title">Other texts</span>
+      <span class="action-count" id="other-count"></span>
+    </div>
+    <div class="other-list" id="other-list"></div>
+  </div>
+
   <!-- Category review -->
   <div class="review-section">
     <button class="review-toggle" id="review-toggle" onclick="toggleReview()">
-      <span id="review-toggle-label">Review auto-filtered texts</span>
+      <span id="review-toggle-label">Auto-filtered texts</span>
       <span class="review-arrow" id="review-arrow">▾</span>
     </button>
     <div class="review-body" id="review-body" style="display:none">
       <div class="review-tabs" id="review-tabs">
         <button class="review-tab active" data-cat="spam" onclick="setReviewCat('spam')">Spam <span id="review-count-spam" class="review-tab-count"></span></button>
         <button class="review-tab" data-cat="delivery" onclick="setReviewCat('delivery')">Logistics <span id="review-count-delivery" class="review-tab-count"></span></button>
-        <button class="review-tab" data-cat="uncategorized" onclick="setReviewCat('uncategorized')">Other <span id="review-count-other" class="review-tab-count"></span></button>
       </div>
       <div class="review-list" id="review-list"></div>
     </div>
@@ -644,7 +658,7 @@ function lastMsgs(c){
 }
 
 // ── Render ───────────────────────────────────────────────────────────────────
-function renderAll(){renderScore();saveScoreHistory();renderTrend();renderActions();renderReview();}
+function renderAll(){renderScore();saveScoreHistory();renderTrend();renderActions();renderOtherTexts();renderReview();}
 
 // ── Score history ────────────────────────────────────────────────────────────
 function getHistory(){
@@ -864,6 +878,52 @@ function renderActions(){
   }).join('');
 }
 
+function otherTexts(){
+  return reviewConvos('uncategorized').filter(inTimeline);
+}
+
+function renderOtherTexts(){
+  const list=otherTexts().sort((a,b)=>{
+    const at=a.last_message_at?new Date(a.last_message_at).getTime():0;
+    const bt=b.last_message_at?new Date(b.last_message_at).getTime():0;
+    return bt-at;
+  });
+  document.getElementById('other-count').textContent=list.length===1?'1 text':list.length+' texts';
+  const el=document.getElementById('other-list');
+  if(!list.length){el.innerHTML='<div class="review-empty">Nothing here</div>';return;}
+  el.innerHTML=list.map(c=>{
+    const name=displayName(c),lm=lastMsgs(c),phone=c.phone||'',smsHref=phone?'sms:'+phone.replace(/\s/g,''):'#';
+    const msgs=recentPreviewMessages(c),exp=c.id===S.selectedId;
+    let prevTheirs='',prevMine='';
+    if(lm.theirs!==null)prevTheirs=`<div class="action-preview"><span class="preview-label">Them:</span> ${esc(lm.theirs)}</div>`;
+    if(lm.mine!==null)prevMine=`<div class="action-preview-mine"><span class="preview-label">You:</span> ${esc(lm.mine)}</div>`;
+    if(!prevTheirs&&!prevMine)prevTheirs=`<div class="action-preview">${esc(c.last_message_text||'')}</div>`;
+    const bubbles=msgs.map(m=>{const side=m.from_me?'mine':'theirs';
+      return`<div class="msg-row ${side}"><div class="msg-bubble ${side}">${esc(m.text||'')}</div><div class="msg-time">${esc(fullTime(m.date))}</div></div>`;}).join('');
+    return `<div class="action-item${exp?' expanded':''}" onclick="toggleExpand('${esc(c.id)}')">
+      <div class="action-item-top">
+        <div class="action-avatar">${esc(initial(c))}</div>
+        <div class="action-body">
+          <div class="action-name">${esc(name)}</div>
+          ${prevTheirs}${prevMine}
+        </div>
+        <div class="action-right">
+          <span class="action-time">${esc(relTime(c.last_message_at))}</span>
+        </div>
+      </div>
+      <div class="action-detail" onclick="event.stopPropagation()">
+        <div class="detail-messages">${msgs.length===0?'<div style="color:var(--text3);font-size:12px;text-align:center;padding:12px 0">No messages in export window</div>':bubbles}</div>
+        <div class="detail-actions">
+          ${phone?`<a class="btn-reply" href="${smsHref}">Reply in Messages ↗</a>`:''}
+          <button class="btn-dismiss" onclick="dismissConvo('${esc(c.id)}')">No reply needed</button>
+          <button class="btn-dismiss" onclick="reclassify('${esc(c.id)}','delivery');event.stopPropagation()">→ Logistics</button>
+          <button class="btn-dismiss" onclick="reclassify('${esc(c.id)}','spam');event.stopPropagation()">→ Spam</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 // ── Actions ──────────────────────────────────────────────────────────────────
 function handleTimeline(val){
   if(!val){S.filter.timelineAfter=null;S.filter.timelineBefore=null;}
@@ -873,7 +933,7 @@ function handleTimeline(val){
 }
 function setActionFilter(f){S.actionFilter=f;
   document.querySelectorAll('.filter-chip').forEach(b=>b.classList.toggle('active',b.dataset.filter===f));renderActions();}
-function toggleExpand(id){S.selectedId=S.selectedId===id?null:id;renderActions();}
+function toggleExpand(id){S.selectedId=S.selectedId===id?null:id;renderActions();renderOtherTexts();}
 function dismissConvo(id){S.dismissed[id]=true;
   try{localStorage.setItem(DISMISS_KEY,JSON.stringify(S.dismissed));}catch(_){}renderAll();}
 
@@ -1024,12 +1084,10 @@ function renderReview(){
   // Update counts
   const spamCount=reviewConvos('spam').length;
   const delivCount=reviewConvos('delivery').length;
-  const otherCount=reviewConvos('uncategorized').length;
   document.getElementById('review-count-spam').textContent=spamCount;
   document.getElementById('review-count-delivery').textContent=delivCount;
-  document.getElementById('review-count-other').textContent=otherCount;
   document.getElementById('review-toggle-label').textContent=
-    `Review auto-filtered texts (${spamCount+delivCount+otherCount})`;
+    `Auto-filtered texts (${spamCount+delivCount})`;
 
   if(!S.reviewOpen)return;
 
