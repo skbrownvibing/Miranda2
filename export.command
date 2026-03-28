@@ -277,12 +277,6 @@ def main():
     chats = cur.fetchall()
 
     conversations = []
-    debug_summary = {
-        'rows_with_cache_has_attachments': 0,
-        'rows_confirmed_by_attachment_join': 0,
-        'rows_emitted_as_attachment': 0,
-        'rows_rejected': 0,
-    }
 
     for chat_id, guid, chat_identifier, display_name, style in chats:
         cur.execute("""
@@ -374,37 +368,17 @@ def main():
                 return '💬'
             return ''
 
-        # All rows as display messages — no filtering so we always show the true latest 5.
+        # All rows as messages — latest 5 reversed for chronological display.
         msg_list = [
             {'text': msg_text(t, att_body, has_att_join), 'from_me': bool(fm), 'date': fmt(apple_ts(d))}
             for t, fm, d, _cache_att, att_body, has_att_join in rows
         ]
 
-        # Response-status signal: prefer rows with parseable text or confirmed attachment,
-        # but fall back to raw rows so we never skip a conversation entirely.
-        signal_rows = [
-            (t, fm, d, cache_att, att_body, has_att_join)
-            for t, fm, d, cache_att, att_body, has_att_join in rows
-            if row_text(t, att_body) or bool(has_att_join)
-        ] or rows
-        debug_summary['rows_rejected'] += (len(rows) - len(signal_rows))
-
-        last_signal_row = signal_rows[0]
-        last_signal_text, last_signal_from_me, last_signal_date, _last_signal_cache_att, last_signal_att_body, last_signal_has_attachment_join = last_signal_row
-        msg_count_lookback = sum(1 for _, _, d, _, _, _ in signal_rows if d > cut_90d)
-        last_signal_at = fmt(apple_ts(last_signal_date))
-        last_signal_preview = msg_text(last_signal_text, last_signal_att_body, last_signal_has_attachment_join)
-
-        # Literal newest event + literal last 5 chronological events for display.
-        latest_event_row = rows[0]
-        latest_event_text, latest_event_from_me, latest_event_date, _latest_event_cache_att, latest_event_att_body, latest_event_has_attachment_join = latest_event_row
-        latest_event_at = fmt(apple_ts(latest_event_date))
-        latest_event_preview = msg_text(latest_event_text, latest_event_att_body, latest_event_has_attachment_join)
-
-        recent_events = [
-            {'text': msg_text(t, att_body, has_att_join), 'from_me': bool(fm), 'date': fmt(apple_ts(d))}
-            for t, fm, d, _ca, att_body, has_att_join in reversed(rows[:5])
-        ]
+        # Everything is derived from rows[0] — the true most-recent DB row.
+        last_t, last_fm, last_d, _last_ca, last_att_body, last_has_att = rows[0]
+        last_at      = fmt(apple_ts(last_d))
+        last_preview = msg_text(last_t, last_att_body, last_has_att)
+        msg_count_lookback = sum(1 for _, _, d, _, _, _ in rows if d > cut_90d)
 
         conversations.append({
             'id':                guid,
@@ -413,15 +387,11 @@ def main():
             'is_group':          is_group,
             'group_name':        display_name if is_group else None,
             'category':          categorize(primary, contact_name, in_contacts, msg_list, msg_count_lookback),
-            'latest_event_at':   latest_event_at,
-            'latest_event_text': latest_event_preview,
-            'latest_event_from_me': bool(latest_event_from_me),
-            'recent_events':     recent_events,
-            'last_message_at':   last_signal_at,
-            'last_message_text': last_signal_preview,
-            'i_replied_last':    bool(latest_event_from_me),
+            'last_message_at':   last_at,
+            'last_message_text': last_preview,
+            'i_replied_last':    bool(last_fm),
             'message_count_30d': msg_count_lookback,
-            'messages':          list(reversed(msg_list[:5])),   # chronological preview window
+            'messages':          list(reversed(msg_list[:5])),
         })
 
     conn.close()
@@ -440,7 +410,6 @@ def main():
         'app':         'Miranda2',
         'version':     '1.0',
         'exported_at': now.isoformat(),
-        'debug_summary': debug_summary,
         'conversations': conversations,
     }
 
@@ -461,12 +430,6 @@ def main():
     print(f"    Delivery:       {d}")
     print(f"    Spam:           {s}")
     print(f"    Uncategorized:  {u}")
-    print(f"")
-    print(f"  Debug summary:")
-    print(f"    rows with cache_has_attachments:    {debug_summary['rows_with_cache_has_attachments']}")
-    print(f"    rows confirmed by attachment join:  {debug_summary['rows_confirmed_by_attachment_join']}")
-    print(f"    rows emitted as 📎 Attachment:      {debug_summary['rows_emitted_as_attachment']}")
-    print(f"    rows rejected:                      {debug_summary['rows_rejected']}")
     print(f"")
     print(f"  File: {out_path}")
     print(f"")
