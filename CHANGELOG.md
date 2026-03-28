@@ -2,6 +2,13 @@
 
 ## Current development cycle
 
+### 2026-03-28 — Fix: preview rows now use true last 1–2 chronological messages
+- Root cause: preview rows were built as "latest from Them" plus "latest from You", then rendered in fixed sender order, which could imply the wrong person replied last.
+- Fixed by selecting the last 1–2 actual non-empty message events from each thread and rendering them oldest-first with `Them:` / `You:` labels based on each event's sender.
+- Follow-up: preview selection now reads from the full exported `messages` array before taking the last 2 displayable rows, so it does not depend on an extra UI-side `slice(-5)` window.
+- Follow-up: added explicit `PREVIEW_INCLUDE_ATTACHMENT` toggle and `previewTextIncluded()` helper to make collapsed-preview inclusion rules intentional and easy to adjust.
+- Result: previews now reflect real thread chronology (including same-sender pairs like Them→Them or You→You) without forcing one line per sender.
+
 ### 2026-03-28 — Fix: score now updates when non-contact threads leave Needs Action
 - Root cause: score computation filtered out threads without `contact_name`, while Needs Action state and other stats already include eligible unsaved-number 1:1 threads.
 - Fixed by removing the `contact_name` requirement from `allPersonalInTimeline()`, so score calculation uses the same in-scope conversation set (excluding only spam, Logistics, and group chats) as the rest of the responsiveness state.
