@@ -282,6 +282,7 @@ def main():
                     m.is_from_me,
                     m.date,
                     m.cache_has_attachments,
+                    m.attributedBody,
                     EXISTS(
                         SELECT 1
                         FROM message_attachment_join maj
