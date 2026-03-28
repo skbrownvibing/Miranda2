@@ -5,6 +5,9 @@
 ### 2026-03-28 — Ensure expanded message rows render as plain text blocks
 - Added explicit `.detail-messages > div` reset styles (no background, border, border-radius, or padding) so expanded rows render as simple text lines rather than bubble-like containers.
 - Kept timestamps visible and message-row rendering logic unchanged (plain text rows with empty-text filtering).
+### 2026-03-28 — Fix: JSON import flow blocked by script parse error
+- Root cause: a stray chained `.map(...)` remained in both `renderActions()` and `renderOtherTexts()` after the plain-text row rendering update, causing a JavaScript parse error (`Unexpected token '.'`) that prevented app initialization.
+- Fixed by removing the orphaned `.map(...)` blocks so the script initializes and file import works again.
 
 ### 2026-03-28 — Action needed expanded rows now render plain text lines
 - Changed Action needed expanded rows to render message text as plain inline text (no chat-bubble styling).
