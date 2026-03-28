@@ -2,6 +2,13 @@
 
 ## Current development cycle
 
+### 2026-03-27 — Fix old attachment rows in contact message preview
+- Fixed the core bug where old photo/attachment rows from months ago appeared in the contact bubble view alongside recent text messages.
+- In the exporter: when building the `messages` display array, attachment-only rows that predate the most recent text message are now excluded. If someone sent photos two months ago and texted recently, only the recent messages are included in the preview window.
+- In the frontend: `recentPreviewMessages` applies the same filter on existing JSON data so users do not need to re-export to benefit from the fix.
+- Conversations where all messages are attachments (no text ever) are unaffected — attachments still show in that case.
+
+
 ### 2026-03-27 — Product definition refresh
 - Added a repo PRD documenting the current product scope, decision rules, scoring model, and future directions.
 - Standardized product framing around responsiveness tracking rather than inbox triage.

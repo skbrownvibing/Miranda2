@@ -306,6 +306,25 @@ def main():
         last_signal_at = fmt(apple_ts(last_signal_date))
         last_signal_preview = msg_text(last_signal_text, last_signal_has_attachment_join)
 
+        # For the display preview window: don't surface attachment-only rows that
+        # predate the most recent text message. If someone sent photos months ago
+        # and then texted recently, the bubble view should show the text, not the
+        # old attachment placeholders.
+        latest_text_ts = next(
+            (d for t, fm, d, _ca, _ha in relevant_rows if (t or '').strip()),
+            None
+        )
+        display_rows = [
+            r for r in relevant_rows
+            if (r[0] or '').strip()      # has real text — always include
+            or latest_text_ts is None    # no text at all — include all attachments
+            or r[2] >= latest_text_ts    # attachment is at least as recent as latest text
+        ][:5]
+        display_msgs = [
+            {'text': msg_text(t, has_att_join), 'from_me': bool(fm), 'date': fmt(apple_ts(d))}
+            for t, fm, d, _ca, has_att_join in display_rows
+        ]
+
         conversations.append({
             'id':                guid,
             'contact_name':      contact_name,

@@ -636,7 +636,23 @@ function fullTime(d){if(!d)return'';return new Date(d).toLocaleString('en-US',{m
 function displayName(c){if(c.is_group&&c.group_name&&c.group_name.trim())return c.group_name.trim();return c.contact_name||c.phone||'Unknown';}
 function initial(c){return displayName(c).trim()[0].toUpperCase();}
 function recentPreviewMessages(c){
-  return (c.messages||[]).slice(-5);
+  const msgs=c.messages||[];
+  if(!msgs.length)return msgs;
+  const ATT='📎 Attachment';
+  // Find the date of the most recent real text message (not an attachment placeholder).
+  let latestTextDate=null;
+  for(let i=msgs.length-1;i>=0;i--){
+    const txt=String(msgs[i]?.text??'').trim();
+    if(txt&&txt!==ATT){latestTextDate=msgs[i].date;break;}
+  }
+  // If there are no text messages at all, show as-is (all entries are real attachments).
+  if(latestTextDate===null)return msgs.slice(-5);
+  // Drop attachment-only rows that predate the latest text — they are old photos
+  // that were sent before the most recent conversation and clutter the preview.
+  return msgs.filter(m=>{
+    const txt=String(m?.text??'').trim();
+    return txt!==ATT||m.date>=latestTextDate;
+  }).slice(-5);
 }
 function lastMsgs(c){
   const msgs=recentPreviewMessages(c),ATT='📎 Attachment';
