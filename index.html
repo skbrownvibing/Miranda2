@@ -714,10 +714,20 @@ function actionable(){return S.conversations.filter(c=>needsResponse(c)&&inTimel
 function allPersonalInTimeline(){return S.conversations.filter(c=>{
   const cat=getCategory(c);if(cat==='spam'||cat==='delivery')return false;
   if(c.is_group)return false;return inTimeline(c);});}
+function allPersonalInTrailingDays(days){
+  const cutoff=new Date();
+  cutoff.setDate(cutoff.getDate()-days);
+  cutoff.setHours(0,0,0,0);
+  return S.conversations.filter(c=>{
+    const cat=getCategory(c);if(cat==='spam'||cat==='delivery')return false;
+    if(c.is_group)return false;
+    if(!c.last_message_at)return false;
+    return new Date(c.last_message_at)>=cutoff;
+  });
+}
 
 // ── Score ─────────────────────────────────────────────────────────────────────
-function computeScore(){
-  const personal=allPersonalInTimeline();
+function computeScoreFromPersonal(personal){
   if(!personal.length)return{score:100,rate:100,speed:0,speedScore:100,hanging:0,hangingScore:100,replied:0,total:0};
   const replied=personal.filter(c=>c.i_replied_last||S.dismissed[c.id]);
   const unreplied=personal.filter(c=>!c.i_replied_last&&!S.dismissed[c.id]);
@@ -734,6 +744,8 @@ function computeScore(){
   const score=Math.round(rate*0.45+speedScore*0.25+hangingScore*0.30);
   return{score:Math.max(0,Math.min(100,score)),rate,speed:avgWait,speedScore,hanging:unreplied.length,hangingScore,replied:replied.length,total};
 }
+function computeScore(){return computeScoreFromPersonal(allPersonalInTimeline());}
+function computeFixedHistoryScore(){return computeScoreFromPersonal(allPersonalInTrailingDays(7));}
 function scoreColor(s){if(s>=85)return'var(--green)';if(s>=65)return'var(--yellow)';if(s>=40)return'var(--orange)';return'var(--red)';}
 function fmtSpeed(h){if(h<1)return'<1h';return Math.round(h)+'h';}
 function scoreLabel(score){
@@ -782,14 +794,20 @@ function renderAll(){renderScore();saveScoreHistory();renderTrend();renderAction
 function getHistory(){
   try{const r=localStorage.getItem(HISTORY_KEY);return r?JSON.parse(r):[];}catch(_){return[];}
 }
+function localDateKey(d=new Date()){
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
 
 function saveScoreHistory(){
-  const s=computeScore();
-  const today=new Date().toISOString().slice(0,10); // YYYY-MM-DD
+  const s=computeFixedHistoryScore();
+  const today=localDateKey();
   let history=getHistory();
   // Update today's entry (last export of the day wins)
   const idx=history.findIndex(h=>h.date===today);
-  const entry={date:today,score:s.score,rate:s.rate,hanging:s.hanging,total:s.total,replied:s.replied};
+  const entry={date:today,score:s.score,rate:s.rate,hanging:s.hanging,total:s.total,replied:s.replied,window_days:7};
   if(idx>=0)history[idx]=entry;else history.push(entry);
   // Keep last 90 days max
   if(history.length>90)history=history.slice(-90);
@@ -802,12 +820,11 @@ function computeStreaks(){
   if(!history.length)return{current:0,longest:0};
   // Build set of dates with entries
   const dates=new Set(history.map(h=>h.date));
-  const today=new Date().toISOString().slice(0,10);
   // Current streak: count backwards from today
   let current=0;
   let d=new Date();
   while(true){
-    const ds=d.toISOString().slice(0,10);
+    const ds=localDateKey(d);
     if(dates.has(ds)){current++;d.setDate(d.getDate()-1);}
     else break;
   }
