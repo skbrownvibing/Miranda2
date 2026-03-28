@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-03-28 — Compact score history card header
+- Reduced the collapsed Score history card height by tightening card padding.
+- Moved the collapsed header content to a single row so `Score history` and `Last score` sit side-by-side for a compact footprint.
+- Added top spacing before expanded trend details so the open state still breathes.
+
 ### 2026-03-28 — Light mode default, dark mode toggle, and score labels
 - Added score tier labels shown in lowercase before the numeric score using the format `label (score)`, with ranges from `actively ghosting 👻` through `top 5% responder 🏆`.
 - Switched the app to light mode by default and tuned key surfaces (backgrounds, cards, text, borders, and inputs) for light-mode-first readability.
