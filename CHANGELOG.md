@@ -2,6 +2,18 @@
 
 ## Current development cycle
 
+### 2026-03-28 — Fix: contacts incorrectly shown as unresponded when recent texts use attributedBody
+- Root cause: `i_replied_last` and `last_message_at` were derived from `relevant_rows[0]` (the most recent *parseable* row) rather than `rows[0]` (the actual most-recent DB row). When `m.text = NULL` and `attributedBody` parsing fails, recent text messages were dropped from `relevant_rows`, making old attachment rows appear as the last signal — causing fully-replied conversations to show as unresponded.
+- Fixed by reading timing and reply-direction signals from `rows[0]` (actual last message) and only using `relevant_rows[0]` for the preview text.
+- Updated `relevant_rows` filter to also retain rows with a non-NULL `attributedBody` blob (real messages even if unparseable) so they contribute to the reply signal.
+- Updated `msg_text()` to render `'💬'` instead of empty string when `attributedBody` is present but unparseable, so the preview shows something rather than nothing.
+- Updated `messages` preview array to use `display_msgs` (filtered display rows) instead of raw `msg_list[:5]`.
+
+### 2026-03-28 — Light mode default, dark mode toggle, and score labels
+- Added score tier labels shown in lowercase before the numeric score using the format `label (score)`, with ranges from `actively ghosting 👻` through `top 5% responder 🏆`.
+- Switched the app to light mode by default and tuned key surfaces (backgrounds, cards, text, borders, and inputs) for light-mode-first readability.
+- Added a top-bar dark mode toggle with localStorage persistence so users can manually switch themes and keep their preference on reload.
+- Increased score label visual emphasis by moving it to the left of the score ring, enlarging typography, and removing the duplicate numeric value from the label so only the big ring number shows the score.
 ### 2026-03-28 — Fix: messages with link previews show as "Attachment" instead of actual text
 - Root cause: when an iMessage contains a URL, iMessage stores the actual message text in `m.attributedBody` (an NSKeyedArchiver binary blob) and leaves `m.text = NULL`. The exporter was only reading `m.text`, so it saw NULL, saw a real attachment join (the link preview card), and wrote "📎 Attachment" — even though the person sent a real text message.
 - Added `extract_attributed_body()` helper that decodes the NSAttributedString binary plist and returns the plain text string.
@@ -24,7 +36,8 @@
 - Collapsed the score history/trend panel by default and added a Show/Hide score history toggle.
 - Fixed Action Needed previews so attachments are only shown when they are inside the same last-5-message preview window (older attachments are no longer pulled into the preview).
 - Added a new top-level Other texts section between Action needed and Auto-filtered texts, and limited Auto-filtered texts to Spam and Logistics only.
-- Fixed Other texts routing so it only shows uncategorized conversations (within timeline) instead of all non-filtered non-action threads.
+- Fixed Other texts routing to read the uncategorized bucket directly rather than routing through review panel logic, preventing accidental broadening or narrowing from changes to shared helpers.
+- Hide the Other texts section entirely when there are no uncategorized conversations.
 
 ### v0.11 — Category Review Panel (Mar 26, 2026)
 - Added a review workflow for auto-filtered texts below the action list.

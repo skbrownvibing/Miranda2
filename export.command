@@ -46,29 +46,80 @@ def norm_phone(p):
         d = d[1:]
     return d
 
-def extract_attributed_body(blob):
-    """Pull plain text from an NSKeyedArchiver-encoded NSAttributedString blob.
+def _uid_int(obj):
+    """Return the integer index from a plistlib.UID or a {'CF$UID': N} dict."""
+    if isinstance(obj, plistlib.UID):
+        return obj.data
+    if isinstance(obj, dict):
+        return obj.get('CF$UID')
+    return None
 
-    iMessage stores message text in m.attributedBody (rather than m.text) when
-    a message contains a link preview, uses iOS 16+ styled text, or was synced
-    from a device running a newer OS.  m.text is NULL in those cases, so we
-    must decode the blob to recover the actual message content.
-    """
+# One-time diagnostic: print the raw plist structure of the first blob we fail
+# to parse, so we can see what's actually in the database.
+_att_body_diag_done = False
+
+def extract_attributed_body(blob):
+    """Pull plain text from an NSKeyedArchiver-encoded NSAttributedString blob."""
+    global _att_body_diag_done
     if not blob:
         return None
     try:
         plist = plistlib.loads(bytes(blob))
-        top_uid = plist['$top']['root']['CF$UID']
-        objects = plist['$objects']
-        top_obj = objects[top_uid]
-        if isinstance(top_obj, dict):
-            ns_str = top_obj.get('NSString')
-            if isinstance(ns_str, dict):
-                text = objects[ns_str['CF$UID']]
-                if isinstance(text, str):
-                    return text.strip() or None
-    except Exception:
-        pass
+        objects = plist.get('$objects', [])
+
+        # ── Structured path: NSKeyedArchiver → NSAttributedString → NSString ──
+        try:
+            top_ref  = plist.get('$top', {}).get('root')
+            top_idx  = _uid_int(top_ref)
+            if top_idx is not None:
+                top_obj = objects[top_idx]
+                if isinstance(top_obj, dict):
+                    ns_str_idx = _uid_int(top_obj.get('NSString'))
+                    if ns_str_idx is not None:
+                        str_obj = objects[ns_str_idx]
+                        if isinstance(str_obj, str):
+                            s = str_obj.strip()
+                            if s:
+                                return s
+                        if isinstance(str_obj, dict):
+                            s = str(str_obj.get('NS.string', '')).strip()
+                            if s:
+                                return s
+        except Exception:
+            pass
+
+        # ── Fallback: first non-metadata string in the objects array ──
+        # Class names and iMessage keys that are never message content:
+        _meta = {
+            '$null', 'NSString', 'NSMutableString', 'NSAttributedString',
+            'NSMutableAttributedString', 'NSColor', 'NSFont', 'NSParagraphStyle',
+            'NSValue', 'NSNumber', 'NSObject', 'NSData', 'NSArray',
+            'NSMutableArray', 'NSDictionary', 'NSMutableDictionary',
+            '__kIMMessagePartAttributeName', '__kIMDataDetectedAttributeName',
+            '__kIMTapbackAttributeName', 'NSOriginalFont', 'NSShadow',
+        }
+        for obj in objects:
+            if isinstance(obj, str):
+                s = obj.strip()
+                if (s and s not in _meta
+                        and not s.startswith('NS')
+                        and not s.startswith('UI')
+                        and not s.startswith('__')
+                        and not s.startswith('$')):
+                    return s
+
+        # ── Diagnostic (runs once): print structure to help debug ──
+        if not _att_body_diag_done:
+            _att_body_diag_done = True
+            print("  [diag] attributedBody parse: structured path and fallback both failed")
+            print(f"  [diag] $top: {plist.get('$top')}")
+            print(f"  [diag] first 6 objects: {objects[:6]}")
+
+    except Exception as e:
+        if not _att_body_diag_done:
+            _att_body_diag_done = True
+            print(f"  [diag] attributedBody plistlib.loads failed: {e}")
+            print(f"  [diag] blob prefix (hex): {bytes(blob)[:16].hex()}")
     return None
 
 # ── Contacts ──────────────────────────────────────────────────────────────────
@@ -226,6 +277,12 @@ def main():
     chats = cur.fetchall()
 
     conversations = []
+    debug_summary = {
+        'rows_with_cache_has_attachments': 0,
+        'rows_confirmed_by_attachment_join': 0,
+        'rows_emitted_as_attachment': 0,
+        'rows_rejected': 0,
+    }
 
     for chat_id, guid, chat_identifier, display_name, style in chats:
         cur.execute("""
@@ -276,6 +333,7 @@ def main():
                     m.is_from_me,
                     m.date,
                     m.cache_has_attachments,
+                    m.attributedBody,
                     EXISTS(
                         SELECT 1
                         FROM message_attachment_join maj
@@ -309,16 +367,24 @@ def main():
             resolved = row_text(t, att_body)
             if resolved:
                 return resolved
-            return '📎 Attachment' if has_attachment_join else ''
+            if has_attachment_join:
+                return '📎 Attachment'
+            # attributedBody present but unparseable — real message, unknown text
+            if att_body:
+                return '💬'
+            return ''
 
         # Keep only trustworthy conversational rows:
         # - non-empty resolved text (m.text or attributedBody)
         # - OR rows with confirmed message↔attachment linkage
+        # - OR rows with a non-NULL attributedBody blob (text message whose blob
+        #   we couldn't parse — still real content, not noise)
         relevant_rows = [
             (t, fm, d, cache_att, att_body, has_att_join)
             for t, fm, d, cache_att, att_body, has_att_join in rows
-            if row_text(t, att_body) or bool(has_att_join)
+            if row_text(t, att_body) or bool(has_att_join) or bool(att_body)
         ]
+        debug_summary['rows_rejected'] += (len(rows) - len(relevant_rows))
 
         if not relevant_rows:
             continue
@@ -329,13 +395,20 @@ def main():
         ]
 
         # Recent context window for action-needed logic and last-message signal.
-        recent_relevant_rows = relevant_rows[:5]
-        last_signal_row = recent_relevant_rows[0]
-        last_signal_text, last_signal_from_me, last_signal_date, _last_signal_cache_att, last_signal_att_body, last_signal_has_attachment_join = last_signal_row
+        # IMPORTANT: use rows[0] (actual most-recent DB row) for timing and
+        # reply-direction signals so that text messages whose attributedBody we
+        # can't parse don't cause old attachments to become the apparent last
+        # message.  Preview text still comes from the most recent parseable row.
+        actual_last = rows[0]
+        last_signal_from_me = bool(actual_last[1])
+        last_signal_date    = actual_last[2]
+        last_signal_at      = fmt(apple_ts(last_signal_date))
+
+        # Preview: most recent parseable content row
+        last_content_row = relevant_rows[0]
+        last_signal_preview = msg_text(last_content_row[0], last_content_row[4], last_content_row[5])
 
         msg_count_lookback = sum(1 for _, _, d, _, _, _ in relevant_rows if d > cut_90d)
-        last_signal_at = fmt(apple_ts(last_signal_date))
-        last_signal_preview = msg_text(last_signal_text, last_signal_att_body, last_signal_has_attachment_join)
 
         # Build display messages so at least one text row is always surfaced.
         #
@@ -384,7 +457,7 @@ def main():
             'last_message_text': last_signal_preview,
             'i_replied_last':    bool(last_signal_from_me),
             'message_count_30d': msg_count_lookback,
-            'messages':          list(reversed(display_msgs)),   # chronological, last 5
+            'messages':          list(reversed(display_msgs)),   # chronological preview window
         })
 
     conn.close()
@@ -403,6 +476,7 @@ def main():
         'app':         'Miranda2',
         'version':     '1.0',
         'exported_at': now.isoformat(),
+        'debug_summary': debug_summary,
         'conversations': conversations,
     }
 
@@ -423,6 +497,12 @@ def main():
     print(f"    Delivery:       {d}")
     print(f"    Spam:           {s}")
     print(f"    Uncategorized:  {u}")
+    print(f"")
+    print(f"  Debug summary:")
+    print(f"    rows with cache_has_attachments:    {debug_summary['rows_with_cache_has_attachments']}")
+    print(f"    rows confirmed by attachment join:  {debug_summary['rows_confirmed_by_attachment_join']}")
+    print(f"    rows emitted as 📎 Attachment:      {debug_summary['rows_emitted_as_attachment']}")
+    print(f"    rows rejected:                      {debug_summary['rows_rejected']}")
     print(f"")
     print(f"  File: {out_path}")
     print(f"")
