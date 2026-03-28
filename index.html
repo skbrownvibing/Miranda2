@@ -969,6 +969,7 @@ function renderActions(){
 }
 
 function otherTexts(){
+  return reviewConvos('uncategorized').filter(inTimeline);
   // Anchored directly to the uncategorized bucket — never routed through review panel logic.
   return S.conversations.filter(c=>getCategory(c)==='uncategorized');
 }
@@ -979,6 +980,37 @@ function renderOtherTexts(){
     const bt=b.last_message_at?new Date(b.last_message_at).getTime():0;
     return bt-at;
   });
+  document.getElementById('other-count').textContent=list.length===1?'1 text':list.length+' texts';
+  const el=document.getElementById('other-list');
+  if(!list.length){el.innerHTML='<div class="review-empty">Nothing here</div>';return;}
+  el.innerHTML=list.map(c=>{
+    const name=displayName(c),lm=lastMsgs(c),phone=c.phone||'',smsHref=phone?'sms:'+phone.replace(/\s/g,''):'#';
+    const msgs=recentPreviewMessages(c),exp=c.id===S.selectedId;
+    let prevTheirs='',prevMine='';
+    if(lm.theirs!==null)prevTheirs=`<div class="action-preview"><span class="preview-label">Them:</span> ${esc(lm.theirs)}</div>`;
+    if(lm.mine!==null)prevMine=`<div class="action-preview-mine"><span class="preview-label">You:</span> ${esc(lm.mine)}</div>`;
+    if(!prevTheirs&&!prevMine)prevTheirs=`<div class="action-preview">${esc(c.last_message_text||'')}</div>`;
+    const bubbles=msgs.map(m=>{const side=m.from_me?'mine':'theirs';
+      return`<div class="msg-row ${side}"><div class="msg-bubble ${side}">${esc(m.text||'')}</div><div class="msg-time">${esc(fullTime(m.date))}</div></div>`;}).join('');
+    return `<div class="action-item${exp?' expanded':''}" onclick="toggleExpand('${esc(c.id)}')">
+      <div class="action-item-top">
+        <div class="action-avatar">${esc(initial(c))}</div>
+        <div class="action-body">
+          <div class="action-name">${esc(name)}</div>
+          ${prevTheirs}${prevMine}
+        </div>
+        <div class="action-right">
+          <span class="action-time">${esc(relTime(c.last_message_at))}</span>
+        </div>
+      </div>
+      <div class="action-detail" onclick="event.stopPropagation()">
+        <div class="detail-messages">${msgs.length===0?'<div style="color:var(--text3);font-size:12px;text-align:center;padding:12px 0">No messages in export window</div>':bubbles}</div>
+        <div class="detail-actions">
+          ${phone?`<a class="btn-reply" href="${smsHref}">Reply in Messages ↗</a>`:''}
+          <button class="btn-dismiss" onclick="dismissConvo('${esc(c.id)}')">No reply needed</button>
+          <button class="btn-dismiss" onclick="reclassify('${esc(c.id)}','delivery');event.stopPropagation()">→ Logistics</button>
+          <button class="btn-dismiss" onclick="reclassify('${esc(c.id)}','spam');event.stopPropagation()">→ Spam</button>
+        </div>
   const section=document.querySelector('.other-section');
   if(!list.length){section.style.display='none';return;}
   section.style.display='';
@@ -1009,7 +1041,7 @@ function handleTimeline(val){
 }
 function setActionFilter(f){S.actionFilter=f;
   document.querySelectorAll('.filter-chip').forEach(b=>b.classList.toggle('active',b.dataset.filter===f));renderActions();}
-function toggleExpand(id){S.selectedId=S.selectedId===id?null:id;renderActions();}
+function toggleExpand(id){S.selectedId=S.selectedId===id?null:id;renderActions();renderOtherTexts();}
 function dismissConvo(id){S.dismissed[id]=true;
   try{localStorage.setItem(DISMISS_KEY,JSON.stringify(S.dismissed));}catch(_){}renderAll();}
 

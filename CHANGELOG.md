@@ -30,6 +30,8 @@
 - Collapsed the score history/trend panel by default and added a Show/Hide score history toggle.
 - Fixed Action Needed previews so attachments are only shown when they are inside the same last-5-message preview window (older attachments are no longer pulled into the preview).
 - Added a new top-level Other texts section between Action needed and Auto-filtered texts, and limited Auto-filtered texts to Spam and Logistics only.
+- Fixed Other texts routing to use the same uncategorized dataset as the previous Other review bucket.
+- Updated Other texts to apply the same global timeline window and use expandable row behavior consistent with Action needed.
 - Fixed Other texts routing to read the uncategorized bucket directly rather than routing through review panel logic, preventing accidental broadening or narrowing from changes to shared helpers.
 - Hide the Other texts section entirely when there are no uncategorized conversations.
 
