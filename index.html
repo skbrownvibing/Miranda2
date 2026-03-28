@@ -700,27 +700,19 @@ function relTime(d){if(!d)return'';const ms=Date.now()-new Date(d).getTime(),m=M
 function fullTime(d){if(!d)return'';return new Date(d).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});}
 function displayName(c){if(c.is_group&&c.group_name&&c.group_name.trim())return c.group_name.trim();return c.contact_name||c.phone||'Unknown';}
 function initial(c){return displayName(c).trim()[0].toUpperCase();}
-function recentPreviewMessages(c){
-  const msgs=c.messages||[];
-  if(!msgs.length)return msgs;
-  const ATT='📎 Attachment';
-  // Find the date of the most recent real text message (not an attachment placeholder).
-  let latestTextDate=null;
-  for(let i=msgs.length-1;i>=0;i--){
-    const txt=String(msgs[i]?.text??'').trim();
-    if(txt&&txt!==ATT){latestTextDate=msgs[i].date;break;}
-  }
-  // If there are no text messages at all, show as-is (all entries are real attachments).
-  if(latestTextDate===null)return msgs.slice(-5);
-  // Drop attachment-only rows that predate the latest text — they are old photos
-  // that were sent before the most recent conversation and clutter the preview.
-  return msgs.filter(m=>{
-    const txt=String(m?.text??'').trim();
-    return txt!==ATT||m.date>=latestTextDate;
-  }).slice(-5);
+function latestEventAt(c){
+  return c.latest_event_at||c.last_message_at||null;
+}
+function latestEventText(c){
+  if(c.latest_event_text!==undefined&&c.latest_event_text!==null)return c.latest_event_text;
+  return c.last_message_text||'';
+}
+function literalRecentEvents(c){
+  const msgs=(c.recent_events&&c.recent_events.length)?c.recent_events:(c.messages||[]);
+  return msgs.slice(-5);
 }
 function lastMsgs(c){
-  const msgs=recentPreviewMessages(c),ATT='📎 Attachment';
+  const msgs=literalRecentEvents(c),ATT='📎 Attachment';
   let theirsText=null,theirsAttach=null,mineText=null;
   for(let i=msgs.length-1;i>=0;i--){
     const txt=String(msgs[i]?.text??'').trim();
@@ -938,11 +930,11 @@ function renderActions(){
   if(!list.length){el.innerHTML='<div class="action-empty"><div class="action-empty-icon">✨</div><div>You\'re all caught up!</div></div>';return;}
   el.innerHTML=list.map(c=>{
     const name=displayName(c),lm=lastMsgs(c),phone=c.phone||'',smsHref=phone?'sms:'+phone.replace(/\s/g,''):'#';
-    const msgs=recentPreviewMessages(c),exp=c.id===S.selectedId;
+    const msgs=literalRecentEvents(c),exp=c.id===S.selectedId;
     let prevTheirs='',prevMine='';
     if(lm.theirs!==null)prevTheirs=`<div class="action-preview"><span class="preview-label">Them:</span> ${esc(lm.theirs)}</div>`;
     if(lm.mine!==null)prevMine=`<div class="action-preview-mine"><span class="preview-label">You:</span> ${esc(lm.mine)}</div>`;
-    if(!prevTheirs&&!prevMine)prevTheirs=`<div class="action-preview">${esc(c.last_message_text||'')}</div>`;
+    if(!prevTheirs&&!prevMine)prevTheirs=`<div class="action-preview">${esc(latestEventText(c))}</div>`;
     const bubbles=msgs.map(m=>{const side=m.from_me?'mine':'theirs';
       return`<div class="msg-row ${side}"><div class="msg-bubble ${side}">${esc(m.text||'')}</div><div class="msg-time">${esc(fullTime(m.date))}</div></div>`;}).join('');
     return`<div class="action-item${exp?' expanded':''}" onclick="toggleExpand('${esc(c.id)}')">
@@ -953,7 +945,7 @@ function renderActions(){
           ${prevTheirs}${prevMine}
         </div>
         <div class="action-right">
-          <span class="action-time">${esc(relTime(c.last_message_at))}</span>
+          <span class="action-time">${esc(relTime(latestEventAt(c)))}</span>
           <div class="urgency-dot ${urgency(c)}"></div>
         </div>
       </div>
@@ -987,11 +979,11 @@ function renderOtherTexts(){
   if(!list.length){el.innerHTML='<div class="review-empty">Nothing here</div>';return;}
   el.innerHTML=list.map(c=>{
     const name=displayName(c),lm=lastMsgs(c),phone=c.phone||'',smsHref=phone?'sms:'+phone.replace(/\s/g,''):'#';
-    const msgs=recentPreviewMessages(c),exp=c.id===S.selectedId;
+    const msgs=literalRecentEvents(c),exp=c.id===S.selectedId;
     let prevTheirs='',prevMine='';
     if(lm.theirs!==null)prevTheirs=`<div class="action-preview"><span class="preview-label">Them:</span> ${esc(lm.theirs)}</div>`;
     if(lm.mine!==null)prevMine=`<div class="action-preview-mine"><span class="preview-label">You:</span> ${esc(lm.mine)}</div>`;
-    if(!prevTheirs&&!prevMine)prevTheirs=`<div class="action-preview">${esc(c.last_message_text||'')}</div>`;
+    if(!prevTheirs&&!prevMine)prevTheirs=`<div class="action-preview">${esc(latestEventText(c))}</div>`;
     const bubbles=msgs.map(m=>{const side=m.from_me?'mine':'theirs';
       return`<div class="msg-row ${side}"><div class="msg-bubble ${side}">${esc(m.text||'')}</div><div class="msg-time">${esc(fullTime(m.date))}</div></div>`;}).join('');
     return `<div class="action-item${exp?' expanded':''}" onclick="toggleExpand('${esc(c.id)}')">
@@ -1002,7 +994,7 @@ function renderOtherTexts(){
           ${prevTheirs}${prevMine}
         </div>
         <div class="action-right">
-          <span class="action-time">${esc(relTime(c.last_message_at))}</span>
+          <span class="action-time">${esc(relTime(latestEventAt(c)))}</span>
         </div>
       </div>
       <div class="action-detail" onclick="event.stopPropagation()">
@@ -1213,7 +1205,7 @@ function renderReview(){
   const control=S.reviewCat==='uncategorized'?renderOtherSignalControl():'';
   el.innerHTML=control+list.slice(0,50).map(c=>{
     const name=c.contact_name||c.phone||'Unknown';
-    const preview=(c.last_message_text||'').slice(0,60);
+    const preview=(latestEventText(c)||'').slice(0,60);
     const cat=S.reviewCat;
     const CAT_LABELS={personal:'Personal',delivery:'Logistics',spam:'Spam',uncategorized:'Other'};
     const hasOverride=(c.phone&&S.overrides[c.phone])||S.overrides[c.id];

@@ -2,6 +2,12 @@
 
 ## Current development cycle
 
+### 2026-03-28 — Literal chronology for thread display (separate from response status)
+- Changed thread display to use literal chronology only: the latest item shown in each thread is the true newest source event, even when it is a reaction, attachment, blank-ish row, or other odd terminal event.
+- Changed expanded conversation previews to render the literal newest 5 chronological events with no relevance filtering or semantic substitution.
+- Added dedicated display fields to export output: `latest_event_at`, `latest_event_text`, `latest_event_from_me`, and `recent_events`.
+- Kept response-status logic separate (`i_replied_last`, dismissal, scoring inputs), so status no longer controls which latest event is displayed.
+
 ### 2026-03-28 — Compact score history card header
 - Reduced the collapsed Score history card height by tightening card padding.
 - Moved the collapsed header content to a single row so `Score history` and `Last score` sit side-by-side for a compact footprint.
