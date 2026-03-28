@@ -201,6 +201,12 @@ def main():
     chats = cur.fetchall()
 
     conversations = []
+    debug_summary = {
+        'rows_with_cache_has_attachments': 0,
+        'rows_confirmed_by_attachment_join': 0,
+        'rows_emitted_as_attachment': 0,
+        'rows_rejected': 0,
+    }
 
     for chat_id, guid, chat_identifier, display_name, style in chats:
         cur.execute("""
@@ -223,7 +229,21 @@ def main():
 
         # Messages in lookback window (no text filter — attachments/reactions have text=NULL)
         cur.execute("""
-            SELECT m.text, m.is_from_me, m.date, m.cache_has_attachments
+            SELECT
+                m.ROWID,
+                m.guid,
+                m.text,
+                m.is_from_me,
+                m.date,
+                m.cache_has_attachments,
+                m.associated_message_type,
+                m.associated_message_guid,
+                EXISTS(
+                    SELECT 1
+                    FROM message_attachment_join maj
+                    JOIN attachment a ON a.ROWID = maj.attachment_id
+                    WHERE maj.message_id = m.ROWID
+                ) AS has_attachment_join
             FROM message m
             JOIN chat_message_join cmj ON m.ROWID = cmj.message_id
             WHERE cmj.chat_id = ? AND m.date > ?
@@ -235,7 +255,21 @@ def main():
         # Fall back to most recent messages if nothing in window
         if not rows:
             cur.execute("""
-                SELECT m.text, m.is_from_me, m.date, m.cache_has_attachments
+                SELECT
+                    m.ROWID,
+                    m.guid,
+                    m.text,
+                    m.is_from_me,
+                    m.date,
+                    m.cache_has_attachments,
+                    m.associated_message_type,
+                    m.associated_message_guid,
+                    EXISTS(
+                        SELECT 1
+                        FROM message_attachment_join maj
+                        JOIN attachment a ON a.ROWID = maj.attachment_id
+                        WHERE maj.message_id = m.ROWID
+                    ) AS has_attachment_join
                 FROM message m
                 JOIN chat_message_join cmj ON m.ROWID = cmj.message_id
                 WHERE cmj.chat_id = ?
@@ -252,37 +286,75 @@ def main():
                 return t
             return '📎 Attachment' if has_att else ''
 
+        debug_summary['rows_with_cache_has_attachments'] += sum(1 for r in rows if bool(r[5]))
+        debug_summary['rows_confirmed_by_attachment_join'] += sum(1 for r in rows if bool(r[8]))
+
         # Keep only relevant conversational rows:
         # - non-empty text after trimming
         # - or attachment-only messages
         relevant_rows = [
-            (t, fm, d, att)
-            for t, fm, d, att in rows
+            (rowid, msg_guid, t, fm, d, att, assoc_type, assoc_guid, has_att_join)
+            for rowid, msg_guid, t, fm, d, att, assoc_type, assoc_guid, has_att_join in rows
             if ((t or '').strip() != '') or bool(att)
         ]
+        debug_summary['rows_rejected'] += (len(rows) - len(relevant_rows))
 
         if not relevant_rows:
             continue
 
-        msg_list = [
-            {'text': msg_text(t, att), 'from_me': bool(fm), 'date': fmt(apple_ts(d))}
-            for t, fm, d, att in relevant_rows
-        ]
+        recent_relevant_rows = relevant_rows[:5]
+        most_recent_text_ts = None
+        for _rowid, _msg_guid, t, _fm, d, _att, _assoc_type, _assoc_guid, _has_att_join in recent_relevant_rows:
+            if (t or '').strip() != '':
+                most_recent_text_ts = d
+                break
+
+        # Recency/context heuristic for the 5-row preview window:
+        # if a recent text exists, drop older attachment-only rows from that window.
+        if most_recent_text_ts is None:
+            preview_rows = recent_relevant_rows
+        else:
+            preview_rows = [
+                row for row in recent_relevant_rows
+                if ((row[2] or '').strip() != '') or (row[4] >= most_recent_text_ts)
+            ]
+            if not preview_rows:
+                preview_rows = recent_relevant_rows
+        debug_summary['rows_rejected'] += max(0, len(recent_relevant_rows) - len(preview_rows))
+
+        msg_list = []
+        for rowid, msg_guid, t, fm, d, att, assoc_type, assoc_guid, has_att_join in preview_rows:
+            emitted = msg_text(t, att)
+            if emitted == '📎 Attachment':
+                debug_summary['rows_emitted_as_attachment'] += 1
+            msg_list.append({
+                'text': emitted,
+                'from_me': bool(fm),
+                'date': fmt(apple_ts(d)),
+                # Temporary debug fields (diagnosis only).
+                'raw_text': t,
+                'emitted_text': emitted,
+                'cache_has_attachments': bool(att),
+                'has_attachment_join': bool(has_att_join),
+                'message_rowid': rowid,
+                'message_guid': msg_guid,
+                'associated_message_type': assoc_type,
+                'associated_message_guid': assoc_guid,
+            })
 
         # Recent context window for action-needed logic and last-message signal.
-        recent_relevant_rows = relevant_rows[:5]
         last_text_row = next(
-            ((t, fm, d, att) for t, fm, d, att in recent_relevant_rows if (t or '').strip() != ''),
+            ((t, fm, d, att) for _, _, t, fm, d, att, _, _, _ in preview_rows if (t or '').strip() != ''),
             None
         )
-        last_signal_row = last_text_row if last_text_row is not None else recent_relevant_rows[0]
-        last_signal_text, last_signal_from_me, last_signal_date, last_signal_att = last_signal_row
+        if last_text_row is not None:
+            last_signal_text, last_signal_from_me, last_signal_date, last_signal_att = last_text_row
+        else:
+            _rowid, _msg_guid, last_signal_text, last_signal_from_me, last_signal_date, last_signal_att, _assoc_type, _assoc_guid, _has_att_join = preview_rows[0]
 
-        msg_count_lookback = sum(1 for _, _, d, _ in relevant_rows if d > cut_90d)
+        msg_count_lookback = sum(1 for _, _, _, _, d, _, _, _, _ in relevant_rows if d > cut_90d)
         last_signal_at = fmt(apple_ts(last_signal_date))
         last_signal_preview = msg_text(last_signal_text, last_signal_att)
-        msg_count_lookback = sum(1 for _, _, d, _ in relevant_rows if d > cut_90d)
-        last = msg_list[0]
 
         conversations.append({
             'id':                guid,
@@ -295,7 +367,7 @@ def main():
             'last_message_text': last_signal_preview,
             'i_replied_last':    bool(last_signal_from_me),
             'message_count_30d': msg_count_lookback,
-            'messages':          list(reversed(msg_list[:5])),   # chronological, last 5
+            'messages':          list(reversed(msg_list[:5])),   # chronological preview window
         })
 
     conn.close()
@@ -314,6 +386,7 @@ def main():
         'app':         'Miranda2',
         'version':     '1.0',
         'exported_at': now.isoformat(),
+        'debug_summary': debug_summary,
         'conversations': conversations,
     }
 
@@ -334,6 +407,12 @@ def main():
     print(f"    Delivery:       {d}")
     print(f"    Spam:           {s}")
     print(f"    Uncategorized:  {u}")
+    print(f"")
+    print(f"  Debug summary:")
+    print(f"    rows with cache_has_attachments:    {debug_summary['rows_with_cache_has_attachments']}")
+    print(f"    rows confirmed by attachment join:  {debug_summary['rows_confirmed_by_attachment_join']}")
+    print(f"    rows emitted as 📎 Attachment:      {debug_summary['rows_emitted_as_attachment']}")
+    print(f"    rows rejected:                      {debug_summary['rows_rejected']}")
     print(f"")
     print(f"  File: {out_path}")
     print(f"")

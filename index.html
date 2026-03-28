@@ -620,8 +620,31 @@ function relTime(d){if(!d)return'';const ms=Date.now()-new Date(d).getTime(),m=M
 function fullTime(d){if(!d)return'';return new Date(d).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});}
 function displayName(c){if(c.is_group&&c.group_name&&c.group_name.trim())return c.group_name.trim();return c.contact_name||c.phone||'Unknown';}
 function initial(c){return displayName(c).trim()[0].toUpperCase();}
+function recentPreviewMessages(c){
+  const msgs=(c.messages||[]),window=msgs.slice(-5);
+  let newestTextTs=null;
+  for(let i=window.length-1;i>=0;i--){
+    const txt=String(window[i]?.text??'').trim();
+    if(txt&&txt!=='📎 Attachment'){
+      const ts=window[i]?.date?new Date(window[i].date).getTime():null;
+      newestTextTs=Number.isFinite(ts)?ts:null;
+      break;
+    }
+  }
+  // Recency/context heuristic for the 5-message window (not raw-message truth):
+  // if there's a recent text, suppress older attachment-only rows in that window.
+  if(newestTextTs===null)return window;
+  const filtered=window.filter(m=>{
+    const txt=String(m?.text??'').trim();
+    if(txt&&txt!=='📎 Attachment')return true;
+    if(txt!=='📎 Attachment')return false;
+    const ts=m?.date?new Date(m.date).getTime():null;
+    return Number.isFinite(ts)&&ts>=newestTextTs;
+  });
+  return filtered.length?filtered:window;
+}
 function lastMsgs(c){
-  const msgs=c.messages||[],ATT='📎 Attachment';
+  const msgs=recentPreviewMessages(c),ATT='📎 Attachment';
   let theirsText=null,theirsAttach=null,mineText=null;
   for(let i=msgs.length-1;i>=0;i--){
     const txt=String(msgs[i]?.text??'').trim();
@@ -826,7 +849,7 @@ function renderActions(){
   if(!list.length){el.innerHTML='<div class="action-empty"><div class="action-empty-icon">✨</div><div>You\'re all caught up!</div></div>';return;}
   el.innerHTML=list.map(c=>{
     const name=displayName(c),lm=lastMsgs(c),phone=c.phone||'',smsHref=phone?'sms:'+phone.replace(/\s/g,''):'#';
-    const msgs=c.messages||[],exp=c.id===S.selectedId;
+    const msgs=recentPreviewMessages(c),exp=c.id===S.selectedId;
     let prevTheirs='',prevMine='';
     if(lm.theirs!==null)prevTheirs=`<div class="action-preview"><span class="preview-label">Them:</span> ${esc(lm.theirs)}</div>`;
     if(lm.mine!==null)prevMine=`<div class="action-preview-mine"><span class="preview-label">You:</span> ${esc(lm.mine)}</div>`;
