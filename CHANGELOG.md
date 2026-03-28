@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-03-28 — Fix: score now updates when non-contact threads leave Needs Action
+- Root cause: score computation filtered out threads without `contact_name`, while Needs Action state and other stats already include eligible unsaved-number 1:1 threads.
+- Fixed by removing the `contact_name` requirement from `allPersonalInTimeline()`, so score calculation uses the same in-scope conversation set (excluding only spam, Logistics, and group chats) as the rest of the responsiveness state.
+- Result: marking a thread as **No reply needed** (or moving it out of Needs Action via similar state changes) now immediately updates the main score and score label without refresh.
+
 ### 2026-03-28 — Ensure expanded message rows render as plain text blocks
 - Added explicit `.detail-messages > div` reset styles (no background, border, border-radius, or padding) so expanded rows render as simple text lines rather than bubble-like containers.
 - Kept timestamps visible and message-row rendering logic unchanged (plain text rows with empty-text filtering).

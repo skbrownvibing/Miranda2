@@ -651,7 +651,7 @@ function inTimeline(c){
 function actionable(){return S.conversations.filter(c=>needsResponse(c)&&inTimeline(c)&&c.contact_name);}
 function allPersonalInTimeline(){return S.conversations.filter(c=>{
   const cat=getCategory(c);if(cat==='spam'||cat==='delivery')return false;
-  if(c.is_group)return false;if(!c.contact_name)return false;return inTimeline(c);});}
+  if(c.is_group)return false;return inTimeline(c);});}
 
 // ── Score ─────────────────────────────────────────────────────────────────────
 function computeScore(){
