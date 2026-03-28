@@ -653,10 +653,10 @@ function inTimeline(c){
   if(timelineBefore&&d>timelineBefore)return false;
   return true;
 }
-function actionable(){return S.conversations.filter(c=>needsResponse(c)&&inTimeline(c));}
+function actionable(){return S.conversations.filter(c=>needsResponse(c)&&inTimeline(c)&&c.contact_name);}
 function allPersonalInTimeline(){return S.conversations.filter(c=>{
   const cat=getCategory(c);if(cat==='spam'||cat==='delivery')return false;
-  if(c.is_group)return false;return inTimeline(c);});}
+  if(c.is_group)return false;if(!c.contact_name)return false;return inTimeline(c);});}
 
 // ── Score ─────────────────────────────────────────────────────────────────────
 function computeScore(){
@@ -963,18 +963,7 @@ function renderActions(){
 }
 
 function otherTexts(){
-  return S.conversations.filter(c=>{
-    const cat=getCategory(c);
-    return !c.contact_name &&
-      !c.is_group &&
-      inTimeline(c) &&
-      !needsResponse(c) &&
-      cat!=='spam' &&
-      cat!=='delivery';
-  });
-  return reviewConvos('uncategorized').filter(inTimeline);
-  // Anchored directly to the uncategorized bucket — never routed through review panel logic.
-  return S.conversations.filter(c=>getCategory(c)==='uncategorized');
+  return S.conversations.filter(c=>needsResponse(c)&&inTimeline(c)&&!c.contact_name);
 }
 
 function renderOtherTexts(){
