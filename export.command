@@ -103,7 +103,8 @@ def _extract_streamtyped(raw):
                 # Strip leading object-replacement char (inline attachment placeholder)
                 if s.startswith('\ufffc'):
                     s = s[1:].strip()
-                if len(s) >= 1 and s not in _meta:
+                # Allow single non-ASCII chars (emoji); require len>=2 for ASCII to block noise bytes like @
+                if s not in _meta and (len(s) >= 2 or (len(s) == 1 and ord(s[0]) > 127)):
                     if ' ' in s or not any(s.startswith(p) for p in _cls_prefixes):
                         return s
             except UnicodeDecodeError:
