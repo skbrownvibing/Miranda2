@@ -9,6 +9,7 @@
 - Increased score label visual emphasis by moving it to the left of the score ring, enlarging typography, and removing the duplicate numeric value from the label so only the big ring number shows the score.
 - Hardened score-label rendering to strip any trailing `(number)` suffix if present, ensuring text like `bad texter 😬` never re-shows as `bad texter 😬 (34)`.
 - Centralized score-label cleanup in a dedicated helper to consistently enforce label-only rendering across score updates.
+- Fixed `renderScore()` reassigning `score-summary` multiple times; it now sets the cleaned label once so `(${score})` is not reintroduced.
 ### 2026-03-28 — Fix: messages with link previews show as "Attachment" instead of actual text
 - Root cause: when an iMessage contains a URL, iMessage stores the actual message text in `m.attributedBody` (an NSKeyedArchiver binary blob) and leaves `m.text = NULL`. The exporter was only reading `m.text`, so it saw NULL, saw a real attachment join (the link preview card), and wrote "📎 Attachment" — even though the person sent a real text message.
 - Added `extract_attributed_body()` helper that decodes the NSAttributedString binary plist and returns the plain text string.
