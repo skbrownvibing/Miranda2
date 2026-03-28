@@ -879,7 +879,8 @@ function renderActions(){
 }
 
 function otherTexts(){
-  return reviewConvos('uncategorized');
+  // Anchored directly to the uncategorized bucket — never routed through review panel logic.
+  return S.conversations.filter(c=>getCategory(c)==='uncategorized');
 }
 
 function renderOtherTexts(){
@@ -888,9 +889,11 @@ function renderOtherTexts(){
     const bt=b.last_message_at?new Date(b.last_message_at).getTime():0;
     return bt-at;
   });
+  const section=document.querySelector('.other-section');
+  if(!list.length){section.style.display='none';return;}
+  section.style.display='';
   document.getElementById('other-count').textContent=list.length===1?'1 text':list.length+' texts';
   const el=document.getElementById('other-list');
-  if(!list.length){el.innerHTML='<div class="review-empty">Nothing here</div>';return;}
   el.innerHTML=list.map(c=>{
     const name=displayName(c),lm=lastMsgs(c);
     const preview=lm.theirs!==null?lm.theirs:lm.mine!==null?lm.mine:(c.last_message_text||'');
