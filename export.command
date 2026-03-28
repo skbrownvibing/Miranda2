@@ -59,12 +59,71 @@ _att_body_stats  = {'parsed': 0, 'failed': 0}
 _att_body_samples = []   # up to 5 failure samples
 _ATT_BODY_MAX_SAMPLES = 5
 
+def extract_typedstream_string(raw):
+    """Extract plain text from an NSArchiver streamtyped blob.
+
+    iMessage stores attributedBody in this older binary format rather than
+    the NSKeyedArchiver plist format that plistlib understands.  The message
+    text is the first non-metadata string embedded in the byte stream.
+    """
+    # Exact class/framework names embedded as descriptors in the blob
+    _meta = {
+        'streamtyped', 'NSString', 'NSMutableString', 'NSAttributedString',
+        'NSMutableAttributedString', 'NSObject', 'NSArray', 'NSMutableArray',
+        'NSDictionary', 'NSMutableDictionary', 'NSColor', 'NSFont',
+        'NSParagraphStyle', 'NSValue', 'NSNumber', 'NSData', 'NSShadow',
+        'NSOriginalFont',
+    }
+    # Framework identifier prefixes — skip spaceless tokens that start with these
+    _cls_prefixes = ('NS', 'UI', 'CK', 'IM', '__', '$')
+
+    i = 0
+    while i < len(raw):
+        b = raw[i]
+        # Start of a printable ASCII or UTF-8 multibyte sequence
+        if 0x20 <= b <= 0x7e or b >= 0xc2:
+            j = i + 1
+            while j < len(raw):
+                bj = raw[j]
+                if 0x20 <= bj <= 0x7e or 0x80 <= bj <= 0xbf or bj >= 0xc2:
+                    j += 1
+                else:
+                    break
+            try:
+                s = raw[i:j].decode('utf-8').strip().lstrip('+')
+                if s and s not in _meta:
+                    # Strings with spaces are almost certainly real text.
+                    # Spaceless tokens starting with framework prefixes are metadata.
+                    if ' ' in s or not any(s.startswith(p) for p in _cls_prefixes):
+                        return s
+            except UnicodeDecodeError:
+                pass
+            i = j
+        else:
+            i += 1
+    return None
+
+
 def extract_attributed_body(blob):
-    """Pull plain text from an NSKeyedArchiver-encoded NSAttributedString blob."""
+    """Pull plain text from an NSAttributedString attributedBody blob."""
     if not blob:
         return None
+    raw = bytes(blob)
+
+    # NSArchiver streamtyped format — what iMessage actually writes
+    if raw.startswith(b'\x04\x0bstreamtyped'):
+        result = extract_typedstream_string(raw)
+        if result:
+            _att_body_stats['parsed'] += 1
+        else:
+            _att_body_stats['failed'] += 1
+            if len(_att_body_samples) < _ATT_BODY_MAX_SAMPLES:
+                _att_body_samples.append({'reason': 'streamtyped_no_text', 'blob_hex': raw[:32].hex()})
+        return result
+
+    # NSKeyedArchiver plist format — fallback for any non-streamtyped blobs
     try:
-        plist = plistlib.loads(bytes(blob))
+        plist = plistlib.loads(raw)
         objects = plist.get('$objects', [])
 
         # ── Structured path: NSKeyedArchiver → NSAttributedString → NSString ──
