@@ -54,13 +54,13 @@ def _uid_int(obj):
         return obj.get('CF$UID')
     return None
 
-# One-time diagnostic: print the raw plist structure of the first blob we fail
-# to parse, so we can see what's actually in the database.
-_att_body_diag_done = False
+# Diagnostic counters — reset each run.
+_att_body_stats  = {'parsed': 0, 'failed': 0}
+_att_body_samples = []   # up to 5 failure samples
+_ATT_BODY_MAX_SAMPLES = 5
 
 def extract_attributed_body(blob):
     """Pull plain text from an NSKeyedArchiver-encoded NSAttributedString blob."""
-    global _att_body_diag_done
     if not blob:
         return None
     try:
@@ -80,10 +80,12 @@ def extract_attributed_body(blob):
                         if isinstance(str_obj, str):
                             s = str_obj.strip()
                             if s:
+                                _att_body_stats['parsed'] += 1
                                 return s
                         if isinstance(str_obj, dict):
                             s = str(str_obj.get('NS.string', '')).strip()
                             if s:
+                                _att_body_stats['parsed'] += 1
                                 return s
         except Exception:
             pass
@@ -106,20 +108,26 @@ def extract_attributed_body(blob):
                         and not s.startswith('UI')
                         and not s.startswith('__')
                         and not s.startswith('$')):
+                    _att_body_stats['parsed'] += 1
                     return s
 
-        # ── Diagnostic (runs once): print structure to help debug ──
-        if not _att_body_diag_done:
-            _att_body_diag_done = True
-            print("  [diag] attributedBody parse: structured path and fallback both failed")
-            print(f"  [diag] $top: {plist.get('$top')}")
-            print(f"  [diag] first 6 objects: {objects[:6]}")
+        # Both paths failed — record a sample for diagnostics.
+        _att_body_stats['failed'] += 1
+        if len(_att_body_samples) < _ATT_BODY_MAX_SAMPLES:
+            _att_body_samples.append({
+                'reason': 'no_text_found',
+                '$top':    plist.get('$top'),
+                'objects': objects[:8],
+            })
 
     except Exception as e:
-        if not _att_body_diag_done:
-            _att_body_diag_done = True
-            print(f"  [diag] attributedBody plistlib.loads failed: {e}")
-            print(f"  [diag] blob prefix (hex): {bytes(blob)[:16].hex()}")
+        _att_body_stats['failed'] += 1
+        if len(_att_body_samples) < _ATT_BODY_MAX_SAMPLES:
+            _att_body_samples.append({
+                'reason':     'plist_load_failed',
+                'error':      str(e),
+                'blob_hex':   bytes(blob)[:32].hex(),
+            })
     return None
 
 # ── Contacts ──────────────────────────────────────────────────────────────────
@@ -434,6 +442,26 @@ def main():
     print(f"  File: {out_path}")
     print(f"")
     print(f"  Open index.html and drag the JSON file onto the page.")
+
+    # ── attributedBody parse diagnostics ──
+    total_att = _att_body_stats['parsed'] + _att_body_stats['failed']
+    if total_att:
+        print(f"")
+        print(f"  attributedBody blobs: {total_att} total — "
+              f"{_att_body_stats['parsed']} parsed OK, "
+              f"{_att_body_stats['failed']} failed")
+        if _att_body_samples:
+            print(f"  Failure samples (up to {_ATT_BODY_MAX_SAMPLES}):")
+            for i, s in enumerate(_att_body_samples, 1):
+                print(f"    [{i}] reason: {s['reason']}")
+                if s['reason'] == 'plist_load_failed':
+                    print(f"         error:    {s['error']}")
+                    print(f"         blob_hex: {s['blob_hex']}")
+                else:
+                    print(f"         $top:     {s['$top']}")
+                    print(f"         objects:  {s['objects']}")
+        print(f"")
+
     return True
 
 ok = main()
