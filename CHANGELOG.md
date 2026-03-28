@@ -2,6 +2,10 @@
 
 ## Current development cycle
 
+### 2026-03-28 — Compact score history card header
+- Reduced the collapsed Score history card height by tightening card padding.
+- Moved the collapsed header content to a single row so `Score history` and `Last score` sit side-by-side for a compact footprint.
+- Added top spacing before expanded trend details so the open state still breathes.
 ### 2026-03-28 — Fix: contacts incorrectly shown as unresponded when recent texts use attributedBody
 - Root cause: `i_replied_last` and `last_message_at` were derived from `relevant_rows[0]` (the most recent *parseable* row) rather than `rows[0]` (the actual most-recent DB row). When `m.text = NULL` and `attributedBody` parsing fails, recent text messages were dropped from `relevant_rows`, making old attachment rows appear as the last signal — causing fully-replied conversations to show as unresponded.
 - Fixed by reading timing and reply-direction signals from `rows[0]` (actual last message) and only using `relevant_rows[0]` for the preview text.
