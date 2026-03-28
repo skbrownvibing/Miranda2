@@ -367,14 +367,23 @@ def main():
             resolved = row_text(t, att_body)
             if resolved:
                 return resolved
+            if has_attachment_join:
+                return '📎 Attachment'
+            # attributedBody present but unparseable — real message, unknown text
+            if att_body:
+                return '💬'
+            return ''
             return '📎 Attachment' if has_attachment_join else ''
 
         # Keep only trustworthy conversational rows:
         # - non-empty resolved text (m.text or attributedBody)
         # - OR rows with confirmed message↔attachment linkage
+        # - OR rows with a non-NULL attributedBody blob (text message whose blob
+        #   we couldn't parse — still real content, not noise)
         relevant_rows = [
             (t, fm, d, cache_att, att_body, has_att_join)
             for t, fm, d, cache_att, att_body, has_att_join in rows
+            if row_text(t, att_body) or bool(has_att_join) or bool(att_body)
             if row_text(t, att_body) or bool(has_att_join)
         ]
         debug_summary['rows_rejected'] += (len(rows) - len(relevant_rows))
@@ -388,6 +397,20 @@ def main():
         ]
 
         # Recent context window for action-needed logic and last-message signal.
+        # IMPORTANT: use rows[0] (actual most-recent DB row) for timing and
+        # reply-direction signals so that text messages whose attributedBody we
+        # can't parse don't cause old attachments to become the apparent last
+        # message.  Preview text still comes from the most recent parseable row.
+        actual_last = rows[0]
+        last_signal_from_me = bool(actual_last[1])
+        last_signal_date    = actual_last[2]
+        last_signal_at      = fmt(apple_ts(last_signal_date))
+
+        # Preview: most recent parseable content row
+        last_content_row = relevant_rows[0]
+        last_signal_preview = msg_text(last_content_row[0], last_content_row[4], last_content_row[5])
+
+        msg_count_lookback = sum(1 for _, _, d, _, _, _ in relevant_rows if d > cut_90d)
         recent_relevant_rows = relevant_rows[:5]
         last_signal_row = recent_relevant_rows[0]
         last_signal_text, last_signal_from_me, last_signal_date, _last_signal_cache_att, last_signal_att_body, last_signal_has_attachment_join = last_signal_row
@@ -443,6 +466,7 @@ def main():
             'last_message_text': last_signal_preview,
             'i_replied_last':    bool(last_signal_from_me),
             'message_count_30d': msg_count_lookback,
+            'messages':          list(reversed(display_msgs)),   # chronological preview window
             'messages':          list(reversed(msg_list[:5])),   # chronological preview window
         })
 
