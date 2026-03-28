@@ -926,6 +926,7 @@ function renderActions(){
     if(!prevTheirs&&!prevMine)prevTheirs=`<div class="action-preview">${esc(latestEventText(c))}</div>`;
     const textRows=msgs
       .filter(m=>String(m?.text??'').trim())
+      .map(m=>`<div><div>${esc(String(m.text).trim())}</div><div class="msg-time">${esc(fullTime(m.date))}</div></div>`).join('');
       .map(m=>{const side=m.from_me?'mine':'theirs';
         return`<div class="msg-row ${side}"><div>${esc(String(m.text).trim())}</div><div class="msg-time">${esc(fullTime(m.date))}</div></div>`;}).join('');
     return`<div class="action-item${exp?' expanded':''}" onclick="toggleExpand('${esc(c.id)}')">
@@ -975,6 +976,7 @@ function renderOtherTexts(){
     if(!prevTheirs&&!prevMine)prevTheirs=`<div class="action-preview">${esc(latestEventText(c))}</div>`;
     const textRows=msgs
       .filter(m=>String(m?.text??'').trim())
+      .map(m=>`<div><div>${esc(String(m.text).trim())}</div><div class="msg-time">${esc(fullTime(m.date))}</div></div>`).join('');
       .map(m=>{const side=m.from_me?'mine':'theirs';
         return`<div class="msg-row ${side}"><div>${esc(String(m.text).trim())}</div><div class="msg-time">${esc(fullTime(m.date))}</div></div>`;}).join('');
     return `<div class="action-item${exp?' expanded':''}" onclick="toggleExpand('${esc(c.id)}')">
