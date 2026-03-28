@@ -373,6 +373,7 @@ def main():
             if att_body:
                 return '💬'
             return ''
+            return '📎 Attachment' if has_attachment_join else ''
 
         # Keep only trustworthy conversational rows:
         # - non-empty resolved text (m.text or attributedBody)
@@ -383,6 +384,7 @@ def main():
             (t, fm, d, cache_att, att_body, has_att_join)
             for t, fm, d, cache_att, att_body, has_att_join in rows
             if row_text(t, att_body) or bool(has_att_join) or bool(att_body)
+            if row_text(t, att_body) or bool(has_att_join)
         ]
         debug_summary['rows_rejected'] += (len(rows) - len(relevant_rows))
 
@@ -409,6 +411,13 @@ def main():
         last_signal_preview = msg_text(last_content_row[0], last_content_row[4], last_content_row[5])
 
         msg_count_lookback = sum(1 for _, _, d, _, _, _ in relevant_rows if d > cut_90d)
+        recent_relevant_rows = relevant_rows[:5]
+        last_signal_row = recent_relevant_rows[0]
+        last_signal_text, last_signal_from_me, last_signal_date, _last_signal_cache_att, last_signal_att_body, last_signal_has_attachment_join = last_signal_row
+
+        msg_count_lookback = sum(1 for _, _, d, _, _, _ in relevant_rows if d > cut_90d)
+        last_signal_at = fmt(apple_ts(last_signal_date))
+        last_signal_preview = msg_text(last_signal_text, last_signal_att_body, last_signal_has_attachment_join)
 
         # Build display messages so at least one text row is always surfaced.
         #
@@ -458,6 +467,7 @@ def main():
             'i_replied_last':    bool(last_signal_from_me),
             'message_count_30d': msg_count_lookback,
             'messages':          list(reversed(display_msgs)),   # chronological preview window
+            'messages':          list(reversed(msg_list[:5])),   # chronological preview window
         })
 
     conn.close()

@@ -14,6 +14,8 @@
 - Switched the app to light mode by default and tuned key surfaces (backgrounds, cards, text, borders, and inputs) for light-mode-first readability.
 - Added a top-bar dark mode toggle with localStorage persistence so users can manually switch themes and keep their preference on reload.
 - Increased score label visual emphasis by moving it to the left of the score ring, enlarging typography, and removing the duplicate numeric value from the label so only the big ring number shows the score.
+- Hardened score-label rendering to strip any trailing `(number)` suffix if present, ensuring text like `bad texter 😬` never re-shows as `bad texter 😬 (34)`.
+- Centralized score-label cleanup in a dedicated helper to consistently enforce label-only rendering across score updates.
 ### 2026-03-28 — Fix: messages with link previews show as "Attachment" instead of actual text
 - Root cause: when an iMessage contains a URL, iMessage stores the actual message text in `m.attributedBody` (an NSKeyedArchiver binary blob) and leaves `m.text = NULL`. The exporter was only reading `m.text`, so it saw NULL, saw a real attachment join (the link preview card), and wrote "📎 Attachment" — even though the person sent a real text message.
 - Added `extract_attributed_body()` helper that decodes the NSAttributedString binary plist and returns the plain text string.
@@ -36,6 +38,8 @@
 - Collapsed the score history/trend panel by default and added a Show/Hide score history toggle.
 - Fixed Action Needed previews so attachments are only shown when they are inside the same last-5-message preview window (older attachments are no longer pulled into the preview).
 - Added a new top-level Other texts section between Action needed and Auto-filtered texts, and limited Auto-filtered texts to Spam and Logistics only.
+- Fixed Other texts routing to use the same uncategorized dataset as the previous Other review bucket.
+- Updated Other texts to apply the same global timeline window and use expandable row behavior consistent with Action needed.
 - Fixed Other texts routing to read the uncategorized bucket directly rather than routing through review panel logic, preventing accidental broadening or narrowing from changes to shared helpers.
 - Hide the Other texts section entirely when there are no uncategorized conversations.
 
