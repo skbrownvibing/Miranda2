@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-03-28 — Action needed expanded rows now render plain text lines
+- Changed Action needed expanded rows to render message text as plain inline text (no chat-bubble styling).
+- Kept per-message timestamps visible.
+- Skipped empty/blank message rows so no empty message containers are shown.
+
 ### 2026-03-28 — Literal chronology for thread display (separate from response status)
 - Changed thread display to use literal chronology only: the latest item shown in each thread is the true newest source event, even when it is a reaction, attachment, blank-ish row, or other odd terminal event.
 - Changed expanded conversation previews to render the literal newest 5 chronological events with no relevance filtering or semantic substitution.
