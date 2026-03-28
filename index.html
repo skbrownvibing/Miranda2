@@ -506,6 +506,7 @@ const S = {
 const OVERRIDE_KEY='miranda2_overrides_v1', DISMISS_KEY='miranda2_dismissed_v1',
       DATA_KEY='miranda2_data_v1', META_KEY='miranda2_meta_v1', HISTORY_KEY='miranda2_history_v1',
       NAME_SIGNAL_KEY='miranda2_name_signal_v1', THEME_KEY='miranda2_theme_v1';
+const PREVIEW_INCLUDE_ATTACHMENT=true; // set false to hide "📎 Attachment" rows in collapsed previews
 
 function init() {
   try { const r=localStorage.getItem(OVERRIDE_KEY); if(r) S.overrides=JSON.parse(r); } catch(_){}
@@ -759,21 +760,19 @@ function initial(c){return displayName(c).trim()[0].toUpperCase();}
 function latestEventAt(c){return c.last_message_at||null;}
 function latestEventText(c){return c.last_message_text||'';}
 function literalRecentEvents(c){return(c.messages||[]).slice(-5);}
-function lastMsgs(c){
-  const msgs=literalRecentEvents(c),ATT='📎 Attachment',BUBBLE='💬';
-  let theirs=null,theirsAtt=null,mine=null;
-  for(let i=msgs.length-1;i>=0;i--){
-    const txt=String(msgs[i]?.text??'').trim();
-    if(!txt||txt===BUBBLE)continue;
-    if(msgs[i].from_me){
-      if(mine===null&&txt!==ATT)mine=txt;
-    }else{
-      if(theirs===null&&txt!==ATT)theirs=txt;
-      if(theirsAtt===null&&txt===ATT)theirsAtt=txt;
-    }
-    if(theirs!==null&&mine!==null)break;
-  }
-  return{theirs:theirs!==null?theirs:theirsAtt,mine};
+function previewTextIncluded(txt){
+  if(!txt)return false;
+  if(!PREVIEW_INCLUDE_ATTACHMENT&&txt==='📎 Attachment')return false;
+  return true;
+}
+function previewRows(c){
+  return (c.messages||[])
+    .filter(m=>previewTextIncluded(String(m?.text??'').trim()))
+    .slice(-2)
+    .map(m=>({
+      from_me:!!m.from_me,
+      text:String(m.text).trim()
+    }));
 }
 
 // ── Render ───────────────────────────────────────────────────────────────────
@@ -975,12 +974,10 @@ function renderActions(){
   const el=document.getElementById('action-list');
   if(!list.length){el.innerHTML='<div class="action-empty"><div class="action-empty-icon">✨</div><div>You\'re all caught up!</div></div>';return;}
   el.innerHTML=list.map(c=>{
-    const name=displayName(c),lm=lastMsgs(c),phone=c.phone||'',smsHref=phone?'sms:'+phone.replace(/\s/g,''):'#';
+    const name=displayName(c),rows=previewRows(c),phone=c.phone||'',smsHref=phone?'sms:'+phone.replace(/\s/g,''):'#';
     const msgs=literalRecentEvents(c),exp=c.id===S.selectedId;
-    let prevTheirs='',prevMine='';
-    if(lm.theirs!==null)prevTheirs=`<div class="action-preview"><span class="preview-label">Them:</span> ${esc(lm.theirs)}</div>`;
-    if(lm.mine!==null)prevMine=`<div class="action-preview-mine"><span class="preview-label">You:</span> ${esc(lm.mine)}</div>`;
-    if(!prevTheirs&&!prevMine)prevTheirs=`<div class="action-preview">${esc(latestEventText(c))}</div>`;
+    let previewHtml=rows.map(r=>`<div class="${r.from_me?'action-preview-mine':'action-preview'}"><span class="preview-label">${r.from_me?'You':'Them'}:</span> ${esc(r.text)}</div>`).join('');
+    if(!previewHtml)previewHtml=`<div class="action-preview">${esc(latestEventText(c))}</div>`;
     const textRows=msgs
       .filter(m=>String(m?.text??'').trim())
       .map(m=>`<div><div>${esc(String(m.text).trim())}</div><div class="msg-time">${esc(fullTime(m.date))}</div></div>`).join('');
@@ -989,7 +986,7 @@ function renderActions(){
         <div class="action-avatar">${esc(initial(c))}</div>
         <div class="action-body">
           <div class="action-name">${esc(name)}</div>
-          ${prevTheirs}${prevMine}
+          ${previewHtml}
         </div>
         <div class="action-right">
           <span class="action-time">${esc(relTime(latestEventAt(c)))}</span>
@@ -1023,12 +1020,10 @@ function renderOtherTexts(){
   const el=document.getElementById('other-list');
   if(!list.length){el.innerHTML='<div class="review-empty">Nothing here</div>';return;}
   el.innerHTML=list.map(c=>{
-    const name=displayName(c),lm=lastMsgs(c),phone=c.phone||'',smsHref=phone?'sms:'+phone.replace(/\s/g,''):'#';
+    const name=displayName(c),rows=previewRows(c),phone=c.phone||'',smsHref=phone?'sms:'+phone.replace(/\s/g,''):'#';
     const msgs=literalRecentEvents(c),exp=c.id===S.selectedId;
-    let prevTheirs='',prevMine='';
-    if(lm.theirs!==null)prevTheirs=`<div class="action-preview"><span class="preview-label">Them:</span> ${esc(lm.theirs)}</div>`;
-    if(lm.mine!==null)prevMine=`<div class="action-preview-mine"><span class="preview-label">You:</span> ${esc(lm.mine)}</div>`;
-    if(!prevTheirs&&!prevMine)prevTheirs=`<div class="action-preview">${esc(latestEventText(c))}</div>`;
+    let previewHtml=rows.map(r=>`<div class="${r.from_me?'action-preview-mine':'action-preview'}"><span class="preview-label">${r.from_me?'You':'Them'}:</span> ${esc(r.text)}</div>`).join('');
+    if(!previewHtml)previewHtml=`<div class="action-preview">${esc(latestEventText(c))}</div>`;
     const textRows=msgs
       .filter(m=>String(m?.text??'').trim())
       .map(m=>`<div><div>${esc(String(m.text).trim())}</div><div class="msg-time">${esc(fullTime(m.date))}</div></div>`).join('');
@@ -1037,7 +1032,7 @@ function renderOtherTexts(){
         <div class="action-avatar">${esc(initial(c))}</div>
         <div class="action-body">
           <div class="action-name">${esc(name)}</div>
-          ${prevTheirs}${prevMine}
+          ${previewHtml}
         </div>
         <div class="action-right">
           <span class="action-time">${esc(relTime(latestEventAt(c)))}</span>
