@@ -95,7 +95,7 @@ def _extract_streamtyped(raw):
                 else:
                     break
             try:
-                s = raw[i:j].decode('utf-8').strip().lstrip('+')
+                s = raw[i:j].decode('utf-8', errors='ignore').strip().lstrip('+')
                 if len(s) >= 4 and s not in _meta:
                     if ' ' in s or not any(s.startswith(p) for p in _cls_prefixes):
                         return s
