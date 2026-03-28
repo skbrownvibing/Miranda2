@@ -699,16 +699,20 @@ function latestEventAt(c){return c.last_message_at||null;}
 function latestEventText(c){return c.last_message_text||'';}
 function literalRecentEvents(c){return(c.messages||[]).slice(-5);}
 function lastMsgs(c){
-  const msgs=literalRecentEvents(c);
-  let theirs=null,mine=null;
+  const msgs=literalRecentEvents(c),ATT='📎 Attachment',BUBBLE='💬';
+  let theirs=null,theirsAtt=null,mine=null;
   for(let i=msgs.length-1;i>=0;i--){
     const txt=String(msgs[i]?.text??'').trim();
-    if(!txt||txt==='💬')continue;
-    if(msgs[i].from_me){if(mine===null)mine=txt;}
-    else{if(theirs===null)theirs=txt;}
+    if(!txt||txt===BUBBLE)continue;
+    if(msgs[i].from_me){
+      if(mine===null&&txt!==ATT)mine=txt;
+    }else{
+      if(theirs===null&&txt!==ATT)theirs=txt;
+      if(theirsAtt===null&&txt===ATT)theirsAtt=txt;
+    }
     if(theirs!==null&&mine!==null)break;
   }
-  return{theirs,mine};
+  return{theirs:theirs!==null?theirs:theirsAtt,mine};
 }
 
 // ── Render ───────────────────────────────────────────────────────────────────
