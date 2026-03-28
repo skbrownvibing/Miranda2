@@ -2,6 +2,14 @@
 
 ## Current development cycle
 
+### 2026-03-28 — Top-bar “Last updated” freshness indicator
+- Added a minimal `Last updated: …` label in the top-right action area next to **New export**.
+- Uses `exported_at` from the loaded JSON as the primary freshness source, with `savedAt` fallback only when `exported_at` is missing.
+- Keeps the default UI to a single relative timestamp and shows the exact local timestamp on hover.
+- Updates the relative label dynamically over time (minutes → hours → days).
+- Applies subtle visual de-emphasis when the loaded export is older than 24 hours.
+- Hides the indicator when no data is loaded.
+
 ### 2026-03-28 — Fix: score now updates when non-contact threads leave Needs Action
 - Root cause: score computation filtered out threads without `contact_name`, while Needs Action state and other stats already include eligible unsaved-number 1:1 threads.
 - Fixed by removing the `contact_name` requirement from `allPersonalInTimeline()`, so score calculation uses the same in-scope conversation set (excluding only spam, Logistics, and group chats) as the rest of the responsiveness state.
