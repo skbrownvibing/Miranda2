@@ -700,17 +700,9 @@ function relTime(d){if(!d)return'';const ms=Date.now()-new Date(d).getTime(),m=M
 function fullTime(d){if(!d)return'';return new Date(d).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});}
 function displayName(c){if(c.is_group&&c.group_name&&c.group_name.trim())return c.group_name.trim();return c.contact_name||c.phone||'Unknown';}
 function initial(c){return displayName(c).trim()[0].toUpperCase();}
-function latestEventAt(c){
-  return c.latest_event_at||c.last_message_at||null;
-}
-function latestEventText(c){
-  if(c.latest_event_text!==undefined&&c.latest_event_text!==null)return c.latest_event_text;
-  return c.last_message_text||'';
-}
-function literalRecentEvents(c){
-  const msgs=(c.recent_events&&c.recent_events.length)?c.recent_events:(c.messages||[]);
-  return msgs.slice(-5);
-}
+function latestEventAt(c){return c.last_message_at||null;}
+function latestEventText(c){return c.last_message_text||'';}
+function literalRecentEvents(c){return(c.messages||[]).slice(-5);}
 function lastMsgs(c){
   const msgs=literalRecentEvents(c),ATT='📎 Attachment';
   let theirsText=null,theirsAttach=null,mineText=null;
