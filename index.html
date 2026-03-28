@@ -971,6 +971,15 @@ function renderActions(){
 }
 
 function otherTexts(){
+  return S.conversations.filter(c=>{
+    const cat=getCategory(c);
+    return !c.contact_name &&
+      !c.is_group &&
+      inTimeline(c) &&
+      !needsResponse(c) &&
+      cat!=='spam' &&
+      cat!=='delivery';
+  });
   return reviewConvos('uncategorized').filter(inTimeline);
   // Anchored directly to the uncategorized bucket — never routed through review panel logic.
   return S.conversations.filter(c=>getCategory(c)==='uncategorized');

@@ -45,6 +45,7 @@
 - Added a new top-level Other texts section between Action needed and Auto-filtered texts, and limited Auto-filtered texts to Spam and Logistics only.
 - Fixed Other texts routing to use the same uncategorized dataset as the previous Other review bucket.
 - Updated Other texts to apply the same global timeline window and use expandable row behavior consistent with Action needed.
+- Redefined Other texts to show unknown 1:1 senders in timeline that are not Action needed and not Spam/Logistics.
 - Fixed Other texts routing to read the uncategorized bucket directly rather than routing through review panel logic, preventing accidental broadening or narrowing from changes to shared helpers.
 - Hide the Other texts section entirely when there are no uncategorized conversations.
 
