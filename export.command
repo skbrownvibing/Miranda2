@@ -419,7 +419,7 @@ def main():
             'recent_events':     recent_events,
             'last_message_at':   last_signal_at,
             'last_message_text': last_signal_preview,
-            'i_replied_last':    bool(last_signal_from_me),
+            'i_replied_last':    bool(latest_event_from_me),
             'message_count_30d': msg_count_lookback,
             'messages':          list(reversed(msg_list[:5])),   # chronological preview window
         })
