@@ -411,7 +411,7 @@ body[data-theme="dark"] .saved-prompt button:hover { color:#fff; }
         <div class="trend-toggle-row" id="trend-toggle" onclick="toggleTrend()">
           <span id="trend-toggle-label">Score history ▾</span>
         </div>
-        <div class="trend-preview" id="trend-preview">Last score: --</div>
+        <div class="trend-preview" id="trend-preview">Last 7d score: --</div>
       </div>
       <div id="trend-body" style="display:none">
         <div class="trend-stats">
@@ -848,10 +848,10 @@ function renderTrend(){
   const chart=document.getElementById('trend-chart');
   const dates=document.getElementById('trend-dates');
   const latest=history.length?history[history.length-1].score:'--';
-  document.getElementById('trend-preview').textContent=`Last score: ${latest}`;
+  document.getElementById('trend-preview').textContent=`Last 7d score: ${latest}`;
 
   if(history.length<2){
-    chart.innerHTML='<div class="trend-empty">Run the export on different days to build your trend</div>';
+    chart.innerHTML='<div class="trend-empty">Run the export on different days to build your 7-day score trend</div>';
     dates.innerHTML='';
     document.getElementById('trend-best').textContent='--';
     document.getElementById('trend-avg').textContent='--';
