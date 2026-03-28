@@ -373,17 +373,13 @@ def main():
             if att_body:
                 return '💬'
             return ''
-            return '📎 Attachment' if has_attachment_join else ''
 
-        # Keep only trustworthy conversational rows:
+        # Keep only trustworthy conversational rows for response-status logic:
         # - non-empty resolved text (m.text or attributedBody)
         # - OR rows with confirmed message↔attachment linkage
-        # - OR rows with a non-NULL attributedBody blob (text message whose blob
-        #   we couldn't parse — still real content, not noise)
         relevant_rows = [
             (t, fm, d, cache_att, att_body, has_att_join)
             for t, fm, d, cache_att, att_body, has_att_join in rows
-            if row_text(t, att_body) or bool(has_att_join) or bool(att_body)
             if row_text(t, att_body) or bool(has_att_join)
         ]
         debug_summary['rows_rejected'] += (len(rows) - len(relevant_rows))
@@ -396,63 +392,23 @@ def main():
             for t, fm, d, _cache_att, att_body, has_att_join in relevant_rows
         ]
 
-        # Recent context window for action-needed logic and last-message signal.
-        # IMPORTANT: use rows[0] (actual most-recent DB row) for timing and
-        # reply-direction signals so that text messages whose attributedBody we
-        # can't parse don't cause old attachments to become the apparent last
-        # message.  Preview text still comes from the most recent parseable row.
-        actual_last = rows[0]
-        last_signal_from_me = bool(actual_last[1])
-        last_signal_date    = actual_last[2]
-        last_signal_at      = fmt(apple_ts(last_signal_date))
-
-        # Preview: most recent parseable content row
-        last_content_row = relevant_rows[0]
-        last_signal_preview = msg_text(last_content_row[0], last_content_row[4], last_content_row[5])
-
-        msg_count_lookback = sum(1 for _, _, d, _, _, _ in relevant_rows if d > cut_90d)
+        # Response-status signal remains separate from literal display chronology.
         recent_relevant_rows = relevant_rows[:5]
         last_signal_row = recent_relevant_rows[0]
         last_signal_text, last_signal_from_me, last_signal_date, _last_signal_cache_att, last_signal_att_body, last_signal_has_attachment_join = last_signal_row
-
         msg_count_lookback = sum(1 for _, _, d, _, _, _ in relevant_rows if d > cut_90d)
         last_signal_at = fmt(apple_ts(last_signal_date))
         last_signal_preview = msg_text(last_signal_text, last_signal_att_body, last_signal_has_attachment_join)
 
-        # Build display messages so at least one text row is always surfaced.
-        #
-        # Case A – recent window has text: drop attachment-only rows that predate
-        #   the most recent text so stale photo rows don't crowd the preview.
-        # Case B – recent window is all genuine attachments: pull the most recent
-        #   text from further back as conversational context.
-        recent_5 = relevant_rows[:5]
-        has_text_in_recent = any(row_text(r[0], r[4]) for r in recent_5)
+        # Literal newest event + literal last 5 chronological events for display.
+        latest_event_row = rows[0]
+        latest_event_text, latest_event_from_me, latest_event_date, _latest_event_cache_att, latest_event_att_body, latest_event_has_attachment_join = latest_event_row
+        latest_event_at = fmt(apple_ts(latest_event_date))
+        latest_event_preview = msg_text(latest_event_text, latest_event_att_body, latest_event_has_attachment_join)
 
-        if has_text_in_recent:
-            latest_text_ts = next(
-                (d for t, fm, d, _ca, att_body, _ha in relevant_rows if row_text(t, att_body)),
-                None
-            )
-            display_rows = [
-                r for r in relevant_rows
-                if row_text(r[0], r[4])      # has real text — always include
-                or latest_text_ts is None    # no text at all — keep all attachments
-                or r[2] >= latest_text_ts    # attachment at least as recent as latest text
-            ][:5]
-        else:
-            # All-attachment window — pull in most recent older text as context
-            older_text = next(
-                (r for r in relevant_rows[5:] if row_text(r[0], r[4])),
-                None
-            )
-            if older_text:
-                display_rows = list(recent_5[:4]) + [older_text]
-            else:
-                display_rows = list(recent_5)
-
-        display_msgs = [
+        recent_events = [
             {'text': msg_text(t, att_body, has_att_join), 'from_me': bool(fm), 'date': fmt(apple_ts(d))}
-            for t, fm, d, _ca, att_body, has_att_join in display_rows
+            for t, fm, d, _ca, att_body, has_att_join in reversed(rows[:5])
         ]
 
         conversations.append({
@@ -462,11 +418,14 @@ def main():
             'is_group':          is_group,
             'group_name':        display_name if is_group else None,
             'category':          categorize(primary, contact_name, in_contacts, msg_list, msg_count_lookback),
+            'latest_event_at':   latest_event_at,
+            'latest_event_text': latest_event_preview,
+            'latest_event_from_me': bool(latest_event_from_me),
+            'recent_events':     recent_events,
             'last_message_at':   last_signal_at,
             'last_message_text': last_signal_preview,
             'i_replied_last':    bool(last_signal_from_me),
             'message_count_30d': msg_count_lookback,
-            'messages':          list(reversed(display_msgs)),   # chronological preview window
             'messages':          list(reversed(msg_list[:5])),   # chronological preview window
         })
 
