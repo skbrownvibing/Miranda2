@@ -2,11 +2,18 @@
 
 ## Current development cycle
 
+### 2026-03-28 — Fix: messages with link previews show as "Attachment" instead of actual text
+- Root cause: when an iMessage contains a URL, iMessage stores the actual message text in `m.attributedBody` (an NSKeyedArchiver binary blob) and leaves `m.text = NULL`. The exporter was only reading `m.text`, so it saw NULL, saw a real attachment join (the link preview card), and wrote "📎 Attachment" — even though the person sent a real text message.
+- Added `extract_attributed_body()` helper that decodes the NSAttributedString binary plist and returns the plain text string.
+- Updated `row_text()` to try `m.text` first and fall back to `attributedBody`.
+- Updated both SQL queries to select `m.attributedBody`.
+- Updated `relevant_rows` filter and all downstream row processing to use the resolved text.
+- Re-export required to see correct message previews for affected conversations.
+
 ### 2026-03-27 — Fix old attachment rows in contact message preview
-- Fixed the core bug where old photo/attachment rows from months ago appeared in the contact bubble view alongside recent text messages.
-- In the exporter: when building the `messages` display array, attachment-only rows that predate the most recent text message are now excluded. If someone sent photos two months ago and texted recently, only the recent messages are included in the preview window.
-- In the frontend: `recentPreviewMessages` applies the same filter on existing JSON data so users do not need to re-export to benefit from the fix.
-- Conversations where all messages are attachments (no text ever) are unaffected — attachments still show in that case.
+- Fixed the case where old photo/attachment rows from months ago appeared alongside a recent text message in the bubble view.
+- Exporter: attachment-only rows that predate the most recent text message in the window are excluded from `messages`.
+- Frontend: `recentPreviewMessages` applies the same filter on existing JSON so users do not need to re-export.
 
 
 ### 2026-03-27 — Product definition refresh
