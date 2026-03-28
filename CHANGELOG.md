@@ -9,12 +9,18 @@
 - Increased score label visual emphasis by moving it to the left of the score ring, enlarging typography, and removing the duplicate numeric value from the label so only the big ring number shows the score.
 - Hardened score-label rendering to strip any trailing `(number)` suffix if present, ensuring text like `bad texter 😬` never re-shows as `bad texter 😬 (34)`.
 - Centralized score-label cleanup in a dedicated helper to consistently enforce label-only rendering across score updates.
+### 2026-03-28 — Fix: messages with link previews show as "Attachment" instead of actual text
+- Root cause: when an iMessage contains a URL, iMessage stores the actual message text in `m.attributedBody` (an NSKeyedArchiver binary blob) and leaves `m.text = NULL`. The exporter was only reading `m.text`, so it saw NULL, saw a real attachment join (the link preview card), and wrote "📎 Attachment" — even though the person sent a real text message.
+- Added `extract_attributed_body()` helper that decodes the NSAttributedString binary plist and returns the plain text string.
+- Updated `row_text()` to try `m.text` first and fall back to `attributedBody`.
+- Updated both SQL queries to select `m.attributedBody`.
+- Updated `relevant_rows` filter and all downstream row processing to use the resolved text.
+- Re-export required to see correct message previews for affected conversations.
 
 ### 2026-03-27 — Fix old attachment rows in contact message preview
-- Fixed the core bug where old photo/attachment rows from months ago appeared in the contact bubble view alongside recent text messages.
-- In the exporter: when building the `messages` display array, attachment-only rows that predate the most recent text message are now excluded. If someone sent photos two months ago and texted recently, only the recent messages are included in the preview window.
-- In the frontend: `recentPreviewMessages` applies the same filter on existing JSON data so users do not need to re-export to benefit from the fix.
-- Conversations where all messages are attachments (no text ever) are unaffected — attachments still show in that case.
+- Fixed the case where old photo/attachment rows from months ago appeared alongside a recent text message in the bubble view.
+- Exporter: attachment-only rows that predate the most recent text message in the window are excluded from `messages`.
+- Frontend: `recentPreviewMessages` applies the same filter on existing JSON so users do not need to re-export.
 
 
 ### 2026-03-27 — Product definition refresh
@@ -25,6 +31,8 @@
 - Collapsed the score history/trend panel by default and added a Show/Hide score history toggle.
 - Fixed Action Needed previews so attachments are only shown when they are inside the same last-5-message preview window (older attachments are no longer pulled into the preview).
 - Added a new top-level Other texts section between Action needed and Auto-filtered texts, and limited Auto-filtered texts to Spam and Logistics only.
+- Fixed Other texts routing to use the same uncategorized dataset as the previous Other review bucket.
+- Updated Other texts to apply the same global timeline window and use expandable row behavior consistent with Action needed.
 - Fixed Other texts routing to read the uncategorized bucket directly rather than routing through review panel logic, preventing accidental broadening or narrowing from changes to shared helpers.
 - Hide the Other texts section entirely when there are no uncategorized conversations.
 

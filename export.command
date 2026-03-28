@@ -16,7 +16,7 @@ if ! command -v python3 &>/dev/null; then
 fi
 
 python3 <<'PYTHON_EOF'
-import sqlite3, json, os, re, glob, sys
+import sqlite3, json, os, re, glob, sys, plistlib
 from datetime import datetime, timezone, timedelta
 
 APPLE_EPOCH      = datetime(2001, 1, 1, tzinfo=timezone.utc)
@@ -45,6 +45,82 @@ def norm_phone(p):
     if len(d) == 11 and d[0] == '1':
         d = d[1:]
     return d
+
+def _uid_int(obj):
+    """Return the integer index from a plistlib.UID or a {'CF$UID': N} dict."""
+    if isinstance(obj, plistlib.UID):
+        return obj.data
+    if isinstance(obj, dict):
+        return obj.get('CF$UID')
+    return None
+
+# One-time diagnostic: print the raw plist structure of the first blob we fail
+# to parse, so we can see what's actually in the database.
+_att_body_diag_done = False
+
+def extract_attributed_body(blob):
+    """Pull plain text from an NSKeyedArchiver-encoded NSAttributedString blob."""
+    global _att_body_diag_done
+    if not blob:
+        return None
+    try:
+        plist = plistlib.loads(bytes(blob))
+        objects = plist.get('$objects', [])
+
+        # ── Structured path: NSKeyedArchiver → NSAttributedString → NSString ──
+        try:
+            top_ref  = plist.get('$top', {}).get('root')
+            top_idx  = _uid_int(top_ref)
+            if top_idx is not None:
+                top_obj = objects[top_idx]
+                if isinstance(top_obj, dict):
+                    ns_str_idx = _uid_int(top_obj.get('NSString'))
+                    if ns_str_idx is not None:
+                        str_obj = objects[ns_str_idx]
+                        if isinstance(str_obj, str):
+                            s = str_obj.strip()
+                            if s:
+                                return s
+                        if isinstance(str_obj, dict):
+                            s = str(str_obj.get('NS.string', '')).strip()
+                            if s:
+                                return s
+        except Exception:
+            pass
+
+        # ── Fallback: first non-metadata string in the objects array ──
+        # Class names and iMessage keys that are never message content:
+        _meta = {
+            '$null', 'NSString', 'NSMutableString', 'NSAttributedString',
+            'NSMutableAttributedString', 'NSColor', 'NSFont', 'NSParagraphStyle',
+            'NSValue', 'NSNumber', 'NSObject', 'NSData', 'NSArray',
+            'NSMutableArray', 'NSDictionary', 'NSMutableDictionary',
+            '__kIMMessagePartAttributeName', '__kIMDataDetectedAttributeName',
+            '__kIMTapbackAttributeName', 'NSOriginalFont', 'NSShadow',
+        }
+        for obj in objects:
+            if isinstance(obj, str):
+                s = obj.strip()
+                if (s and s not in _meta
+                        and not s.startswith('NS')
+                        and not s.startswith('UI')
+                        and not s.startswith('__')
+                        and not s.startswith('$')):
+                    return s
+
+        # ── Diagnostic (runs once): print structure to help debug ──
+        if not _att_body_diag_done:
+            _att_body_diag_done = True
+            print("  [diag] attributedBody parse: structured path and fallback both failed")
+            print(f"  [diag] $top: {plist.get('$top')}")
+            print(f"  [diag] first 6 objects: {objects[:6]}")
+
+    except Exception as e:
+        if not _att_body_diag_done:
+            _att_body_diag_done = True
+            print(f"  [diag] attributedBody plistlib.loads failed: {e}")
+            print(f"  [diag] blob prefix (hex): {bytes(blob)[:16].hex()}")
+    return None
 
 # ── Contacts ──────────────────────────────────────────────────────────────────
 
@@ -234,6 +310,7 @@ def main():
                 m.is_from_me,
                 m.date,
                 m.cache_has_attachments,
+                m.attributedBody,
                 EXISTS(
                     SELECT 1
                     FROM message_attachment_join maj
@@ -256,6 +333,7 @@ def main():
                     m.is_from_me,
                     m.date,
                     m.cache_has_attachments,
+                    m.attributedBody,
                     EXISTS(
                         SELECT 1
                         FROM message_attachment_join maj
@@ -273,19 +351,31 @@ def main():
         if not rows:
             continue
 
-        def msg_text(t, has_attachment_join):
+        def row_text(t, att_body):
+            """Resolve the plain text for a message row.
+
+            m.text is NULL for messages that contain a link preview or use
+            iOS 16+ styled text — the content lives in m.attributedBody
+            instead.  Always try m.text first; fall back to attributedBody.
+            """
             trimmed = (t or '').strip()
             if trimmed:
                 return trimmed
+            return extract_attributed_body(att_body)
+
+        def msg_text(t, att_body, has_attachment_join):
+            resolved = row_text(t, att_body)
+            if resolved:
+                return resolved
             return '📎 Attachment' if has_attachment_join else ''
 
         # Keep only trustworthy conversational rows:
-        # - non-empty text after trimming
+        # - non-empty resolved text (m.text or attributedBody)
         # - OR rows with confirmed message↔attachment linkage
         relevant_rows = [
-            (t, fm, d, cache_att, has_att_join)
-            for t, fm, d, cache_att, has_att_join in rows
-            if ((t or '').strip() != '') or bool(has_att_join)
+            (t, fm, d, cache_att, att_body, has_att_join)
+            for t, fm, d, cache_att, att_body, has_att_join in rows
+            if row_text(t, att_body) or bool(has_att_join)
         ]
         debug_summary['rows_rejected'] += (len(rows) - len(relevant_rows))
 
@@ -293,36 +383,53 @@ def main():
             continue
 
         msg_list = [
-            {'text': msg_text(t, has_att_join), 'from_me': bool(fm), 'date': fmt(apple_ts(d))}
-            for t, fm, d, _cache_att, has_att_join in relevant_rows
+            {'text': msg_text(t, att_body, has_att_join), 'from_me': bool(fm), 'date': fmt(apple_ts(d))}
+            for t, fm, d, _cache_att, att_body, has_att_join in relevant_rows
         ]
 
         # Recent context window for action-needed logic and last-message signal.
         recent_relevant_rows = relevant_rows[:5]
         last_signal_row = recent_relevant_rows[0]
-        last_signal_text, last_signal_from_me, last_signal_date, _last_signal_cache_att, last_signal_has_attachment_join = last_signal_row
+        last_signal_text, last_signal_from_me, last_signal_date, _last_signal_cache_att, last_signal_att_body, last_signal_has_attachment_join = last_signal_row
 
-        msg_count_lookback = sum(1 for _, _, d, _, _ in relevant_rows if d > cut_90d)
+        msg_count_lookback = sum(1 for _, _, d, _, _, _ in relevant_rows if d > cut_90d)
         last_signal_at = fmt(apple_ts(last_signal_date))
-        last_signal_preview = msg_text(last_signal_text, last_signal_has_attachment_join)
+        last_signal_preview = msg_text(last_signal_text, last_signal_att_body, last_signal_has_attachment_join)
 
-        # For the display preview window: don't surface attachment-only rows that
-        # predate the most recent text message. If someone sent photos months ago
-        # and then texted recently, the bubble view should show the text, not the
-        # old attachment placeholders.
-        latest_text_ts = next(
-            (d for t, fm, d, _ca, _ha in relevant_rows if (t or '').strip()),
-            None
-        )
-        display_rows = [
-            r for r in relevant_rows
-            if (r[0] or '').strip()      # has real text — always include
-            or latest_text_ts is None    # no text at all — include all attachments
-            or r[2] >= latest_text_ts    # attachment is at least as recent as latest text
-        ][:5]
+        # Build display messages so at least one text row is always surfaced.
+        #
+        # Case A – recent window has text: drop attachment-only rows that predate
+        #   the most recent text so stale photo rows don't crowd the preview.
+        # Case B – recent window is all genuine attachments: pull the most recent
+        #   text from further back as conversational context.
+        recent_5 = relevant_rows[:5]
+        has_text_in_recent = any(row_text(r[0], r[4]) for r in recent_5)
+
+        if has_text_in_recent:
+            latest_text_ts = next(
+                (d for t, fm, d, _ca, att_body, _ha in relevant_rows if row_text(t, att_body)),
+                None
+            )
+            display_rows = [
+                r for r in relevant_rows
+                if row_text(r[0], r[4])      # has real text — always include
+                or latest_text_ts is None    # no text at all — keep all attachments
+                or r[2] >= latest_text_ts    # attachment at least as recent as latest text
+            ][:5]
+        else:
+            # All-attachment window — pull in most recent older text as context
+            older_text = next(
+                (r for r in relevant_rows[5:] if row_text(r[0], r[4])),
+                None
+            )
+            if older_text:
+                display_rows = list(recent_5[:4]) + [older_text]
+            else:
+                display_rows = list(recent_5)
+
         display_msgs = [
-            {'text': msg_text(t, has_att_join), 'from_me': bool(fm), 'date': fmt(apple_ts(d))}
-            for t, fm, d, _ca, has_att_join in display_rows
+            {'text': msg_text(t, att_body, has_att_join), 'from_me': bool(fm), 'date': fmt(apple_ts(d))}
+            for t, fm, d, _ca, att_body, has_att_join in display_rows
         ]
 
         conversations.append({
