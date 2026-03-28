@@ -895,6 +895,7 @@ function renderScore(){
   document.getElementById('score-number').style.color=color;
   const sum=document.getElementById('score-summary');
   sum.textContent=scoreLabel(s.score);
+  sum.textContent=`${scoreLabel(s.score)} (${s.score})`;
   document.getElementById('contrib-rate').textContent=s.rate+'%';
   document.getElementById('contrib-rate').style.color=scoreColor(s.rate);
   document.getElementById('contrib-rate-bar').style.width=s.rate+'%';
