@@ -98,6 +98,10 @@ body[data-theme="dark"] {
   border-radius:8px;background:var(--surface2);color:var(--text2);cursor:pointer;outline:none;
 }
 .top-bar-actions button:hover { background:var(--border);color:var(--text); }
+.last-updated {
+  font-size:12px;color:var(--text3);white-space:nowrap;
+}
+.last-updated.stale { opacity:0.72; }
 .theme-toggle {
   min-width:86px;
 }
@@ -362,6 +366,7 @@ body[data-theme="dark"] .saved-prompt button:hover { color:#fff; }
         <option value="90">Last 3 months</option>
         <option value="">All time</option>
       </select>
+      <span class="last-updated" id="last-updated" style="display:none"></span>
       <button onclick="resetData()">New export</button>
     </div>
   </div>
@@ -496,6 +501,7 @@ const S = {
   trendOpen: false, theme: 'light',
   nameSignalFirst: '', nameSignalEditing: false,
   filter: { timelineAfter: null, timelineBefore: null },
+  exportTimestamp: null, exportTimestampSource: null, lastUpdatedTimer: null,
 };
 const OVERRIDE_KEY='miranda2_overrides_v1', DISMISS_KEY='miranda2_dismissed_v1',
       DATA_KEY='miranda2_data_v1', META_KEY='miranda2_meta_v1', HISTORY_KEY='miranda2_history_v1',
@@ -553,15 +559,70 @@ function loadData(data,save){
   document.getElementById('app').classList.add('loaded');
   if(save){try{localStorage.setItem(DATA_KEY,JSON.stringify(data));
     localStorage.setItem(META_KEY,JSON.stringify({savedAt:new Date().toISOString(),count:S.conversations.length}));}catch(_){}}
+  setLastUpdatedTimestamp(data);
   handleTimeline(document.getElementById('timeline-filter').value);
 }
 
 function resetData(){
   S.conversations=[];S.selectedId=null;S.newIds.clear();
+  clearLastUpdatedTimestamp();
   document.getElementById('app').classList.remove('loaded');
   document.getElementById('drop-screen').style.display='flex';
   document.getElementById('drop-error').style.display='none';
   document.getElementById('file-input').value='';checkSavedData();
+}
+
+function setLastUpdatedTimestamp(data){
+  let iso=(data&&data.exported_at)||null,source='exported_at';
+  if(!iso){
+    try{
+      const m=JSON.parse(localStorage.getItem(META_KEY));
+      if(m&&m.savedAt){iso=m.savedAt;source='savedAt';}
+    }catch(_){}
+  }
+  if(!iso){clearLastUpdatedTimestamp();return;}
+  const ts=new Date(iso);
+  if(Number.isNaN(ts.getTime())){clearLastUpdatedTimestamp();return;}
+  S.exportTimestamp=ts.toISOString();
+  S.exportTimestampSource=source;
+  renderLastUpdated();
+  if(S.lastUpdatedTimer)clearInterval(S.lastUpdatedTimer);
+  S.lastUpdatedTimer=setInterval(renderLastUpdated,60000);
+}
+
+function clearLastUpdatedTimestamp(){
+  if(S.lastUpdatedTimer){clearInterval(S.lastUpdatedTimer);S.lastUpdatedTimer=null;}
+  S.exportTimestamp=null;S.exportTimestampSource=null;
+  const el=document.getElementById('last-updated');
+  if(!el)return;
+  el.style.display='none';
+  el.textContent='';
+  el.title='';
+  el.classList.remove('stale');
+}
+
+function relativeLastUpdated(d){
+  const ms=Date.now()-new Date(d).getTime();
+  const m=Math.floor(ms/60000);
+  if(m<1)return'just now';
+  if(m<60)return`${m}m ago`;
+  const h=Math.floor(m/60);
+  if(h<24)return`${h}h ago`;
+  return`${Math.floor(h/24)}d ago`;
+}
+
+function renderLastUpdated(){
+  if(!S.exportTimestamp)return;
+  const el=document.getElementById('last-updated');
+  if(!el)return;
+  const ts=new Date(S.exportTimestamp);
+  if(Number.isNaN(ts.getTime())){clearLastUpdatedTimestamp();return;}
+  const rel=relativeLastUpdated(S.exportTimestamp);
+  el.textContent=`Last updated: ${rel}`;
+  el.title=ts.toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+  const ageHrs=(Date.now()-ts.getTime())/3600000;
+  if(ageHrs>24)el.classList.add('stale');else el.classList.remove('stale');
+  el.style.display='inline';
 }
 
 // ── Recategorize ─────────────────────────────────────────────────────────────

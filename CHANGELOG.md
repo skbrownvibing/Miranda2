@@ -8,6 +8,13 @@
 - Follow-up: preview selection now reads from the full exported `messages` array before taking the last 2 displayable rows, so it does not depend on an extra UI-side `slice(-5)` window.
 - Follow-up: added explicit `PREVIEW_INCLUDE_ATTACHMENT` toggle and `previewTextIncluded()` helper to make collapsed-preview inclusion rules intentional and easy to adjust.
 - Result: previews now reflect real thread chronology (including same-sender pairs like Them→Them or You→You) without forcing one line per sender.
+### 2026-03-28 — Top-bar “Last updated” freshness indicator
+- Added a minimal `Last updated: …` label in the top-right action area next to **New export**.
+- Uses `exported_at` from the loaded JSON as the primary freshness source, with `savedAt` fallback only when `exported_at` is missing.
+- Keeps the default UI to a single relative timestamp and shows the exact local timestamp on hover.
+- Updates the relative label dynamically over time (minutes → hours → days).
+- Applies subtle visual de-emphasis when the loaded export is older than 24 hours.
+- Hides the indicator when no data is loaded.
 
 ### 2026-03-28 — Fix: score now updates when non-contact threads leave Needs Action
 - Root cause: score computation filtered out threads without `contact_name`, while Needs Action state and other stats already include eligible unsaved-number 1:1 threads.
