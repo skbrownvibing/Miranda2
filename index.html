@@ -840,7 +840,7 @@ function generateSuggestedReply(context){
 
   // Stub generation behavior (no external AI):
   if(/[?]\s*$/.test(lastText)){
-    return { skipped:false, reply:'happy to chat, what works for you?' };
+    return { skipped:false, reply:'yes, that works for me' };
   }
 
   return { skipped:true, reply:SKIP_MSG };
@@ -1170,6 +1170,7 @@ async function generateReplyForThread(id){
   const thread=S.conversations.find(c=>c.id===id);
   if(!thread)return;
   if(thread.is_group)return; // strict 1:1 only safeguard
+  if(!actionable().some(c=>c.id===id))return; // Needs Action threads only
 
   const st=getReplyAssistState(id);
   if(st.isGenerating||st.suggestedReply||st.wasSkipped)return; // no regenerate
