@@ -201,6 +201,12 @@ def main():
     chats = cur.fetchall()
 
     conversations = []
+    debug_summary = {
+        'rows_with_cache_has_attachments': 0,
+        'rows_confirmed_by_attachment_join': 0,
+        'rows_emitted_as_attachment': 0,
+        'rows_rejected': 0,
+    }
 
     for chat_id, guid, chat_identifier, display_name, style in chats:
         cur.execute("""
@@ -281,6 +287,7 @@ def main():
             for t, fm, d, cache_att, has_att_join in rows
             if ((t or '').strip() != '') or bool(has_att_join)
         ]
+        debug_summary['rows_rejected'] += (len(rows) - len(relevant_rows))
 
         if not relevant_rows:
             continue
@@ -329,7 +336,7 @@ def main():
             'last_message_text': last_signal_preview,
             'i_replied_last':    bool(last_signal_from_me),
             'message_count_30d': msg_count_lookback,
-            'messages':          list(reversed(display_msgs)),   # chronological, last 5
+            'messages':          list(reversed(msg_list[:5])),   # chronological preview window
         })
 
     conn.close()
@@ -348,6 +355,7 @@ def main():
         'app':         'Miranda2',
         'version':     '1.0',
         'exported_at': now.isoformat(),
+        'debug_summary': debug_summary,
         'conversations': conversations,
     }
 
@@ -368,6 +376,12 @@ def main():
     print(f"    Delivery:       {d}")
     print(f"    Spam:           {s}")
     print(f"    Uncategorized:  {u}")
+    print(f"")
+    print(f"  Debug summary:")
+    print(f"    rows with cache_has_attachments:    {debug_summary['rows_with_cache_has_attachments']}")
+    print(f"    rows confirmed by attachment join:  {debug_summary['rows_confirmed_by_attachment_join']}")
+    print(f"    rows emitted as 📎 Attachment:      {debug_summary['rows_emitted_as_attachment']}")
+    print(f"    rows rejected:                      {debug_summary['rows_rejected']}")
     print(f"")
     print(f"  File: {out_path}")
     print(f"")
