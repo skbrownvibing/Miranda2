@@ -46,6 +46,14 @@ def norm_phone(p):
         d = d[1:]
     return d
 
+def _uid_int(obj):
+    """Return the integer index from a plistlib.UID or a {'CF$UID': N} dict."""
+    if isinstance(obj, plistlib.UID):
+        return obj.data          # Python 3: UID objects expose .data
+    if isinstance(obj, dict):
+        return obj.get('CF$UID')
+    return None
+
 def extract_attributed_body(blob):
     """Pull plain text from an NSKeyedArchiver-encoded NSAttributedString blob.
 
@@ -58,15 +66,27 @@ def extract_attributed_body(blob):
         return None
     try:
         plist = plistlib.loads(bytes(blob))
-        top_uid = plist['$top']['root']['CF$UID']
         objects = plist['$objects']
-        top_obj = objects[top_uid]
-        if isinstance(top_obj, dict):
-            ns_str = top_obj.get('NSString')
-            if isinstance(ns_str, dict):
-                text = objects[ns_str['CF$UID']]
-                if isinstance(text, str):
-                    return text.strip() or None
+
+        # Navigate NSKeyedArchiver: $top.root → NSAttributedString → NSString
+        top_idx = _uid_int(plist['$top']['root'])
+        if top_idx is None:
+            return None
+        top_obj = objects[top_idx]
+        if not isinstance(top_obj, dict):
+            return None
+
+        ns_str_idx = _uid_int(top_obj.get('NSString'))
+        if ns_str_idx is None:
+            return None
+        str_obj = objects[ns_str_idx]
+
+        # The string value is either a plain Python str, or a dict with 'NS.string'
+        if isinstance(str_obj, str):
+            return str_obj.strip() or None
+        if isinstance(str_obj, dict):
+            text = str_obj.get('NS.string', '')
+            return text.strip() or None
     except Exception:
         pass
     return None
