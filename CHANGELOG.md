@@ -6,6 +6,7 @@
 - Added score tier labels shown in lowercase before the numeric score using the format `label (score)`, with ranges from `actively ghosting 👻` through `top 5% responder 🏆`.
 - Switched the app to light mode by default and tuned key surfaces (backgrounds, cards, text, borders, and inputs) for light-mode-first readability.
 - Added a top-bar dark mode toggle with localStorage persistence so users can manually switch themes and keep their preference on reload.
+- Increased score label visual emphasis by moving it to the left of the score ring, enlarging typography, and removing the duplicate numeric value from the label so only the big ring number shows the score.
 ### 2026-03-28 — Fix: messages with link previews show as "Attachment" instead of actual text
 - Root cause: when an iMessage contains a URL, iMessage stores the actual message text in `m.attributedBody` (an NSKeyedArchiver binary blob) and leaves `m.text = NULL`. The exporter was only reading `m.text`, so it saw NULL, saw a real attachment join (the link preview card), and wrote "📎 Attachment" — even though the person sent a real text message.
 - Added `extract_attributed_body()` helper that decodes the NSAttributedString binary plist and returns the plain text string.
