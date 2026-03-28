@@ -2,6 +2,39 @@
 
 ## Current development cycle
 
+### 2026-03-28 — Compact score history card header
+- Reduced the collapsed Score history card height by tightening card padding.
+- Moved the collapsed header content to a single row so `Score history` and `Last score` sit side-by-side for a compact footprint.
+- Added top spacing before expanded trend details so the open state still breathes.
+### 2026-03-28 — Fix: contacts incorrectly shown as unresponded when recent texts use attributedBody
+- Root cause: `i_replied_last` and `last_message_at` were derived from `relevant_rows[0]` (the most recent *parseable* row) rather than `rows[0]` (the actual most-recent DB row). When `m.text = NULL` and `attributedBody` parsing fails, recent text messages were dropped from `relevant_rows`, making old attachment rows appear as the last signal — causing fully-replied conversations to show as unresponded.
+- Fixed by reading timing and reply-direction signals from `rows[0]` (actual last message) and only using `relevant_rows[0]` for the preview text.
+- Updated `relevant_rows` filter to also retain rows with a non-NULL `attributedBody` blob (real messages even if unparseable) so they contribute to the reply signal.
+- Updated `msg_text()` to render `'💬'` instead of empty string when `attributedBody` is present but unparseable, so the preview shows something rather than nothing.
+- Updated `messages` preview array to use `display_msgs` (filtered display rows) instead of raw `msg_list[:5]`.
+
+### 2026-03-28 — Light mode default, dark mode toggle, and score labels
+- Added score tier labels shown in lowercase before the numeric score using the format `label (score)`, with ranges from `actively ghosting 👻` through `top 5% responder 🏆`.
+- Switched the app to light mode by default and tuned key surfaces (backgrounds, cards, text, borders, and inputs) for light-mode-first readability.
+- Added a top-bar dark mode toggle with localStorage persistence so users can manually switch themes and keep their preference on reload.
+- Increased score label visual emphasis by moving it to the left of the score ring, enlarging typography, and removing the duplicate numeric value from the label so only the big ring number shows the score.
+- Hardened score-label rendering to strip any trailing `(number)` suffix if present, ensuring text like `bad texter 😬` never re-shows as `bad texter 😬 (34)`.
+- Centralized score-label cleanup in a dedicated helper to consistently enforce label-only rendering across score updates.
+- Fixed `renderScore()` reassigning `score-summary` multiple times; it now sets the cleaned label once so `(${score})` is not reintroduced.
+### 2026-03-28 — Fix: messages with link previews show as "Attachment" instead of actual text
+- Root cause: when an iMessage contains a URL, iMessage stores the actual message text in `m.attributedBody` (an NSKeyedArchiver binary blob) and leaves `m.text = NULL`. The exporter was only reading `m.text`, so it saw NULL, saw a real attachment join (the link preview card), and wrote "📎 Attachment" — even though the person sent a real text message.
+- Added `extract_attributed_body()` helper that decodes the NSAttributedString binary plist and returns the plain text string.
+- Updated `row_text()` to try `m.text` first and fall back to `attributedBody`.
+- Updated both SQL queries to select `m.attributedBody`.
+- Updated `relevant_rows` filter and all downstream row processing to use the resolved text.
+- Re-export required to see correct message previews for affected conversations.
+
+### 2026-03-27 — Fix old attachment rows in contact message preview
+- Fixed the case where old photo/attachment rows from months ago appeared alongside a recent text message in the bubble view.
+- Exporter: attachment-only rows that predate the most recent text message in the window are excluded from `messages`.
+- Frontend: `recentPreviewMessages` applies the same filter on existing JSON so users do not need to re-export.
+
+
 ### 2026-03-27 — Product definition refresh
 - Added a repo PRD documenting the current product scope, decision rules, scoring model, and future directions.
 - Standardized product framing around responsiveness tracking rather than inbox triage.
@@ -13,6 +46,8 @@
 - Fixed Other texts routing to use the same uncategorized dataset as the previous Other review bucket.
 - Updated Other texts to apply the same global timeline window and use expandable row behavior consistent with Action needed.
 - Redefined Other texts to show unknown 1:1 senders in timeline that are not Action needed and not Spam/Logistics.
+- Fixed Other texts routing to read the uncategorized bucket directly rather than routing through review panel logic, preventing accidental broadening or narrowing from changes to shared helpers.
+- Hide the Other texts section entirely when there are no uncategorized conversations.
 
 ### v0.11 — Category Review Panel (Mar 26, 2026)
 - Added a review workflow for auto-filtered texts below the action list.
