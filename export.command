@@ -374,29 +374,24 @@ def main():
                 return '💬'
             return ''
 
-        # Keep only trustworthy conversational rows for response-status logic:
-        # - non-empty resolved text (m.text or attributedBody)
-        # - OR rows with confirmed message↔attachment linkage
-        relevant_rows = [
+        # All rows as display messages — no filtering so we always show the true latest 5.
+        msg_list = [
+            {'text': msg_text(t, att_body, has_att_join), 'from_me': bool(fm), 'date': fmt(apple_ts(d))}
+            for t, fm, d, _cache_att, att_body, has_att_join in rows
+        ]
+
+        # Response-status signal: prefer rows with parseable text or confirmed attachment,
+        # but fall back to raw rows so we never skip a conversation entirely.
+        signal_rows = [
             (t, fm, d, cache_att, att_body, has_att_join)
             for t, fm, d, cache_att, att_body, has_att_join in rows
             if row_text(t, att_body) or bool(has_att_join)
-        ]
-        debug_summary['rows_rejected'] += (len(rows) - len(relevant_rows))
+        ] or rows
+        debug_summary['rows_rejected'] += (len(rows) - len(signal_rows))
 
-        if not relevant_rows:
-            continue
-
-        msg_list = [
-            {'text': msg_text(t, att_body, has_att_join), 'from_me': bool(fm), 'date': fmt(apple_ts(d))}
-            for t, fm, d, _cache_att, att_body, has_att_join in relevant_rows
-        ]
-
-        # Response-status signal remains separate from literal display chronology.
-        recent_relevant_rows = relevant_rows[:5]
-        last_signal_row = recent_relevant_rows[0]
+        last_signal_row = signal_rows[0]
         last_signal_text, last_signal_from_me, last_signal_date, _last_signal_cache_att, last_signal_att_body, last_signal_has_attachment_join = last_signal_row
-        msg_count_lookback = sum(1 for _, _, d, _, _, _ in relevant_rows if d > cut_90d)
+        msg_count_lookback = sum(1 for _, _, d, _, _, _ in signal_rows if d > cut_90d)
         last_signal_at = fmt(apple_ts(last_signal_date))
         last_signal_preview = msg_text(last_signal_text, last_signal_att_body, last_signal_has_attachment_join)
 
