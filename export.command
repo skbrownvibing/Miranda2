@@ -49,46 +49,77 @@ def norm_phone(p):
 def _uid_int(obj):
     """Return the integer index from a plistlib.UID or a {'CF$UID': N} dict."""
     if isinstance(obj, plistlib.UID):
-        return obj.data          # Python 3: UID objects expose .data
+        return obj.data
     if isinstance(obj, dict):
         return obj.get('CF$UID')
     return None
 
-def extract_attributed_body(blob):
-    """Pull plain text from an NSKeyedArchiver-encoded NSAttributedString blob.
+# One-time diagnostic: print the raw plist structure of the first blob we fail
+# to parse, so we can see what's actually in the database.
+_att_body_diag_done = False
 
-    iMessage stores message text in m.attributedBody (rather than m.text) when
-    a message contains a link preview, uses iOS 16+ styled text, or was synced
-    from a device running a newer OS.  m.text is NULL in those cases, so we
-    must decode the blob to recover the actual message content.
-    """
+def extract_attributed_body(blob):
+    """Pull plain text from an NSKeyedArchiver-encoded NSAttributedString blob."""
+    global _att_body_diag_done
     if not blob:
         return None
     try:
         plist = plistlib.loads(bytes(blob))
-        objects = plist['$objects']
+        objects = plist.get('$objects', [])
 
-        # Navigate NSKeyedArchiver: $top.root → NSAttributedString → NSString
-        top_idx = _uid_int(plist['$top']['root'])
-        if top_idx is None:
-            return None
-        top_obj = objects[top_idx]
-        if not isinstance(top_obj, dict):
-            return None
+        # ── Structured path: NSKeyedArchiver → NSAttributedString → NSString ──
+        try:
+            top_ref  = plist.get('$top', {}).get('root')
+            top_idx  = _uid_int(top_ref)
+            if top_idx is not None:
+                top_obj = objects[top_idx]
+                if isinstance(top_obj, dict):
+                    ns_str_idx = _uid_int(top_obj.get('NSString'))
+                    if ns_str_idx is not None:
+                        str_obj = objects[ns_str_idx]
+                        if isinstance(str_obj, str):
+                            s = str_obj.strip()
+                            if s:
+                                return s
+                        if isinstance(str_obj, dict):
+                            s = str(str_obj.get('NS.string', '')).strip()
+                            if s:
+                                return s
+        except Exception:
+            pass
 
-        ns_str_idx = _uid_int(top_obj.get('NSString'))
-        if ns_str_idx is None:
-            return None
-        str_obj = objects[ns_str_idx]
+        # ── Fallback: first non-metadata string in the objects array ──
+        # Class names and iMessage keys that are never message content:
+        _meta = {
+            '$null', 'NSString', 'NSMutableString', 'NSAttributedString',
+            'NSMutableAttributedString', 'NSColor', 'NSFont', 'NSParagraphStyle',
+            'NSValue', 'NSNumber', 'NSObject', 'NSData', 'NSArray',
+            'NSMutableArray', 'NSDictionary', 'NSMutableDictionary',
+            '__kIMMessagePartAttributeName', '__kIMDataDetectedAttributeName',
+            '__kIMTapbackAttributeName', 'NSOriginalFont', 'NSShadow',
+        }
+        for obj in objects:
+            if isinstance(obj, str):
+                s = obj.strip()
+                if (s and s not in _meta
+                        and not s.startswith('NS')
+                        and not s.startswith('UI')
+                        and not s.startswith('__')
+                        and not s.startswith('$')):
+                    return s
 
-        # The string value is either a plain Python str, or a dict with 'NS.string'
-        if isinstance(str_obj, str):
-            return str_obj.strip() or None
-        if isinstance(str_obj, dict):
-            text = str_obj.get('NS.string', '')
-            return text.strip() or None
-    except Exception:
-        pass
+        # ── Diagnostic (runs once): print structure to help debug ──
+        if not _att_body_diag_done:
+            _att_body_diag_done = True
+            print("  [diag] attributedBody parse: structured path and fallback both failed")
+            print(f"  [diag] $top: {plist.get('$top')}")
+            print(f"  [diag] first 6 objects: {objects[:6]}")
+
+    except Exception as e:
+        if not _att_body_diag_done:
+            _att_body_diag_done = True
+            print(f"  [diag] attributedBody plistlib.loads failed: {e}")
+            print(f"  [diag] blob prefix (hex): {bytes(blob)[:16].hex()}")
     return None
 
 # ── Contacts ──────────────────────────────────────────────────────────────────
