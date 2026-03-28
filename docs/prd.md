@@ -1,238 +1,111 @@
 # PRD: Local-First iMessage Responsiveness Tracker for Mac
 
-## Overview
+## Overview  
+A local-first Mac app that helps users identify which 1:1 personal text conversations are still waiting on a reply, measure responsiveness over time, and make the process motivating and easy to return to.
 
-A local-first Mac app that helps users identify which 1:1 personal text conversations are still waiting on a reply, measure how responsive they are over time, and make the process feel motivating rather than stressful.
+## Problem  
+iMessage does not help users track response debt. Personal conversations get buried under logistics, spam, group chats, and noise, causing missed replies and poor visibility into responsiveness.
 
-## Problem
-
-iMessage is not designed to help users track response debt. Personal conversations get buried under logistics, spam, group chats, and low-priority noise, so users miss replies they intended to send and lose visibility into how responsive they actually are.
-
-## Target user
-
+## Target user  
 Mac users who text frequently, primarily use iMessage for personal communication, and want a lightweight way to see which 1:1 conversations are waiting on them.
 
-## Core value
+## Core value  
+The product shows which conversations are waiting on the user, measures reply behavior over time, helps reduce missed replies, and creates a simple, repeatable habit loop.
 
-The product makes texting responsiveness measurable and actionable by:
+## Current product  
+Two components:  
+1. Local Mac export script → normalized JSON  
+2. Local web app → action list, score, history  
 
-- showing which personal conversations are currently waiting on the user
-- measuring reply behavior over time
-- helping users reduce missed replies
-- making the process feel motivating, satisfying, and easy to return to
+No server, accounts, or cloud sync.
 
-## Current product
-
-The current product has two components:
-
-1. A local Mac export script that reads iMessage data and writes normalized JSON output
-2. A local web app that reads the exported JSON and computes an action list, responsiveness score, and historical trends
-
-The current product has no server, no user accounts, and no cloud sync. All data remains local to the user’s machine.
-
-## Core behaviors
-
-The app:
-- filters out conversations unlikely to reflect personal response debt
-- identifies 1:1 conversations where the latest relevant message is from the other person
-- ranks those conversations into an action list
-- computes a responsiveness score from historical reply behavior
-- shows score history and trends over time
-- lets users dismiss conversations that do not require a reply
+## Core behaviors  
+The app filters conversations using classification (spam, Automated, group chats), identifies 1:1 conversations where the latest normalized event is from the other person, ranks eligible conversations into an action list, computes a responsiveness score, shows score history, and allows dismissing conversations.
 
 ## Decision rules
 
-### 1:1 conversation
+### Normalized event  
+A normalized event is the canonical unit of conversation history. All chronology, latest-event display, and previews are based on normalized events. Includes all real conversation activity after export normalization (messages, attachments, etc.), regardless of parseability.
 
-A 1:1 conversation is a thread with exactly one other participant and no group-chat metadata.
+### 1:1 conversation  
+Exactly one other participant and no group metadata.
 
-### Relevant message
+### Waiting on you  
+A conversation is waiting on the user when it is a 1:1 conversation, the latest normalized event was sent by the other person, it is not excluded, and it is not dismissed. Filtering may be used for scoring logic but must not override the latest event.
 
-A relevant message is a message that counts toward conversational response debt.
+### Excluded conversations  
+Excluded from action list and scoring if it is a group chat, classified as spam, classified as Automated, or contains no normalized events outside spam/Automated classification. Exclusion does not affect chronological event data.
 
-Relevant messages exclude:
-- system-generated messages
-- reactions, tapbacks, and similar non-message events
-- messages classified as Automated
-- messages classified as spam
+### Automated classification  
+Automated includes delivery updates, rideshare notifications, appointment flows, reservations, verification messages, and other transactional system messages. These are excluded even if they request replies. Human logistics messages are not excluded. Classification is heuristic and user-overridable.
 
-### Waiting on you
+### Unsaved numbers  
+Conversations with unsaved participants are included. By default, eligible unsaved 1:1 conversations appear in **Other**; if waiting on the user they move to the action list; if spam/Automated they are excluded; manual overrides take precedence. Unsaved numbers can count toward scoring if eligible.
 
-A conversation is considered "waiting on you" when all of the following are true:
+### Dismissed conversations  
+Dismissed conversations are removed from the action list, do not count as unresolved, and reappear if a new incoming normalized event occurs.
 
-- it is a 1:1 conversation
-- the latest relevant message was sent by the other person
-- the conversation is not excluded from the action list
-- the conversation has not been manually dismissed
+### Manual overrides  
+User overrides take precedence until a new normalized event changes state.
 
-For MVP, the product assumes that a latest incoming relevant message may require a reply, even if that is imperfect.
+## Canonical data rules  
+- Latest event is always the newest normalized event and never derived from filtered or preview subsets  
+- Display, response state, and scoring are independent; display must not influence logic  
+- Preview is display-only and never used for scoring or response state  
+- Exporter defines message meaning; frontend only renders  
+- Score, action list, and stats use the same eligibility set  
+- Waiting-on-you is always derived from normalized events  
 
-### Excluded conversations
+## Scoring model  
+The responsiveness score is a 0–100 value computed over the currently selected time window using the same eligible conversation set as the action list.
 
-A conversation is excluded from the action list and excluded from scoring when any of the following are true:
+It combines three components:  
+- **Reply rate (40%)**: percentage of conversations you replied to when a reply was expected  
+- **Reply speed (30%)**: how quickly you reply on average  
+- **Open conversations penalty (30%)**: penalty for conversations currently waiting on you, with older ones weighted more heavily  
 
-- it is a group chat
-- it is classified as spam
-- it is classified as Automated
-- it contains no relevant conversational messages
+The final score is the weighted combination of these components scaled to 0–100. It excludes spam, Automated, group chats, and dismissed conversations, and must not depend on preview or display logic.
 
-### Automated classification
+## Score history  
+One score snapshot is stored per day.
 
-A conversation may be classified as Automated when its messages are primarily:
-- delivery updates
-- rideshare notifications
-- appointment reminders or scheduling flows
-- reservation confirmations
-- verification or authentication messages
-- other automated transactional messages that do not meaningfully reflect personal responsiveness
+## Anti-patterns to avoid  
+- deriving state from preview data  
+- redefining latest event from filtered subsets  
+- duplicating eligibility logic  
+- compensating for exporter issues in frontend  
+- using different datasets for display vs logic  
 
-Automated texts that ask for confirmation, such as replying with a number to confirm an appointment or reservation, should still be excluded.
+## Success criteria  
+Users can quickly identify conversations waiting on them, the score matches perceived responsiveness, repeated use reduces missed replies, users return frequently, and setup is simple.
 
-Human logistics messages are not excluded.
+## Constraints  
+Mac only, export-based (no live sync), heuristic classification.
 
-This classification is heuristic and may be overridden by the user.
+## Non-goals  
+Sending messages, building a messaging client, real-time sync, emotional interpretation of conversations.
 
-### Unsaved numbers
+## Edge cases  
+Multiple numbers per contact, reactions/attachments/non-standard events, missing contact names, mixed personal and automated threads, partial exports.
 
-Conversations with participants who are not saved as contacts are still eligible for the action list and scoring unless they are separately classified as spam or Automated.
+## Next priorities  
+- Suggested reply + Copy  
+- Easier refresh (no manual export)  
+- Pagination (10 threads at a time)  
+- Group chat inclusion  
+- Waiting on others  
+- Work vs personal inbox  
+- Needs Action / Other polish  
 
-### Dismissed conversations
+## Recently completed  
+- dynamic score updates  
+- score labels  
+- light mode + toggle  
+- attachment fix  
+- Other routing fix  
 
-A dismissed conversation is one the user has manually marked as not requiring a reply.
-
-Dismissed conversations:
-- do not appear in the action list
-- do not count as unresolved conversations for scoring
-- may reappear if a new relevant incoming message arrives later
-
-### Manual overrides
-
-User-applied overrides take precedence over automatic classification.
-
-If a user manually reclassifies or dismisses a conversation, that override remains in effect until a new relevant message changes the state of the conversation.
-
-## Product principles
-
-- **Local-first:** all user data stays on device
-- **Fast:** export and review should take minutes, with minimal setup
-- **Focused:** optimize for personal response tracking, not full messaging replacement
-- **Actionable:** every metric should help the user reply, triage, or improve habits
-- **Enjoyable:** the product should feel motivating and light, not guilt-inducing
-- **Gamified:** scores, streaks, and progress should make users want to come back
-
-## MVP scope
-
-### Included
-- local iMessage export
-- heuristic filtering for spam, Automated, and group chats
-- contact protection for known contacts
-- manual category overrides
-- unreplied conversation action list
-- responsiveness score
-- score history, streaks, and trends
-- timeline filters
-- handoff to reply in Messages
-
-### Excluded
-- sending texts inside the product
-- live sync with Messages
-- iPhone support
-- cloud backup
-- user accounts
-
-## Scoring model
-
-The responsiveness score is a 0-100 measure of how consistently the user replies to personal 1:1 conversations.
-
-The product should compute:
-- a current overall score
-- a daily score for each day
-- score history over time
-
-The score is based on three components:
-- reply rate over the last 7 days
-- average reply time over the last 7 days
-- penalty for conversations currently waiting on the user
-
-Excluded conversations do not affect the score. This includes group chats, spam, Automated conversations, and manually dismissed conversations.
-
-### Reply rate
-
-Reply rate measures how often the user responds when a conversation is waiting on them over the last 7 days.
-
-Higher reply rates increase the score.
-
-### Average reply time
-
-Average reply time measures how long the user typically takes to reply after receiving a relevant incoming message over the last 7 days.
-
-Faster replies increase the score. Slower replies reduce the score.
-
-### Open conversation penalty
-
-The score includes a penalty for conversations that are currently waiting on the user.
-
-Older unresolved conversations should reduce the score more than newer unresolved conversations.
-
-A single long-unanswered conversation should continue to hurt the score until the user replies or manually dismisses it.
-
-### Daily score
-
-The product should compute a daily score so users can see how their responsiveness changes day to day.
-
-The daily score should reflect the user’s recent reply behavior and current unresolved conversations as of that day.
-
-### Product requirements for scoring
-
-The scoring model should be:
-- stable enough to feel fair
-- simple enough to explain to the user
-- sensitive enough to reward improvement quickly
-- motivating enough to encourage repeat use rather than guilt or avoidance
-
-## Success criteria
-
-- users can quickly see which conversations are waiting on them
-- users feel the score roughly matches their real responsiveness
-- repeated use reduces missed replies
-- users check the product daily or near-daily
-- setup is simple enough for non-technical users
-
-## Constraints
-
-- Mac only
-- depends on exported iMessage data rather than live system sync
-- Apple platform limitations make real-time sync and direct text sending difficult
-- categorization is heuristic and imperfect
-
-## Non-goals
-
-- replacing iMessage
-- judging emotional importance perfectly
-- determining whether a user morally owes someone a reply
-- supporting live texting across devices
-
-## Edge cases to handle
-
-- conversations with people not saved as contacts
-- conversations with multiple phone numbers for one contact
-- reactions, tapbacks, and other non-standard message events
-- system or service messages
-- chats with missing or incomplete contact names
-- muted or pinned conversations
-- exported data from multiple time periods
-- conversations that are partly logistical and partly personal
-
-## Future directions
-
-### Near term
-- reduce friction in import and export
-- improve categorization accuracy
-- make repeated use feel more seamless
-- make the product feel more fun and habit-forming
-
-### Longer term
-- support replying inside the product
-- explore lightweight reply drafting or response automation
-- reduce delay between fresh message data and app state
-- evaluate whether the product should evolve into a lightweight messaging workflow layer
+## Do not build  
+- sending messages  
+- Mac app / infra expansion  
+- UI editing tools  
+- multiple reply options  
