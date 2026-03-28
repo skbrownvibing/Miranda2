@@ -19,15 +19,17 @@ python3 <<'PYTHON_EOF'
 import sqlite3, json, os, re, glob, sys, plistlib
 from datetime import datetime, timezone, timedelta
 
-APPLE_EPOCH      = datetime(2001, 1, 1, tzinfo=timezone.utc)
-LOOKBACK_DAYS    = 90
-PERSONAL_DAYS    = 90
-PERSONAL_THRESH  = 3   # messages exchanged in PERSONAL_DAYS to count as personal (fallback)
+# ── Config ────────────────────────────────────────────────────────────────────
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
+LOOKBACK_DAYS   = 90    # How far back to pull messages
+PERSONAL_THRESH = 3     # Min messages in window to classify as personal (no contact)
+OUTPUT_PATH     = os.path.join(os.path.expanduser("~/Desktop"), "miranda2_messages.json")
+APPLE_EPOCH     = datetime(2001, 1, 1, tzinfo=timezone.utc)
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
 
 def apple_ts(ts):
-    """Apple Core Data timestamp → datetime (handles both ns and s variants)."""
+    """Apple Core Data timestamp → datetime."""
     if not ts:
         return None
     try:
@@ -47,33 +49,21 @@ def norm_phone(p):
     return d
 
 def _uid_int(obj):
-    """Return the integer index from a plistlib.UID or a {'CF$UID': N} dict."""
     if isinstance(obj, plistlib.UID):
         return obj.data
     if isinstance(obj, dict):
         return obj.get('CF$UID')
     return None
 
-# Diagnostic counters — reset each run.
-_att_body_stats  = {'parsed': 0, 'failed': 0}
-_att_body_samples = []   # up to 5 failure samples
-_ATT_BODY_MAX_SAMPLES = 5
-
-# Try to import PyObjC Foundation once at startup.
+# PyObjC is optional — used for the most reliable streamtyped decoding.
 try:
     from Foundation import NSData, NSUnarchiver
     _PYOBJC_OK = True
 except ImportError:
     _PYOBJC_OK = False
 
-
-def extract_typedstream_string(raw):
-    """Extract plain text from an NSArchiver streamtyped blob.
-
-    Tries Apple's own NSUnarchiver first (via PyObjC), which handles the
-    format correctly.  Falls back to a byte scan if PyObjC is unavailable.
-    """
-    # ── Primary: let macOS decode its own format ──────────────────────────────
+def _extract_streamtyped(raw):
+    """Extract plain text from an NSArchiver streamtyped blob."""
     if _PYOBJC_OK:
         try:
             ns_data = NSData.dataWithBytes_length_(raw, len(raw))
@@ -84,7 +74,7 @@ def extract_typedstream_string(raw):
         except Exception:
             pass
 
-    # ── Fallback: scan for the first plausible UTF-8 string ──────────────────
+    # Fallback: scan for the first plausible UTF-8 string in the binary blob.
     _meta = {
         'streamtyped', 'NSString', 'NSMutableString', 'NSAttributedString',
         'NSMutableAttributedString', 'NSObject', 'NSArray', 'NSMutableArray',
@@ -106,7 +96,6 @@ def extract_typedstream_string(raw):
                     break
             try:
                 s = raw[i:j].decode('utf-8').strip().lstrip('+')
-                # Require at least 4 chars to avoid binary noise like "il"
                 if len(s) >= 4 and s not in _meta:
                     if ' ' in s or not any(s.startswith(p) for p in _cls_prefixes):
                         return s
@@ -117,54 +106,38 @@ def extract_typedstream_string(raw):
             i += 1
     return None
 
-
 def extract_attributed_body(blob):
     """Pull plain text from an NSAttributedString attributedBody blob."""
     if not blob:
         return None
     raw = bytes(blob)
 
-    # NSArchiver streamtyped format — what iMessage actually writes
+    # NSArchiver streamtyped format — what iMessage actually writes.
     if raw.startswith(b'\x04\x0bstreamtyped'):
-        result = extract_typedstream_string(raw)
-        if result:
-            _att_body_stats['parsed'] += 1
-        else:
-            _att_body_stats['failed'] += 1
-            if len(_att_body_samples) < _ATT_BODY_MAX_SAMPLES:
-                _att_body_samples.append({'reason': 'streamtyped_no_text', 'blob_hex': raw[:32].hex()})
-        return result
+        return _extract_streamtyped(raw)
 
-    # NSKeyedArchiver plist format — fallback for any non-streamtyped blobs
+    # NSKeyedArchiver plist format — fallback for non-streamtyped blobs.
     try:
-        plist = plistlib.loads(raw)
+        plist   = plistlib.loads(raw)
         objects = plist.get('$objects', [])
 
-        # ── Structured path: NSKeyedArchiver → NSAttributedString → NSString ──
         try:
-            top_ref  = plist.get('$top', {}).get('root')
-            top_idx  = _uid_int(top_ref)
+            top_idx = _uid_int(plist.get('$top', {}).get('root'))
             if top_idx is not None:
                 top_obj = objects[top_idx]
                 if isinstance(top_obj, dict):
-                    ns_str_idx = _uid_int(top_obj.get('NSString'))
-                    if ns_str_idx is not None:
-                        str_obj = objects[ns_str_idx]
-                        if isinstance(str_obj, str):
-                            s = str_obj.strip()
-                            if s:
-                                _att_body_stats['parsed'] += 1
-                                return s
-                        if isinstance(str_obj, dict):
-                            s = str(str_obj.get('NS.string', '')).strip()
-                            if s:
-                                _att_body_stats['parsed'] += 1
-                                return s
+                    ns_idx = _uid_int(top_obj.get('NSString'))
+                    if ns_idx is not None:
+                        s = objects[ns_idx]
+                        if isinstance(s, str) and s.strip():
+                            return s.strip()
+                        if isinstance(s, dict):
+                            v = str(s.get('NS.string', '')).strip()
+                            if v:
+                                return v
         except Exception:
             pass
 
-        # ── Fallback: first non-metadata string in the objects array ──
-        # Class names and iMessage keys that are never message content:
         _meta = {
             '$null', 'NSString', 'NSMutableString', 'NSAttributedString',
             'NSMutableAttributedString', 'NSColor', 'NSFont', 'NSParagraphStyle',
@@ -176,37 +149,31 @@ def extract_attributed_body(blob):
         for obj in objects:
             if isinstance(obj, str):
                 s = obj.strip()
-                if (s and s not in _meta
-                        and not s.startswith('NS')
-                        and not s.startswith('UI')
-                        and not s.startswith('__')
-                        and not s.startswith('$')):
-                    _att_body_stats['parsed'] += 1
+                if s and s not in _meta and not s.startswith(('NS', 'UI', '__', '$')):
                     return s
-
-        # Both paths failed — record a sample for diagnostics.
-        _att_body_stats['failed'] += 1
-        if len(_att_body_samples) < _ATT_BODY_MAX_SAMPLES:
-            _att_body_samples.append({
-                'reason': 'no_text_found',
-                '$top':    plist.get('$top'),
-                'objects': objects[:8],
-            })
-
-    except Exception as e:
-        _att_body_stats['failed'] += 1
-        if len(_att_body_samples) < _ATT_BODY_MAX_SAMPLES:
-            _att_body_samples.append({
-                'reason':     'plist_load_failed',
-                'error':      str(e),
-                'blob_hex':   bytes(blob)[:32].hex(),
-            })
+    except Exception:
+        pass
     return None
+
+def resolve_text(text, att_body, has_attachment):
+    """Return the best available plain text for a message row."""
+    t = (text or '').strip()
+    if t:
+        return t
+    from_blob = extract_attributed_body(att_body)
+    if from_blob:
+        return from_blob
+    if has_attachment:
+        return '📎 Attachment'
+    if att_body:
+        return '💬'
+    return ''
 
 # ── Contacts ──────────────────────────────────────────────────────────────────
 
 def load_contacts():
-    contacts = {}   # normalised phone/email → display name
+    """Return a dict of normalised phone/email → display name from AddressBook."""
+    contacts = {}
     patterns = [
         "~/Library/Application Support/AddressBook/Sources/*/AddressBook-v22.abcddb",
         "~/Library/Application Support/AddressBook/AddressBook-v22.abcddb",
@@ -277,46 +244,76 @@ SPAM_WORDS = [
     'account suspended', 'account on hold', 'verify your account',
 ]
 
-def categorize(handle, contact_name, in_contacts, messages, msg_count_lookback):
+def categorize(handle, contact_name, in_contacts, messages, msg_count):
     digits = re.sub(r'\D', '', handle or '')
-
-    # Short codes (5–6 digits) → spam
     if len(digits) in (5, 6):
         return 'spam'
 
     name_lower   = (contact_name or '').lower()
     handle_lower = (handle or '').lower()
 
-    # Known delivery service sender names
     for svc in DELIVERY_SENDERS:
         if svc in name_lower or svc in handle_lower:
             return 'delivery'
 
     sample = ' '.join((m.get('text') or '') for m in messages[:15]).lower()
-
     for kw in DELIVERY_WORDS:
         if kw in sample:
             return 'delivery'
-
     for kw in SPAM_WORDS:
         if kw in sample:
             return 'spam'
 
-    # Saved in contacts → personal (strongest signal for real people)
     if in_contacts:
         return 'personal'
-
-    # Enough recent back-and-forth → personal
-    if msg_count_lookback >= PERSONAL_THRESH:
+    if msg_count >= PERSONAL_THRESH:
         return 'personal'
-
     return 'uncategorized'
+
+# ── Message fetching ──────────────────────────────────────────────────────────
+
+MSG_QUERY = """
+    SELECT
+        m.text,
+        m.is_from_me,
+        m.date,
+        m.attributedBody,
+        m.associated_message_type,
+        m.item_type,
+        EXISTS(
+            SELECT 1 FROM message_attachment_join maj
+            JOIN attachment a ON a.ROWID = maj.attachment_id
+            WHERE maj.message_id = m.ROWID
+        ) AS has_attachment
+    FROM message m
+    JOIN chat_message_join cmj ON m.ROWID = cmj.message_id
+    WHERE cmj.chat_id = ? {date_filter}
+    ORDER BY m.date DESC
+    LIMIT 100
+"""
+
+def fetch_rows(cur, chat_id, cutoff):
+    cur.execute(MSG_QUERY.format(date_filter=f"AND m.date > {cutoff}"), (chat_id,))
+    rows = cur.fetchall()
+    if not rows:
+        # No messages in window — fall back to the most recent few ever
+        cur.execute(MSG_QUERY.format(date_filter=""), (chat_id,))
+        rows = cur.fetchall()
+    return rows
+
+def is_substantive(row):
+    """True for real sent/received messages. False for tapbacks, reactions, and group events.
+
+    associated_message_type != 0  →  tapback or reaction (e.g. ❤️, 👍, laugh)
+    item_type != 0                →  group membership / name-change system event
+    """
+    _t, _fm, _d, _ab, assoc_type, item_type, _att = row
+    return assoc_type == 0 and item_type == 0
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
     db_path = os.path.expanduser("~/Library/Messages/chat.db")
-
     if not os.path.exists(db_path):
         print("  ERROR: iMessage database not found.")
         print(f"  Expected: {db_path}")
@@ -328,14 +325,12 @@ def main():
         conn.execute("SELECT 1 FROM chat LIMIT 1")
     except sqlite3.OperationalError as e:
         print("  ERROR: Cannot read iMessage database.")
-        print("")
         msg = str(e).lower()
-        if "unable to open" in msg or "permission" in msg or "denied" in msg or "authorization" in msg:
-            print("  Terminal needs Full Disk Access:")
-            print("  1. Open System Settings")
-            print("  2. Privacy & Security → Full Disk Access")
-            print("  3. Enable Terminal (or your terminal app)")
-            print("  4. Re-run this script")
+        if any(w in msg for w in ("unable to open", "permission", "denied", "authorization")):
+            print("\n  Terminal needs Full Disk Access:")
+            print("  1. Open System Settings → Privacy & Security → Full Disk Access")
+            print("  2. Enable Terminal (or your terminal app)")
+            print("  3. Re-run this script")
         else:
             print(f"  Details: {e}")
         return False
@@ -345,19 +340,15 @@ def main():
     print(f"  {len(contacts)} contacts found")
     print("  Reading messages…")
 
-    cur = conn.cursor()
-    now       = datetime.now(timezone.utc)
-    cut_90d   = int(((now - timedelta(days=LOOKBACK_DAYS)) - APPLE_EPOCH).total_seconds() * 1e9)
-    cut_30d   = int(((now - timedelta(days=PERSONAL_DAYS)) - APPLE_EPOCH).total_seconds() * 1e9)
+    cur    = conn.cursor()
+    now    = datetime.now(timezone.utc)
+    cutoff = int(((now - timedelta(days=LOOKBACK_DAYS)) - APPLE_EPOCH).total_seconds() * 1e9)
 
-    cur.execute("""
-        SELECT c.ROWID, c.guid, c.chat_identifier, c.display_name, c.style
-        FROM chat c
-        ORDER BY c.ROWID
-    """)
+    cur.execute("SELECT ROWID, guid, chat_identifier, display_name, style FROM chat ORDER BY ROWID")
     chats = cur.fetchall()
 
-    conversations = []
+    conversations       = []
+    tapback_corrections = 0
 
     for chat_id, guid, chat_identifier, display_name, style in chats:
         cur.execute("""
@@ -367,9 +358,9 @@ def main():
         """, (chat_id,))
         handles = [r[0] for r in cur.fetchall()]
 
-        is_group     = bool(style == 43 or len(handles) > 1)
-        primary      = handles[0] if handles else (chat_identifier or '')
-        phone_norm   = norm_phone(primary)
+        is_group   = bool(style == 43 or len(handles) > 1)
+        primary    = handles[0] if handles else (chat_identifier or '')
+        phone_norm = norm_phone(primary)
 
         in_contacts  = bool(contacts.get(phone_norm) or contacts.get(primary.lower()))
         contact_name = (
@@ -378,88 +369,37 @@ def main():
             (display_name if is_group else None)
         )
 
-        # Messages in lookback window (no text filter yet; we validate row trustworthiness below)
-        cur.execute("""
-            SELECT
-                m.text,
-                m.is_from_me,
-                m.date,
-                m.cache_has_attachments,
-                m.attributedBody,
-                EXISTS(
-                    SELECT 1
-                    FROM message_attachment_join maj
-                    JOIN attachment a ON a.ROWID = maj.attachment_id
-                    WHERE maj.message_id = m.ROWID
-                ) AS has_attachment_join
-            FROM message m
-            JOIN chat_message_join cmj ON m.ROWID = cmj.message_id
-            WHERE cmj.chat_id = ? AND m.date > ?
-            ORDER BY m.date DESC
-            LIMIT 100
-        """, (chat_id, cut_90d))
-        rows = cur.fetchall()
-
-        # Fall back to most recent messages if nothing in window
-        if not rows:
-            cur.execute("""
-                SELECT
-                    m.text,
-                    m.is_from_me,
-                    m.date,
-                    m.cache_has_attachments,
-                    m.attributedBody,
-                    EXISTS(
-                        SELECT 1
-                        FROM message_attachment_join maj
-                        JOIN attachment a ON a.ROWID = maj.attachment_id
-                        WHERE maj.message_id = m.ROWID
-                    ) AS has_attachment_join
-                FROM message m
-                JOIN chat_message_join cmj ON m.ROWID = cmj.message_id
-                WHERE cmj.chat_id = ?
-                ORDER BY m.date DESC
-                LIMIT 10
-            """, (chat_id,))
-            rows = cur.fetchall()
-
+        rows = fetch_rows(cur, chat_id, cutoff)
         if not rows:
             continue
 
-        def row_text(t, att_body):
-            """Resolve the plain text for a message row.
+        # Separate substantive rows (real messages) from noise (tapbacks, reactions, events)
+        substantive = [r for r in rows if is_substantive(r)]
 
-            m.text is NULL for messages that contain a link preview or use
-            iOS 16+ styled text — the content lives in m.attributedBody
-            instead.  Always try m.text first; fall back to attributedBody.
-            """
-            trimmed = (t or '').strip()
-            if trimmed:
-                return trimmed
-            return extract_attributed_body(att_body)
-
-        def msg_text(t, att_body, has_attachment_join):
-            resolved = row_text(t, att_body)
-            if resolved:
-                return resolved
-            if has_attachment_join:
-                return '📎 Attachment'
-            # attributedBody present but unparseable — real message, unknown text
-            if att_body:
-                return '💬'
-            return ''
-
-        # All rows as messages — latest 5 reversed for chronological display.
+        # Build the message preview list from substantive rows only
         msg_list = [
-            {'text': msg_text(t, att_body, has_att_join), 'from_me': bool(fm), 'date': fmt(apple_ts(d))}
-            for t, fm, d, _cache_att, att_body, has_att_join in rows
+            {
+                'text':    resolve_text(t, ab, has_att),
+                'from_me': bool(fm),
+                'date':    fmt(apple_ts(d)),
+            }
+            for t, fm, d, ab, _assoc, _item, has_att in substantive
         ]
 
-        # Everything is derived from rows[0] — the true most-recent DB row.
-        last_t, last_fm, last_d, _last_ca, last_att_body, last_has_att = rows[0]
+        # Determine reply direction from most recent substantive message.
+        # This is the core fix: tapbacks/reactions sent by the other person would
+        # otherwise appear as rows[0] and incorrectly mark the conversation unreplied.
+        if substantive:
+            last_row = substantive[0]
+            if rows[0] is not last_row:
+                tapback_corrections += 1
+        else:
+            last_row = rows[0]  # nothing substantive at all — use raw fallback
+
+        last_t, last_fm, last_d, last_ab, _assoc, _item, last_has_att = last_row
         last_at      = fmt(apple_ts(last_d))
-        last_preview = msg_text(last_t, last_att_body, last_has_att)
-        msg_count_lookback = sum(1 for _, _, d, _, _, _ in rows if d > cut_90d)
+        last_preview = resolve_text(last_t, last_ab, last_has_att)
+        msg_count    = sum(1 for r in rows if r[2] > cutoff)
 
         conversations.append({
             'id':                guid,
@@ -467,11 +407,11 @@ def main():
             'phone':             primary,
             'is_group':          is_group,
             'group_name':        display_name if is_group else None,
-            'category':          categorize(primary, contact_name, in_contacts, msg_list, msg_count_lookback),
+            'category':          categorize(primary, contact_name, in_contacts, msg_list, msg_count),
             'last_message_at':   last_at,
             'last_message_text': last_preview,
             'i_replied_last':    bool(last_fm),
-            'message_count_30d': msg_count_lookback,
+            'message_count_30d': msg_count,
             'messages':          list(reversed(msg_list[:5])),
         })
 
@@ -479,7 +419,6 @@ def main():
 
     conversations.sort(key=lambda c: c.get('last_message_at') or '', reverse=True)
 
-    # ── Stats ──
     cats = {}
     unreplied_personal = 0
     for c in conversations:
@@ -488,14 +427,13 @@ def main():
             unreplied_personal += 1
 
     output = {
-        'app':         'Miranda2',
-        'version':     '1.0',
-        'exported_at': now.isoformat(),
+        'app':           'Miranda2',
+        'version':       '2.0',
+        'exported_at':   now.isoformat(),
         'conversations': conversations,
     }
 
-    out_path = os.path.join(os.path.expanduser("~/Desktop"), "miranda2_messages.json")
-    with open(out_path, 'w', encoding='utf-8') as f:
+    with open(OUTPUT_PATH, 'w', encoding='utf-8') as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
 
     p = cats.get('personal', 0)
@@ -503,38 +441,17 @@ def main():
     s = cats.get('spam', 0)
     u = cats.get('uncategorized', 0)
 
-    print(f"")
-    print(f"  Done!")
-    print(f"")
+    print(f"\n  Done!\n")
     print(f"  Conversations exported: {len(conversations)}")
     print(f"    Personal:       {p}  ({unreplied_personal} unreplied)")
     print(f"    Delivery:       {d}")
     print(f"    Spam:           {s}")
     print(f"    Uncategorized:  {u}")
-    print(f"")
-    print(f"  File: {out_path}")
-    print(f"")
-    print(f"  Open index.html and drag the JSON file onto the page.")
-
-    # ── attributedBody parse diagnostics ──
-    total_att = _att_body_stats['parsed'] + _att_body_stats['failed']
-    if total_att:
-        print(f"")
-        print(f"  attributedBody blobs: {total_att} total — "
-              f"{_att_body_stats['parsed']} parsed OK, "
-              f"{_att_body_stats['failed']} failed")
-        if _att_body_samples:
-            print(f"  Failure samples (up to {_ATT_BODY_MAX_SAMPLES}):")
-            for i, s in enumerate(_att_body_samples, 1):
-                print(f"    [{i}] reason: {s['reason']}")
-                if s['reason'] == 'plist_load_failed':
-                    print(f"         error:    {s['error']}")
-                    print(f"         blob_hex: {s['blob_hex']}")
-                else:
-                    print(f"         $top:     {s['$top']}")
-                    print(f"         objects:  {s['objects']}")
-        print(f"")
-
+    if tapback_corrections:
+        print(f"\n  Tapback corrections: {tapback_corrections} conversation(s) had their")
+        print(f"  reply status corrected by ignoring reactions/tapbacks.")
+    print(f"\n  File: {OUTPUT_PATH}")
+    print(f"\n  Open index.html and drag the JSON file onto the page.")
     return True
 
 ok = main()
