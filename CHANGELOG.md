@@ -2,6 +2,10 @@
 
 ## Current development cycle
 
+### 2026-03-28 — Fix: JSON import flow blocked by script parse error
+- Root cause: a stray chained `.map(...)` remained in both `renderActions()` and `renderOtherTexts()` after the plain-text row rendering update, causing a JavaScript parse error (`Unexpected token '.'`) that prevented app initialization.
+- Fixed by removing the orphaned `.map(...)` blocks so the script initializes and file import works again.
+
 ### 2026-03-28 — Action needed expanded rows now render plain text lines
 - Changed Action needed expanded rows to render message text as plain inline text (no chat-bubble styling).
 - Kept per-message timestamps visible.
