@@ -2,6 +2,12 @@
 
 ## Current development cycle
 
+### 2026-03-28 — Light mode default, dark mode toggle, and score labels
+- Added score tier labels shown in lowercase before the numeric score using the format `label (score)`, with ranges from `actively ghosting 👻` through `top 5% responder 🏆`.
+- Switched the app to light mode by default and tuned key surfaces (backgrounds, cards, text, borders, and inputs) for light-mode-first readability.
+- Added a top-bar dark mode toggle with localStorage persistence so users can manually switch themes and keep their preference on reload.
+- Increased score label visual emphasis by moving it to the left of the score ring, enlarging typography, and removing the duplicate numeric value from the label so only the big ring number shows the score.
+
 ### 2026-03-27 — Fix old attachment rows in contact message preview
 - Fixed the core bug where old photo/attachment rows from months ago appeared in the contact bubble view alongside recent text messages.
 - In the exporter: when building the `messages` display array, attachment-only rows that predate the most recent text message are now excluded. If someone sent photos two months ago and texted recently, only the recent messages are included in the preview window.
