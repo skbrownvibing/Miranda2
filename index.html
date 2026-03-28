@@ -686,6 +686,9 @@ function scoreLabel(score){
   if(score<=90)return'on it ⚡️';
   return'top 5% responder 🏆';
 }
+function cleanScoreLabel(label){
+  return String(label||'').replace(/\s*\(\d+\)\s*$/,'').trim();
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function waitHours(c){if(!c.last_message_at)return 0;return(Date.now()-new Date(c.last_message_at).getTime())/3600000;}
@@ -894,6 +897,7 @@ function renderScore(){
   document.getElementById('score-number').textContent=s.score;
   document.getElementById('score-number').style.color=color;
   const sum=document.getElementById('score-summary');
+  sum.textContent=cleanScoreLabel(scoreLabel(s.score));
   sum.textContent=scoreLabel(s.score).replace(/\s*\(\d+\)\s*$/,'');
   sum.textContent=scoreLabel(s.score);
   sum.textContent=`${scoreLabel(s.score)} (${s.score})`;
