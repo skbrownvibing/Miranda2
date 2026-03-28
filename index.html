@@ -1015,22 +1015,6 @@ function renderOtherTexts(){
           <button class="btn-dismiss" onclick="reclassify('${esc(c.id)}','delivery');event.stopPropagation()">→ Logistics</button>
           <button class="btn-dismiss" onclick="reclassify('${esc(c.id)}','spam');event.stopPropagation()">→ Spam</button>
         </div>
-  const section=document.querySelector('.other-section');
-  if(!list.length){section.style.display='none';return;}
-  section.style.display='';
-  document.getElementById('other-count').textContent=list.length===1?'1 text':list.length+' texts';
-  const el=document.getElementById('other-list');
-  el.innerHTML=list.map(c=>{
-    const name=displayName(c),lm=lastMsgs(c);
-    const preview=lm.theirs!==null?lm.theirs:lm.mine!==null?lm.mine:(c.last_message_text||'');
-    return `<div class="other-item">
-      <div class="action-avatar">${esc(initial(c))}</div>
-      <div class="action-body">
-        <div class="action-name">${esc(name)}</div>
-        <div class="action-preview">${esc(preview)}</div>
-      </div>
-      <div class="action-right">
-        <span class="action-time">${esc(relTime(c.last_message_at))}</span>
       </div>
     </div>`;
   }).join('');
