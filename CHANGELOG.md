@@ -8,6 +8,15 @@
 - Added connected/disconnected source UI states with **Refresh messages** and **Change source** actions, plus connected status and last updated display.
 - Wired both Connect and Refresh flows to produce a `File` and pass it into the existing `loadFile()` import handoff (no parallel import pipeline).
 - Added graceful fallback messaging for unsupported browsers, permission failures, missing source, and refresh/read failures while keeping manual import and drag/drop intact.
+### 2026-03-29 — Suggested Reply now uses real AI generation with broader coverage
+- Replaced the deterministic Suggested Reply stub (question-mark-only canned output) with an async model call in the existing button flow.
+- Kept UI behavior unchanged (Generate reply, Generating… state, suggested output, Copy, and no-regenerate behavior).
+- Kept context builder behavior to use the latest non-empty chronological messages (up to 15) with explicit `Me` / `Them` labels.
+- Removed attachment-keyword and long-message skip heuristics; generation now attempts broadly and only skips for empty context, last message from `Me`, or AI failure.
+- Added temporary `REPLY_CONTEXT_AUDIT` console logging so input context can be verified during testing.
+- Added temporary `REPLY_MODEL_OUTPUT_AUDIT` logging for generated copy quality checks (without logging secrets).
+- Added a minimal AI config path using `window.MIRANDA2_AI_CONFIG` (apiKey/model/endpoint) with localStorage fallback keys for API key and model.
+- Added explicit local-only warning in code comments: browser-side API keys are exposed and not suitable for shareable/public deployment.
 
 ### 2026-03-28 — Score history now uses a fixed local 7-day snapshot
 - Standardized score history saves to always compute from a fixed trailing 7-day window, independent of the currently selected UI timeline filter.
