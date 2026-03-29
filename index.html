@@ -410,6 +410,25 @@ body[data-theme="dark"] .saved-prompt button:hover { color:#fff; }
         <button id="change-source-btn-app" style="display:none" onclick="changeSource()">Change source</button>
       </div>
       <span class="source-error" id="source-error-app" style="display:none"></span>
+    <span class="top-bar-brand">Miranda2</span>
+    <div class="top-bar-actions">
+      <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">dark mode</button>
+      <select id="timeline-filter" onchange="handleTimeline(this.value)">
+        <option value="1">Last 24 hours</option>
+        <option value="3">Last 3 days</option>
+        <option value="7" selected>Last 7 days</option>
+        <option value="30">Last 30 days</option>
+        <option value="90">Last 3 months</option>
+        <option value="">All time</option>
+      </select>
+      <span class="last-updated" id="last-updated" style="display:none"></span>
+      <span class="last-updated" id="source-name-app" style="display:none"></span>
+      <span class="last-updated" id="source-updated-app" style="display:none"></span>
+      <button id="connect-export-btn-app" style="display:none" onclick="connectExportFile()">Connect export file</button>
+      <button id="refresh-source-btn-app" style="display:none" onclick="refreshMessages()">Refresh messages</button>
+      <button id="change-source-btn-app" style="display:none" onclick="changeSource()">Change source</button>
+      <span class="source-error" id="source-error-app" style="display:none"></span>
+      <button onclick="resetData()">New export</button>
     </div>
   </div>
 
@@ -552,6 +571,11 @@ const OVERRIDE_KEY='miranda2_overrides_v1', DISMISS_KEY='miranda2_dismissed_v1',
       NAME_SIGNAL_KEY='miranda2_name_signal_v1', THEME_KEY='miranda2_theme_v1',
       CONNECTED_SOURCE_DB='miranda2_connected_source_v1', CONNECTED_SOURCE_STORE='sources', CONNECTED_SOURCE_KEY='primary';
 const PREVIEW_INCLUDE_ATTACHMENT=true; // set false to hide "📎 Attachment" rows in collapsed previews
+// Local-only testing path: browser-side API keys are exposed to anyone with client access.
+// Do not treat this as a shareable/public deployment setup.
+const AI_API_KEY_STORAGE_KEY='miranda2_ai_api_key_v1';
+const AI_MODEL_STORAGE_KEY='miranda2_ai_model_v1';
+const DEFAULT_AI_MODEL='gpt-4.1-mini';
 
 async function init() {
   try { const r=localStorage.getItem(OVERRIDE_KEY); if(r) S.overrides=JSON.parse(r); } catch(_){}
@@ -612,6 +636,10 @@ function formatSourceUpdated(iso){
   const dt=new Date(iso);
   if(Number.isNaN(dt.getTime()))return'Updated —';
   return `Updated ${relativeLastUpdated(iso)}`;
+  if(!iso)return'Last updated: —';
+  const dt=new Date(iso);
+  if(Number.isNaN(dt.getTime()))return'Last updated: —';
+  return `Last updated: ${dt.toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})}`;
 }
 
 function renderSourceUi(){
@@ -621,6 +649,7 @@ function renderSourceUi(){
   const sourceTitle=document.getElementById('source-title-drop');
   const sourceName=document.getElementById('source-name-drop');
   const sourceUpdated=document.getElementById('source-updated-drop');
+  const appName=document.getElementById('source-name-app');
   const appUpdated=document.getElementById('source-updated-app');
   if(sourcePanel){
     sourcePanel.style.display='block';
@@ -639,6 +668,23 @@ function renderSourceUi(){
       sourceTitle.textContent='Connected export file';
       sourceName.textContent='';
       sourceUpdated.textContent=updatedText;
+      sourceName.textContent='Browser does not support one-click refresh.';
+      sourceUpdated.textContent='Import file manually.';
+      if(appName){appName.style.display='none';appName.textContent='';}
+      if(appUpdated){appUpdated.style.display='none';appUpdated.textContent='';}
+    }else if(!connected){
+      sourceTitle.textContent='Connected export file';
+      sourceName.textContent='Not connected';
+      sourceUpdated.textContent='Connect once, then use Refresh messages.';
+      if(appName){appName.style.display='none';appName.textContent='';}
+      if(appUpdated){appUpdated.style.display='none';appUpdated.textContent='';}
+    }else{
+      const nameText=`Connected to: ${S.connectedSource.fileName||'miranda2_messages.json'}`;
+      const updatedText=formatSourceUpdated(S.connectedSource.lastRefreshedAt);
+      sourceTitle.textContent='Connected export file';
+      sourceName.textContent=nameText;
+      sourceUpdated.textContent=updatedText;
+      if(appName){appName.style.display='inline';appName.textContent=nameText;}
       if(appUpdated){appUpdated.style.display='inline';appUpdated.textContent=updatedText;}
     }
   }
@@ -1022,7 +1068,63 @@ function buildReplyContext(thread){
   return msgs.slice(-15);
 }
 
-function generateSuggestedReply(context){
+function getAiConfig(){
+  const cfg=(window.MIRANDA2_AI_CONFIG&&typeof window.MIRANDA2_AI_CONFIG==='object')?window.MIRANDA2_AI_CONFIG:{};
+  const key=(cfg.apiKey||localStorage.getItem(AI_API_KEY_STORAGE_KEY)||'').trim();
+  const model=(cfg.model||localStorage.getItem(AI_MODEL_STORAGE_KEY)||DEFAULT_AI_MODEL).trim();
+  const endpoint=(cfg.endpoint||'https://api.openai.com/v1/chat/completions').trim();
+  return { key, model, endpoint };
+}
+
+async function requestSuggestedReplyFromModel(context){
+  const { key, model, endpoint }=getAiConfig();
+  if(!key)throw new Error('Missing AI API key');
+
+  const conversation=context.map(m=>`${m.speaker}: ${m.text}`).join('\n');
+  const prompt=`You are helping draft a text message reply.
+Write one natural reply the user could send next.
+
+Rules:
+- Use only the conversation shown below
+- Do not invent facts, plans, times, or commitments not grounded in the thread
+- If a time or plan is already mentioned in the thread, you may reference it
+- Keep it natural, casual, and human
+- Usually 1 to 3 sentences
+- Match the tone of the conversation
+- Do not explain your reasoning
+- Output only the reply text
+
+Conversation:
+${conversation}`;
+
+  const response=await fetch(endpoint,{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':`Bearer ${key}`
+    },
+    body:JSON.stringify({
+      model,
+      temperature:0.7,
+      messages:[
+        { role:'system', content:'You draft concise, natural text message replies.' },
+        { role:'user', content:prompt }
+      ]
+    })
+  });
+
+  if(!response.ok){
+    const raw=await response.text().catch(()=> '');
+    throw new Error(`AI request failed (${response.status}): ${raw.slice(0,200)}`);
+  }
+
+  const data=await response.json();
+  const reply=String(data?.choices?.[0]?.message?.content||'').trim();
+  if(!reply)throw new Error('AI returned empty reply');
+  return reply;
+}
+
+async function generateSuggestedReply(context){
   const SKIP_MSG='Too complex to suggest a reply';
   if(!Array.isArray(context)||!context.length){
     return { skipped:true, reply:SKIP_MSG };
@@ -1030,30 +1132,22 @@ function generateSuggestedReply(context){
 
   const last=context[context.length-1];
   const lastText=String(last?.text||'').trim();
+  const lastSpeaker=String(last?.speaker||'').trim();
   if(!lastText){
     return { skipped:true, reply:SKIP_MSG };
   }
 
-  // Attachment-dependent / reference-dependent signals
-  const attachmentRef=/\b(see this|see attached|attached|attachment|photo|image|screenshot|video|doc|file)\b/i;
-  if(attachmentRef.test(lastText)){
+  if(lastSpeaker==='Me'){
     return { skipped:true, reply:SKIP_MSG };
   }
 
-  // Minimal deterministic ambiguity guardrail:
-  // if last 3 messages are long, skip.
-  const lastThree=context.slice(-3);
-  const longCount=lastThree.filter(m=>m.text.length>=140).length;
-  if(longCount>=2){
+  try{
+    const reply=await requestSuggestedReplyFromModel(context);
+    return { skipped:false, reply };
+  }catch(err){
+    console.warn('Suggested reply generation failed',err);
     return { skipped:true, reply:SKIP_MSG };
   }
-
-  // Stub generation behavior (no external AI):
-  if(/[?]\s*$/.test(lastText)){
-    return { skipped:false, reply:'yes, that works for me' };
-  }
-
-  return { skipped:true, reply:SKIP_MSG };
 }
 
 function renderSuggestedReplyUI(thread){
@@ -1393,7 +1487,13 @@ async function generateReplyForThread(id){
     await new Promise(r=>setTimeout(r,350));
 
     const context=buildReplyContext(thread);
-    const result=generateSuggestedReply(context);
+    console.log('REPLY_CONTEXT_AUDIT',{
+      threadId:id,
+      count:context.length,
+      speakers:[...new Set(context.map(m=>m.speaker))],
+      context
+    });
+    const result=await generateSuggestedReply(context);
 
     if(result.skipped){
       st.wasSkipped=true;
@@ -1401,6 +1501,10 @@ async function generateReplyForThread(id){
     }else{
       st.wasSkipped=false;
       st.suggestedReply=String(result.reply||'').trim();
+      console.log('REPLY_MODEL_OUTPUT_AUDIT',{
+        threadId:id,
+        reply:st.suggestedReply
+      });
     }
   }catch(_){
     st.wasSkipped=true;
