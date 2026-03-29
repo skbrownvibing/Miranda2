@@ -858,7 +858,7 @@ function renderSuggestedReplyUI(thread){
       <div style="font-size:12px;color:var(--text2);padding:8px 10px;border:1px solid var(--border);border-radius:10px;max-width:100%;">
         ${esc(st.suggestedReply)}
       </div>
-      <button class="btn-dismiss" onclick="copySuggestedReply(${JSON.stringify(thread.id)});event.stopPropagation()">
+      <button class="btn-dismiss" onclick="copySuggestedReply(${esc(JSON.stringify(thread.id))});event.stopPropagation()">
         ${st.copied?'Copied':'Copy'}
       </button>
     `;
@@ -868,7 +868,7 @@ function renderSuggestedReplyUI(thread){
     return `<div style="font-size:12px;color:var(--text3);">Too complex to suggest a reply</div>`;
   }
 
-  return `<button class="btn-dismiss" onclick="generateReplyForThread(${JSON.stringify(thread.id)});event.stopPropagation()">Generate reply</button>`;
+  return `<button class="btn-dismiss" onclick="generateReplyForThread(${esc(JSON.stringify(thread.id))});event.stopPropagation()">Generate reply</button>`;
 }
 
 // ── Render ───────────────────────────────────────────────────────────────────
@@ -1170,7 +1170,6 @@ async function generateReplyForThread(id){
   const thread=S.conversations.find(c=>c.id===id);
   if(!thread)return;
   if(thread.is_group)return; // strict 1:1 only safeguard
-  if(!actionable().some(c=>c.id===id))return; // Needs Action threads only
 
   const st=getReplyAssistState(id);
   if(st.isGenerating||st.suggestedReply||st.wasSkipped)return; // no regenerate
@@ -1179,22 +1178,27 @@ async function generateReplyForThread(id){
   st.copied=false;
   renderActions();
 
-  // Small UX delay so "Generating…" is visible
-  await new Promise(r=>setTimeout(r,350));
+  try{
+    // Small UX delay so "Generating…" is visible
+    await new Promise(r=>setTimeout(r,350));
 
-  const context=buildReplyContext(thread);
-  const result=generateSuggestedReply(context);
+    const context=buildReplyContext(thread);
+    const result=generateSuggestedReply(context);
 
-  st.isGenerating=false;
-  if(result.skipped){
+    if(result.skipped){
+      st.wasSkipped=true;
+      st.suggestedReply='';
+    }else{
+      st.wasSkipped=false;
+      st.suggestedReply=String(result.reply||'').trim();
+    }
+  }catch(_){
     st.wasSkipped=true;
     st.suggestedReply='';
-  }else{
-    st.wasSkipped=false;
-    st.suggestedReply=String(result.reply||'').trim();
+  }finally{
+    st.isGenerating=false;
+    renderActions();
   }
-
-  renderActions();
 }
 
 async function copySuggestedReply(id){
