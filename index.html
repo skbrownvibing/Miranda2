@@ -102,8 +102,11 @@ body[data-theme="dark"] {
 #app.loaded { display:flex; }
 
 .top-bar {
-  display:flex;align-items:center;justify-content:space-between;
+  display:flex;flex-direction:column;gap:10px;
   padding:16px 24px;border-bottom:1px solid var(--border);background:var(--surface);
+}
+.top-bar-row {
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
 }
 .top-bar-brand { font-size:17px;font-weight:700;color:var(--text);letter-spacing:-0.3px; }
 .top-bar-actions { display:flex;gap:8px;align-items:center; }
@@ -119,6 +122,10 @@ body[data-theme="dark"] {
 .theme-toggle {
   min-width:86px;
 }
+.source-btn-primary {
+  background:var(--blue)!important;color:#fff!important;border-color:var(--blue)!important;
+}
+.source-btn-primary:hover { opacity:.9; }
 
 /* ── Score ─────────────────────────────────────────────────── */
 .score-section {
@@ -336,6 +343,7 @@ body[data-theme="dark"] .saved-prompt .saved-label { color:rgba(255,255,255,0.85
 body[data-theme="dark"] .saved-prompt button:hover { color:#fff; }
 
 @media (max-width:600px) {
+  .top-bar-row { flex-wrap:wrap; }
   .contributors { grid-template-columns:1fr; }
   .score-hero { flex-direction:column;gap:10px; }
   .score-ring { width:150px;height:150px; }
@@ -380,6 +388,28 @@ body[data-theme="dark"] .saved-prompt button:hover { color:#fff; }
 
 <div id="app">
   <div class="top-bar">
+    <div class="top-bar-row">
+      <span class="top-bar-brand">Miranda2</span>
+      <div class="top-bar-actions">
+        <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">dark mode</button>
+        <select id="timeline-filter" onchange="handleTimeline(this.value)">
+          <option value="1">Last 24 hours</option>
+          <option value="3">Last 3 days</option>
+          <option value="7" selected>Last 7 days</option>
+          <option value="30">Last 30 days</option>
+          <option value="90">Last 3 months</option>
+          <option value="">All time</option>
+        </select>
+      </div>
+    </div>
+    <div class="top-bar-row">
+      <div class="top-bar-actions">
+        <span class="last-updated" id="source-updated-app" style="display:none"></span>
+        <button id="connect-export-btn-app" style="display:none" onclick="connectExportFile()">Connect export file</button>
+        <button id="refresh-source-btn-app" class="source-btn-primary" style="display:none" onclick="refreshMessages()">Refresh messages</button>
+        <button id="change-source-btn-app" style="display:none" onclick="changeSource()">Change source</button>
+      </div>
+      <span class="source-error" id="source-error-app" style="display:none"></span>
     <span class="top-bar-brand">Miranda2</span>
     <div class="top-bar-actions">
       <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">dark mode</button>
@@ -602,6 +632,10 @@ function setSourceError(msg){
 }
 
 function formatSourceUpdated(iso){
+  if(!iso)return'Updated —';
+  const dt=new Date(iso);
+  if(Number.isNaN(dt.getTime()))return'Updated —';
+  return `Updated ${relativeLastUpdated(iso)}`;
   if(!iso)return'Last updated: —';
   const dt=new Date(iso);
   if(Number.isNaN(dt.getTime()))return'Last updated: —';
@@ -621,6 +655,19 @@ function renderSourceUi(){
     sourcePanel.style.display='block';
     if(!supported){
       sourceTitle.textContent='Connected export file';
+      sourceName.textContent='';
+      sourceUpdated.textContent='';
+      if(appUpdated){appUpdated.style.display='none';appUpdated.textContent='';}
+    }else if(!connected){
+      sourceTitle.textContent='Connected export file';
+      sourceName.textContent='';
+      sourceUpdated.textContent='';
+      if(appUpdated){appUpdated.style.display='none';appUpdated.textContent='';}
+    }else{
+      const updatedText=formatSourceUpdated(S.connectedSource.lastRefreshedAt);
+      sourceTitle.textContent='Connected export file';
+      sourceName.textContent='';
+      sourceUpdated.textContent=updatedText;
       sourceName.textContent='Browser does not support one-click refresh.';
       sourceUpdated.textContent='Import file manually.';
       if(appName){appName.style.display='none';appName.textContent='';}

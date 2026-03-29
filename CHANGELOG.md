@@ -2,6 +2,12 @@
 
 ## Current development cycle
 
+### 2026-03-29 — Connected source top-bar cleanup (Phase 1 UX polish)
+- Simplified the connected-source top bar into two rows: row 1 (title, dark mode, timeline filter) and row 2 (`Updated X ago`, Refresh, Change source).
+- Removed persistent connected-file labeling from the top bar and removed the **New export** top-bar button.
+- Switched connected-source freshness copy to short relative format (`Updated 2m ago`) instead of long absolute timestamps.
+- Kept import behavior unchanged; this is a UI-only cleanup on top of the existing Phase 1 connected-source flow.
+
 ### 2026-03-29 — Phase 1 connected export file refresh flow
 - Added a one-time **Connect export file** flow using the File System Access API so users can pick `miranda2_messages.json` once, then refresh with one click.
 - Persisted the connected file handle in IndexedDB with minimal metadata (`fileName`, `lastRefreshedAt`) and restored connected state on app load.
