@@ -82,14 +82,31 @@ body[data-theme="dark"] {
 .saved-prompt button:hover { background:rgba(255,255,255,0.92);border-color:rgba(99,102,241,0.35);color:var(--text); }
 .saved-prompt .saved-label { display:block;font-weight:600;margin-bottom:2px;color:var(--text); }
 .saved-prompt .saved-meta { font-size:11px;color:var(--text3); }
+.source-panel {
+  margin-top:16px;padding:14px;border:1px solid var(--border);border-radius:12px;
+  background:var(--surface2);text-align:left;
+}
+.source-panel-title { font-size:12px;color:var(--text3);margin-bottom:6px; }
+.source-panel-line { font-size:12px;color:var(--text2);margin-bottom:4px; }
+.source-panel-actions { display:flex;gap:8px;flex-wrap:wrap;margin-top:8px; }
+.source-panel .btn-primary { padding:8px 12px;font-size:12px; }
+.btn-secondary {
+  font-family:inherit;font-size:12px;padding:8px 12px;border:1px solid var(--border);
+  border-radius:10px;background:var(--surface);color:var(--text2);cursor:pointer;
+}
+.btn-secondary:hover { background:var(--border);color:var(--text); }
+.source-error { margin-top:8px;font-size:12px;color:var(--red); }
 
 /* ── App ──────────────────────────────────────────────────── */
 #app { display:none;flex-direction:column;min-height:100vh; }
 #app.loaded { display:flex; }
 
 .top-bar {
-  display:flex;align-items:center;justify-content:space-between;
+  display:flex;flex-direction:column;gap:10px;
   padding:16px 24px;border-bottom:1px solid var(--border);background:var(--surface);
+}
+.top-bar-row {
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
 }
 .top-bar-brand { font-size:17px;font-weight:700;color:var(--text);letter-spacing:-0.3px; }
 .top-bar-actions { display:flex;gap:8px;align-items:center; }
@@ -105,6 +122,10 @@ body[data-theme="dark"] {
 .theme-toggle {
   min-width:86px;
 }
+.source-btn-primary {
+  background:var(--blue)!important;color:#fff!important;border-color:var(--blue)!important;
+}
+.source-btn-primary:hover { opacity:.9; }
 
 /* ── Score ─────────────────────────────────────────────────── */
 .score-section {
@@ -322,6 +343,7 @@ body[data-theme="dark"] .saved-prompt .saved-label { color:rgba(255,255,255,0.85
 body[data-theme="dark"] .saved-prompt button:hover { color:#fff; }
 
 @media (max-width:600px) {
+  .top-bar-row { flex-wrap:wrap; }
   .contributors { grid-template-columns:1fr; }
   .score-hero { flex-direction:column;gap:10px; }
   .score-ring { width:150px;height:150px; }
@@ -350,24 +372,44 @@ body[data-theme="dark"] .saved-prompt button:hover { color:#fff; }
         <span class="saved-meta" id="saved-meta"></span>
       </button>
     </div>
+    <div class="source-panel" id="source-panel-drop" style="display:none">
+      <div class="source-panel-title" id="source-title-drop">Connected export file</div>
+      <div class="source-panel-line" id="source-name-drop"></div>
+      <div class="source-panel-line" id="source-updated-drop"></div>
+      <div class="source-panel-actions">
+        <button class="btn-primary" id="connect-export-btn-drop" onclick="connectExportFile()">Connect export file</button>
+        <button class="btn-primary" id="refresh-source-btn-drop" onclick="refreshMessages()">Refresh messages</button>
+        <button class="btn-secondary" id="change-source-btn-drop" onclick="changeSource()">Change source</button>
+      </div>
+      <div class="source-error" id="source-error-drop" style="display:none"></div>
+    </div>
   </div>
 </div>
 
 <div id="app">
   <div class="top-bar">
-    <span class="top-bar-brand">Miranda2</span>
-    <div class="top-bar-actions">
-      <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">dark mode</button>
-      <select id="timeline-filter" onchange="handleTimeline(this.value)">
-        <option value="1">Last 24 hours</option>
-        <option value="3">Last 3 days</option>
-        <option value="7" selected>Last 7 days</option>
-        <option value="30">Last 30 days</option>
-        <option value="90">Last 3 months</option>
-        <option value="">All time</option>
-      </select>
-      <span class="last-updated" id="last-updated" style="display:none"></span>
-      <button onclick="resetData()">New export</button>
+    <div class="top-bar-row">
+      <span class="top-bar-brand">Miranda2</span>
+      <div class="top-bar-actions">
+        <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">dark mode</button>
+        <select id="timeline-filter" onchange="handleTimeline(this.value)">
+          <option value="1">Last 24 hours</option>
+          <option value="3">Last 3 days</option>
+          <option value="7" selected>Last 7 days</option>
+          <option value="30">Last 30 days</option>
+          <option value="90">Last 3 months</option>
+          <option value="">All time</option>
+        </select>
+      </div>
+    </div>
+    <div class="top-bar-row">
+      <div class="top-bar-actions">
+        <span class="last-updated" id="source-updated-app" style="display:none"></span>
+        <button id="connect-export-btn-app" style="display:none" onclick="connectExportFile()">Connect export file</button>
+        <button id="refresh-source-btn-app" class="source-btn-primary" style="display:none" onclick="refreshMessages()">Refresh messages</button>
+        <button id="change-source-btn-app" style="display:none" onclick="changeSource()">Change source</button>
+      </div>
+      <span class="source-error" id="source-error-app" style="display:none"></span>
     </div>
   </div>
 
@@ -503,13 +545,15 @@ const S = {
   filter: { timelineAfter: null, timelineBefore: null },
   exportTimestamp: null, exportTimestampSource: null, lastUpdatedTimer: null,
   replyAssistById: {}, // { [threadId]: { isGenerating, suggestedReply, wasSkipped, copied } }
+  connectedSource: { supported: false, handle: null, fileName: '', lastRefreshedAt: null }
 };
 const OVERRIDE_KEY='miranda2_overrides_v1', DISMISS_KEY='miranda2_dismissed_v1',
       DATA_KEY='miranda2_data_v1', META_KEY='miranda2_meta_v1', HISTORY_KEY='miranda2_history_v1',
-      NAME_SIGNAL_KEY='miranda2_name_signal_v1', THEME_KEY='miranda2_theme_v1';
+      NAME_SIGNAL_KEY='miranda2_name_signal_v1', THEME_KEY='miranda2_theme_v1',
+      CONNECTED_SOURCE_DB='miranda2_connected_source_v1', CONNECTED_SOURCE_STORE='sources', CONNECTED_SOURCE_KEY='primary';
 const PREVIEW_INCLUDE_ATTACHMENT=true; // set false to hide "📎 Attachment" rows in collapsed previews
 
-function init() {
+async function init() {
   try { const r=localStorage.getItem(OVERRIDE_KEY); if(r) S.overrides=JSON.parse(r); } catch(_){}
   try { const r=localStorage.getItem(DISMISS_KEY); if(r) S.dismissed=JSON.parse(r); } catch(_){}
   try { const r=localStorage.getItem(NAME_SIGNAL_KEY); if(r) S.nameSignalFirst=JSON.parse(r).firstName||''; } catch(_){}
@@ -524,6 +568,8 @@ function init() {
   ds.addEventListener('dragleave',()=>ds.classList.remove('drag-over'));
   ds.addEventListener('drop',e=>{e.preventDefault();ds.classList.remove('drag-over');if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);});
   document.getElementById('file-input').addEventListener('change',e=>{if(e.target.files[0])loadFile(e.target.files[0]);});
+  await initConnectedSource();
+  renderSourceUi();
 }
 
 function checkSavedData(){
@@ -552,6 +598,170 @@ function diffNew(nd){S.newIds.clear();try{const o=localStorage.getItem(DATA_KEY)
   (nd.conversations||[]).forEach(c=>{if(!old.has(c.id))S.newIds.add(c.id);});}catch(_){}}
 
 function showDropError(msg){const el=document.getElementById('drop-error');el.textContent=msg;el.style.display='block';}
+function setSourceError(msg){
+  ['source-error-drop','source-error-app'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    if(!msg){el.style.display='none';el.textContent='';return;}
+    el.style.display='block';el.textContent=msg;
+  });
+}
+
+function formatSourceUpdated(iso){
+  if(!iso)return'Updated —';
+  const dt=new Date(iso);
+  if(Number.isNaN(dt.getTime()))return'Updated —';
+  return `Updated ${relativeLastUpdated(iso)}`;
+}
+
+function renderSourceUi(){
+  const supported=S.connectedSource.supported;
+  const connected=!!S.connectedSource.handle;
+  const sourcePanel=document.getElementById('source-panel-drop');
+  const sourceTitle=document.getElementById('source-title-drop');
+  const sourceName=document.getElementById('source-name-drop');
+  const sourceUpdated=document.getElementById('source-updated-drop');
+  const appUpdated=document.getElementById('source-updated-app');
+  if(sourcePanel){
+    sourcePanel.style.display='block';
+    if(!supported){
+      sourceTitle.textContent='Connected export file';
+      sourceName.textContent='';
+      sourceUpdated.textContent='';
+      if(appUpdated){appUpdated.style.display='none';appUpdated.textContent='';}
+    }else if(!connected){
+      sourceTitle.textContent='Connected export file';
+      sourceName.textContent='';
+      sourceUpdated.textContent='';
+      if(appUpdated){appUpdated.style.display='none';appUpdated.textContent='';}
+    }else{
+      const updatedText=formatSourceUpdated(S.connectedSource.lastRefreshedAt);
+      sourceTitle.textContent='Connected export file';
+      sourceName.textContent='';
+      sourceUpdated.textContent=updatedText;
+      if(appUpdated){appUpdated.style.display='inline';appUpdated.textContent=updatedText;}
+    }
+  }
+  const connectIds=['connect-export-btn-drop','connect-export-btn-app'];
+  const refreshIds=['refresh-source-btn-drop','refresh-source-btn-app'];
+  const changeIds=['change-source-btn-drop','change-source-btn-app'];
+  connectIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=(supported&&!connected)?'inline-block':'none';});
+  refreshIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=(supported&&connected)?'inline-block':'none';});
+  changeIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=(supported&&connected)?'inline-block':'none';});
+}
+
+function openConnectedSourceDb(){
+  return new Promise((resolve,reject)=>{
+    const req=indexedDB.open(CONNECTED_SOURCE_DB,1);
+    req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(CONNECTED_SOURCE_STORE))db.createObjectStore(CONNECTED_SOURCE_STORE);};
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error||new Error('Failed to open IndexedDB'));
+  });
+}
+
+async function saveConnectedSourceRecord(record){
+  const db=await openConnectedSourceDb();
+  await new Promise((resolve,reject)=>{
+    const tx=db.transaction(CONNECTED_SOURCE_STORE,'readwrite');
+    tx.objectStore(CONNECTED_SOURCE_STORE).put(record,CONNECTED_SOURCE_KEY);
+    tx.oncomplete=()=>resolve();
+    tx.onerror=()=>reject(tx.error||new Error('Could not save source'));
+  });
+  db.close();
+}
+
+async function loadConnectedSourceRecord(){
+  const db=await openConnectedSourceDb();
+  const result=await new Promise((resolve,reject)=>{
+    const tx=db.transaction(CONNECTED_SOURCE_STORE,'readonly');
+    const req=tx.objectStore(CONNECTED_SOURCE_STORE).get(CONNECTED_SOURCE_KEY);
+    req.onsuccess=()=>resolve(req.result||null);
+    req.onerror=()=>reject(req.error||new Error('Could not read source'));
+  });
+  db.close();
+  return result;
+}
+
+async function clearConnectedSourceRecord(){
+  const db=await openConnectedSourceDb();
+  await new Promise((resolve,reject)=>{
+    const tx=db.transaction(CONNECTED_SOURCE_STORE,'readwrite');
+    tx.objectStore(CONNECTED_SOURCE_STORE).delete(CONNECTED_SOURCE_KEY);
+    tx.oncomplete=()=>resolve();
+    tx.onerror=()=>reject(tx.error||new Error('Could not clear source'));
+  });
+  db.close();
+}
+
+async function initConnectedSource(){
+  S.connectedSource.supported=typeof window.showOpenFilePicker==='function'&&typeof window.indexedDB!=='undefined';
+  if(!S.connectedSource.supported)return;
+  try{
+    const saved=await loadConnectedSourceRecord();
+    if(!saved||!saved.handle)return;
+    S.connectedSource.handle=saved.handle;
+    S.connectedSource.fileName=saved.fileName||'miranda2_messages.json';
+    S.connectedSource.lastRefreshedAt=saved.lastRefreshedAt||null;
+  }catch(_){
+    setSourceError('Connected source unavailable. Import file manually.');
+  }
+}
+
+async function ensureReadPermission(handle){
+  if(!handle)return false;
+  try{
+    if((await handle.queryPermission({mode:'read'}))==='granted')return true;
+    if((await handle.requestPermission({mode:'read'}))==='granted')return true;
+  }catch(_){}
+  return false;
+}
+
+async function connectExportFile(){
+  setSourceError('');
+  if(!S.connectedSource.supported){setSourceError('Connect not supported. Import file manually.');renderSourceUi();return;}
+  try{
+    const [handle]=await window.showOpenFilePicker({multiple:false,types:[{description:'JSON export',accept:{'application/json':['.json']}}]});
+    if(!handle)return;
+    const file=await handle.getFile();
+    const refreshedAt=new Date().toISOString();
+    await saveConnectedSourceRecord({handle,fileName:file.name,lastRefreshedAt:refreshedAt});
+    S.connectedSource.handle=handle;
+    S.connectedSource.fileName=file.name;
+    S.connectedSource.lastRefreshedAt=refreshedAt;
+    loadFile(file);
+    renderSourceUi();
+  }catch(ex){
+    if(ex&&ex.name==='AbortError')return;
+    setSourceError('Connect failed. Import file manually.');
+  }
+}
+
+async function refreshMessages(){
+  setSourceError('');
+  if(!S.connectedSource.supported){setSourceError('Refresh failed. Import file manually.');return;}
+  if(!S.connectedSource.handle){setSourceError('Refresh failed. Import file manually.');renderSourceUi();return;}
+  try{
+    const allowed=await ensureReadPermission(S.connectedSource.handle);
+    if(!allowed){setSourceError('Refresh failed (permission denied). Import file manually.');return;}
+    const file=await S.connectedSource.handle.getFile();
+    const refreshedAt=new Date().toISOString();
+    S.connectedSource.lastRefreshedAt=refreshedAt;
+    await saveConnectedSourceRecord({handle:S.connectedSource.handle,fileName:file.name,lastRefreshedAt:refreshedAt});
+    loadFile(file);
+    renderSourceUi();
+  }catch(_){
+    setSourceError('Refresh failed. Import file manually.');
+  }
+}
+
+async function changeSource(){
+  setSourceError('');
+  try{if(S.connectedSource.supported)await clearConnectedSourceRecord();}catch(_){}
+  S.connectedSource.handle=null;
+  S.connectedSource.fileName='';
+  S.connectedSource.lastRefreshedAt=null;
+  renderSourceUi();
+}
 
 function loadData(data,save){
   S.conversations=data.conversations||[];S.selectedId=null;
@@ -570,7 +780,7 @@ function resetData(){
   document.getElementById('app').classList.remove('loaded');
   document.getElementById('drop-screen').style.display='flex';
   document.getElementById('drop-error').style.display='none';
-  document.getElementById('file-input').value='';checkSavedData();
+  document.getElementById('file-input').value='';checkSavedData();renderSourceUi();
 }
 
 function setLastUpdatedTimestamp(data){

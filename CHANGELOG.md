@@ -2,6 +2,19 @@
 
 ## Current development cycle
 
+### 2026-03-29 — Connected source top-bar cleanup (Phase 1 UX polish)
+- Simplified the connected-source top bar into two rows: row 1 (title, dark mode, timeline filter) and row 2 (`Updated X ago`, Refresh, Change source).
+- Removed persistent connected-file labeling from the top bar and removed the **New export** top-bar button.
+- Switched connected-source freshness copy to short relative format (`Updated 2m ago`) instead of long absolute timestamps.
+- Kept import behavior unchanged; this is a UI-only cleanup on top of the existing Phase 1 connected-source flow.
+
+### 2026-03-29 — Phase 1 connected export file refresh flow
+- Added a one-time **Connect export file** flow using the File System Access API so users can pick `miranda2_messages.json` once, then refresh with one click.
+- Persisted the connected file handle in IndexedDB with minimal metadata (`fileName`, `lastRefreshedAt`) and restored connected state on app load.
+- Added connected/disconnected source UI states with **Refresh messages** and **Change source** actions, plus connected status and last updated display.
+- Wired both Connect and Refresh flows to produce a `File` and pass it into the existing `loadFile()` import handoff (no parallel import pipeline).
+- Added graceful fallback messaging for unsupported browsers, permission failures, missing source, and refresh/read failures while keeping manual import and drag/drop intact.
+
 ### 2026-03-28 — Score history now uses a fixed local 7-day snapshot
 - Standardized score history saves to always compute from a fixed trailing 7-day window, independent of the currently selected UI timeline filter.
 - Kept one score snapshot per local calendar day with same-day overwrite behavior (latest save wins).
