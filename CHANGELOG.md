@@ -2,6 +2,12 @@
 
 ## Current development cycle
 
+### 2026-03-29 — Phase 1 connected export file refresh flow
+- Added a one-time **Connect export file** flow using the File System Access API so users can pick `miranda2_messages.json` once, then refresh with one click.
+- Persisted the connected file handle in IndexedDB with minimal metadata (`fileName`, `lastRefreshedAt`) and restored connected state on app load.
+- Added connected/disconnected source UI states with **Refresh messages** and **Change source** actions, plus connected status and last updated display.
+- Wired both Connect and Refresh flows to produce a `File` and pass it into the existing `loadFile()` import handoff (no parallel import pipeline).
+- Added graceful fallback messaging for unsupported browsers, permission failures, missing source, and refresh/read failures while keeping manual import and drag/drop intact.
 ### 2026-03-29 — Suggested Reply now uses real AI generation with broader coverage
 - Replaced the deterministic Suggested Reply stub (question-mark-only canned output) with an async model call in the existing button flow.
 - Kept UI behavior unchanged (Generate reply, Generating… state, suggested output, Copy, and no-regenerate behavior).
