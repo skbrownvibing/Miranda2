@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-03-30 — Top bar de-duplicated back to one row
+- Fixed an accidental duplicated top-bar layout that showed the app name twice and rendered duplicate **dark mode** + timeline controls.
+- Restored a single-row top bar with one `Miranda2` title on the left and one control cluster on the right.
+- Kept existing controls in that single row (`dark mode`, timeline filter, freshness labels/source actions, and **New export**) so functionality stays the same while the header is cleaner.
+
 ### 2026-03-29 — Connected source top-bar cleanup (Phase 1 UX polish)
 - Simplified the connected-source top bar into two rows: row 1 (title, dark mode, timeline filter) and row 2 (`Updated X ago`, Refresh, Change source).
 - Removed persistent connected-file labeling from the top bar and removed the **New export** top-bar button.
