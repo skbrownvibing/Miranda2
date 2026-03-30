@@ -636,10 +636,6 @@ function formatSourceUpdated(iso){
   const dt=new Date(iso);
   if(Number.isNaN(dt.getTime()))return'Updated —';
   return `Updated ${relativeLastUpdated(iso)}`;
-  if(!iso)return'Last updated: —';
-  const dt=new Date(iso);
-  if(Number.isNaN(dt.getTime()))return'Last updated: —';
-  return `Last updated: ${dt.toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})}`;
 }
 
 function renderSourceUi(){
@@ -655,19 +651,6 @@ function renderSourceUi(){
     sourcePanel.style.display='block';
     if(!supported){
       sourceTitle.textContent='Connected export file';
-      sourceName.textContent='';
-      sourceUpdated.textContent='';
-      if(appUpdated){appUpdated.style.display='none';appUpdated.textContent='';}
-    }else if(!connected){
-      sourceTitle.textContent='Connected export file';
-      sourceName.textContent='';
-      sourceUpdated.textContent='';
-      if(appUpdated){appUpdated.style.display='none';appUpdated.textContent='';}
-    }else{
-      const updatedText=formatSourceUpdated(S.connectedSource.lastRefreshedAt);
-      sourceTitle.textContent='Connected export file';
-      sourceName.textContent='';
-      sourceUpdated.textContent=updatedText;
       sourceName.textContent='Browser does not support one-click refresh.';
       sourceUpdated.textContent='Import file manually.';
       if(appName){appName.style.display='none';appName.textContent='';}
