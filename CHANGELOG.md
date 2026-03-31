@@ -2,6 +2,14 @@
 
 ## Current development cycle
 
+### 2026-03-31 — Refresh reliability + single-source top-bar time
+- Simplified top-bar freshness display to a single source of truth: **Last exported: …** (derived from `exported_at`), removing conflicting secondary "updated" copy.
+- Renamed connected-source refresh action to **Re-read export file** to clarify that it re-reads the selected JSON and does not run `export.command`.
+- Hardened connected-source refresh/connect flow by making `loadFile(file)` return a Promise and awaiting it in one-click actions, so parse/read failures are surfaced instead of failing silently.
+- Simplified connected-source status text to only show the connected file name in the drop-screen panel.
+- Fixed one-click support gating to depend on File System Access availability (not IndexedDB), so Chrome no longer falls back to “unsupported” when persistence is blocked.
+- Added clearer source-state messaging for context restrictions and session-only mode when IndexedDB is unavailable.
+
 ### 2026-03-30 — Top bar de-duplicated back to one row
 - Fixed an accidental duplicated top-bar layout that showed the app name twice and rendered duplicate **dark mode** + timeline controls.
 - Restored a single-row top bar with one `Miranda2` title on the left and one control cluster on the right.
