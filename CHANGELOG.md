@@ -2,6 +2,12 @@
 
 ## Current development cycle
 
+### 2026-03-31 — Filtered-out review UX simplified (Spam + Logistics merged in UI)
+- Replaced separate **Spam** and **Logistics** tabs in Auto-filtered texts with one **Filtered out** tab showing the combined total.
+- Kept categorization behavior unchanged (`spam` and `delivery` rules/overrides stay the same); this is a presentation-only merge.
+- Added per-row reason badges (`Spam` or `Logistics`) inside the combined filtered list so users can still see why each thread was filtered.
+- Simplified expanded row actions in **Action needed** and **Other texts** by replacing separate `→ Logistics` and `→ Spam` buttons with one **Filter out** menu.
+
 ### 2026-03-30 — Top bar de-duplicated back to one row
 - Fixed an accidental duplicated top-bar layout that showed the app name twice and rendered duplicate **dark mode** + timeline controls.
 - Restored a single-row top bar with one `Miranda2` title on the left and one control cluster on the right.
