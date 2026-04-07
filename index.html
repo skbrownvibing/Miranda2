@@ -423,11 +423,9 @@ body[data-theme="dark"] .saved-prompt button:hover { color:#fff; }
         <option value="">All time</option>
       </select>
       <span class="last-updated" id="last-updated" style="display:none"></span>
-      <button id="connect-export-btn-app" style="display:none" onclick="connectExportFile()">Connect export file</button>
-      <button id="refresh-source-btn-app" class="source-btn-primary" style="display:none" onclick="refreshMessages()">Re-read export file</button>
-      <button id="change-source-btn-app" style="display:none" onclick="changeSource()">Change source</button>
+      <button id="refresh-source-btn-app" class="source-btn-primary" style="display:none" onclick="refreshMessages()">Refresh messages</button>
       <span class="source-error" id="source-error-app" style="display:none"></span>
-      <button onclick="resetData()">New export</button>
+      <button onclick="resetData()">Home</button>
     </div>
   </div>
 
@@ -671,9 +669,9 @@ function renderSourceUi(){
       sourceName.textContent=nameText;
     }
   }
-  const connectIds=['connect-export-btn-drop','connect-export-btn-app'];
+  const connectIds=['connect-export-btn-drop'];
   const refreshIds=['refresh-source-btn-drop','refresh-source-btn-app'];
-  const changeIds=['change-source-btn-drop','change-source-btn-app'];
+  const changeIds=['change-source-btn-drop'];
   connectIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=(supported&&!connected)?'inline-block':'none';});
   refreshIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=(supported&&connected)?'inline-block':'none';});
   changeIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=(supported&&connected)?'inline-block':'none';});
@@ -876,7 +874,7 @@ function renderLastUpdated(){
   const ts=new Date(S.exportTimestamp);
   if(Number.isNaN(ts.getTime())){clearLastUpdatedTimestamp();return;}
   const rel=relativeLastUpdated(S.exportTimestamp);
-  el.textContent=`Last exported: ${rel}`;
+  el.textContent=`Last updated: ${rel}`;
   el.title=ts.toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
   const ageHrs=(Date.now()-ts.getTime())/3600000;
   if(ageHrs>24)el.classList.add('stale');else el.classList.remove('stale');
