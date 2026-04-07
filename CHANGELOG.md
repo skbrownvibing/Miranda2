@@ -2,6 +2,16 @@
 
 ## Current development cycle
 
+### 2026-04-07 — Top-bar actions simplified for main workflow
+- In the loaded app header, kept only **Refresh messages** and **Home** as primary actions.
+- Renamed **New export** to **Home** and removed **Connect export file** / **Change source** from the loaded-app top bar.
+- Kept source-management actions on the Home/import view (**Connect export file**, **Change source**), with refresh still available there.
+- Kept a single freshness label in the header and clarified copy to **Last updated: ...**.
+
+### 2026-04-07 — Partial UX rename to “Reply or Die”
+- Updated the two primary in-app brand labels from **Miranda2** to **Reply or Die** (import screen title and top-bar brand).
+- Kept internal naming and file/export identifiers unchanged for this pass.
+
 ### 2026-03-31 — Refresh reliability + single-source top-bar time
 - Simplified top-bar freshness display to a single source of truth: **Last exported: …** (derived from `exported_at`), removing conflicting secondary "updated" copy.
 - Renamed connected-source refresh action to **Re-read export file** to clarify that it re-reads the selected JSON and does not run `export.command`.
