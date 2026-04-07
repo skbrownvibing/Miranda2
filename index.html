@@ -289,6 +289,33 @@ body[data-theme="dark"] {
 .review-tab:hover { border-color:var(--blue);color:var(--blue); }
 .review-tab.active { background:var(--blue);border-color:var(--blue);color:#fff; }
 .review-tab-count { font-weight:600;margin-left:2px; }
+.review-meta { display:flex;align-items:center;gap:8px;margin-left:auto; }
+.review-reason {
+  font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;
+  padding:2px 7px;border-radius:999px;border:1px solid var(--border);color:var(--text2);
+}
+.review-reason.spam { border-color:rgba(220,63,63,0.45);color:var(--red); }
+.review-reason.delivery { border-color:rgba(217,164,37,0.45);color:var(--yellow); }
+
+.filter-out-menu { position:relative;display:inline-flex;align-items:center; }
+.filter-out-menu summary {
+  list-style:none;font-family:inherit;font-size:12px;font-weight:500;padding:7px 16px;
+  border:1px solid var(--border);border-radius:10px;background:none;color:var(--text2);
+  cursor:pointer;transition:all .12s;
+}
+.filter-out-menu summary::-webkit-details-marker { display:none; }
+.filter-out-menu summary:hover { border-color:var(--text3);color:var(--text); }
+.filter-out-menu[open] summary { border-color:var(--blue);color:var(--blue); }
+.filter-out-popover {
+  position:absolute;top:calc(100% + 6px);left:0;z-index:10;min-width:130px;
+  display:flex;flex-direction:column;gap:4px;padding:6px;background:var(--surface);
+  border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.18);
+}
+.filter-out-popover button {
+  text-align:left;font-family:inherit;font-size:12px;padding:6px 8px;background:none;
+  border:0;border-radius:8px;color:var(--text2);cursor:pointer;
+}
+.filter-out-popover button:hover { background:var(--surface2);color:var(--text); }
 .review-list { display:flex;flex-direction:column;gap:4px;max-height:400px;overflow-y:auto; }
 .review-item {
   display:flex;align-items:center;gap:10px;padding:10px 12px;
@@ -519,8 +546,7 @@ body[data-theme="dark"] .saved-prompt button:hover { color:#fff; }
     </button>
     <div class="review-body" id="review-body" style="display:none">
       <div class="review-tabs" id="review-tabs">
-        <button class="review-tab active" data-cat="spam" onclick="setReviewCat('spam')">Spam <span id="review-count-spam" class="review-tab-count"></span></button>
-        <button class="review-tab" data-cat="delivery" onclick="setReviewCat('delivery')">Logistics <span id="review-count-delivery" class="review-tab-count"></span></button>
+        <button class="review-tab active" data-cat="filtered" onclick="setReviewCat('filtered')">Filtered out <span id="review-count-filtered" class="review-tab-count"></span></button>
       </div>
       <div class="review-list" id="review-list"></div>
     </div>
@@ -530,7 +556,7 @@ body[data-theme="dark"] .saved-prompt button:hover { color:#fff; }
 <script>
 const S = {
   conversations: [], overrides: {}, dismissed: {}, newIds: new Set(),
-  selectedId: null, actionFilter: 'all', reviewCat: 'spam', reviewOpen: false,
+  selectedId: null, actionFilter: 'all', reviewCat: 'filtered', reviewOpen: false,
   trendOpen: false, theme: 'light',
   nameSignalFirst: '', nameSignalEditing: false,
   filter: { timelineAfter: null, timelineBefore: null },
@@ -1378,8 +1404,7 @@ function renderActions(){
         <div class="detail-actions">
           ${phone?`<a class="btn-reply" href="${smsHref}">Reply in Messages ↗</a>`:''}
           <button class="btn-dismiss" onclick="dismissConvo('${esc(c.id)}')">No reply needed</button>
-          <button class="btn-dismiss" onclick="reclassify('${esc(c.id)}','delivery');event.stopPropagation()">→ Logistics</button>
-          <button class="btn-dismiss" onclick="reclassify('${esc(c.id)}','spam');event.stopPropagation()">→ Spam</button>
+          ${renderFilterOutMenu(c.id)}
           ${renderSuggestedReplyUI(c)}
         </div>
       </div>
@@ -1424,12 +1449,28 @@ function renderOtherTexts(){
         <div class="detail-actions">
           ${phone?`<a class="btn-reply" href="${smsHref}">Reply in Messages ↗</a>`:''}
           <button class="btn-dismiss" onclick="dismissConvo('${esc(c.id)}')">No reply needed</button>
-          <button class="btn-dismiss" onclick="reclassify('${esc(c.id)}','delivery');event.stopPropagation()">→ Logistics</button>
-          <button class="btn-dismiss" onclick="reclassify('${esc(c.id)}','spam');event.stopPropagation()">→ Spam</button>
+          ${renderFilterOutMenu(c.id)}
         </div>
       </div>
     </div>`;
   }).join('');
+}
+
+function renderFilterOutMenu(id){
+  const safeId=esc(id);
+  return `<details class="filter-out-menu" onclick="event.stopPropagation()">
+    <summary>Filter out ▾</summary>
+    <div class="filter-out-popover">
+      <button onclick="reclassify('${safeId}','delivery');closeFilterOutMenu(this,event)">Logistics</button>
+      <button onclick="reclassify('${safeId}','spam');closeFilterOutMenu(this,event)">Spam</button>
+    </div>
+  </details>`;
+}
+
+function closeFilterOutMenu(btn,event){
+  if(event)event.stopPropagation();
+  const root=btn?.closest('.filter-out-menu');
+  if(root)root.open=false;
 }
 
 // ── Actions ──────────────────────────────────────────────────────────────────
@@ -1531,6 +1572,12 @@ function setReviewCat(cat){
 }
 
 function reviewConvos(cat){
+  if(cat==='filtered'){
+    return S.conversations.filter(c=>{
+      const actual=getCategory(c);
+      return actual==='spam'||actual==='delivery';
+    });
+  }
   return S.conversations.filter(c=>{
     const actual=getCategory(c);
     if(actual!==cat)return false;
@@ -1657,8 +1704,7 @@ function renderReview(){
   // Update counts
   const spamCount=reviewConvos('spam').length;
   const delivCount=reviewConvos('delivery').length;
-  document.getElementById('review-count-spam').textContent=spamCount;
-  document.getElementById('review-count-delivery').textContent=delivCount;
+  document.getElementById('review-count-filtered').textContent=spamCount+delivCount;
   document.getElementById('review-toggle-label').textContent=
     `Auto-filtered texts (${spamCount+delivCount})`;
 
@@ -1693,7 +1739,9 @@ function renderReview(){
   el.innerHTML=control+list.slice(0,50).map(c=>{
     const name=c.contact_name||c.phone||'Unknown';
     const preview=(latestEventText(c)||'').slice(0,60);
-    const cat=S.reviewCat;
+    const actual=getCategory(c);
+    const cat=actual==='delivery'?'delivery':actual==='spam'?'spam':S.reviewCat;
+    const reason=cat==='delivery'?'Logistics':'Spam';
     const CAT_LABELS={personal:'Personal',delivery:'Logistics',spam:'Spam',uncategorized:'Other'};
     const hasOverride=(c.phone&&S.overrides[c.phone])||S.overrides[c.id];
     const buttons=['personal','delivery','spam','uncategorized'].filter(cc=>cc!==cat).map(cc=>
@@ -1702,6 +1750,7 @@ function renderReview(){
     return`<div class="review-item">
       <span class="review-name">${esc(name)}</span>
       <span class="review-preview">${esc(preview)}</span>
+      <span class="review-reason ${cat}">${reason}</span>
       ${buttons}
     </div>`;
   }).join('');
