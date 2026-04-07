@@ -399,10 +399,9 @@ body[data-theme="dark"] .saved-prompt button:hover { color:#fff; }
     <div class="source-panel" id="source-panel-drop" style="display:none">
       <div class="source-panel-title" id="source-title-drop">Connected export file</div>
       <div class="source-panel-line" id="source-name-drop"></div>
-      <div class="source-panel-line" id="source-updated-drop"></div>
       <div class="source-panel-actions">
         <button class="btn-primary" id="connect-export-btn-drop" onclick="connectExportFile()">Connect export file</button>
-        <button class="btn-primary" id="refresh-source-btn-drop" onclick="refreshMessages()">Refresh messages</button>
+        <button class="btn-primary" id="refresh-source-btn-drop" onclick="refreshMessages()">Re-read export file</button>
         <button class="btn-secondary" id="change-source-btn-drop" onclick="changeSource()">Change source</button>
       </div>
       <div class="source-error" id="source-error-drop" style="display:none"></div>
@@ -424,9 +423,8 @@ body[data-theme="dark"] .saved-prompt button:hover { color:#fff; }
         <option value="">All time</option>
       </select>
       <span class="last-updated" id="last-updated" style="display:none"></span>
-      <span class="last-updated" id="source-updated-app" style="display:none"></span>
       <button id="connect-export-btn-app" style="display:none" onclick="connectExportFile()">Connect export file</button>
-      <button id="refresh-source-btn-app" class="source-btn-primary" style="display:none" onclick="refreshMessages()">Refresh messages</button>
+      <button id="refresh-source-btn-app" class="source-btn-primary" style="display:none" onclick="refreshMessages()">Re-read export file</button>
       <button id="change-source-btn-app" style="display:none" onclick="changeSource()">Change source</button>
       <span class="source-error" id="source-error-app" style="display:none"></span>
       <button onclick="resetData()">New export</button>
@@ -564,7 +562,10 @@ const S = {
   filter: { timelineAfter: null, timelineBefore: null },
   exportTimestamp: null, exportTimestampSource: null, lastUpdatedTimer: null,
   replyAssistById: {}, // { [threadId]: { isGenerating, suggestedReply, wasSkipped, copied } }
-  connectedSource: { supported: false, handle: null, fileName: '', lastRefreshedAt: null }
+  connectedSource: {
+    supported: false, canPersist: false, supportReason: '',
+    handle: null, fileName: '', lastRefreshedAt: null
+  }
 };
 const OVERRIDE_KEY='miranda2_overrides_v1', DISMISS_KEY='miranda2_dismissed_v1',
       DATA_KEY='miranda2_data_v1', META_KEY='miranda2_meta_v1', HISTORY_KEY='miranda2_history_v1',
@@ -610,12 +611,29 @@ function loadSavedData(){try{const r=localStorage.getItem(DATA_KEY);if(!r)return
 
 function loadFile(file){
   document.getElementById('drop-error').style.display='none';
-  if(!file.name.endsWith('.json')){showDropError('Please select a .json file.');return;}
-  const reader=new FileReader();
-  reader.onload=e=>{try{const data=JSON.parse(e.target.result);
-    if(!data.conversations)throw new Error('Missing "conversations" key.');
-    diffNew(data);loadData(data,true);}catch(ex){showDropError('Could not parse: '+ex.message);}};
-  reader.readAsText(file);
+  if(!file.name.endsWith('.json')){
+    const msg='Please select a .json file.';
+    showDropError(msg);
+    return Promise.reject(new Error(msg));
+  }
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onerror=()=>reject(reader.error||new Error('Could not read file.'));
+    reader.onload=e=>{
+      try{
+        const data=JSON.parse(e.target.result);
+        if(!data.conversations)throw new Error('Missing "conversations" key.');
+        diffNew(data);
+        loadData(data,true);
+        resolve(data);
+      }catch(ex){
+        const err=new Error('Could not parse: '+ex.message);
+        showDropError(err.message);
+        reject(err);
+      }
+    };
+    reader.readAsText(file);
+  });
 }
 function diffNew(nd){S.newIds.clear();try{const o=localStorage.getItem(DATA_KEY);if(!o)return;
   const old=new Set((JSON.parse(o).conversations||[]).map(c=>c.id));
@@ -631,44 +649,26 @@ function setSourceError(msg){
   });
 }
 
-function formatSourceUpdated(iso){
-  if(!iso)return'Updated —';
-  const dt=new Date(iso);
-  if(Number.isNaN(dt.getTime()))return'Updated —';
-  return `Updated ${relativeLastUpdated(iso)}`;
-}
-
 function renderSourceUi(){
   const supported=S.connectedSource.supported;
   const connected=!!S.connectedSource.handle;
   const sourcePanel=document.getElementById('source-panel-drop');
   const sourceTitle=document.getElementById('source-title-drop');
   const sourceName=document.getElementById('source-name-drop');
-  const sourceUpdated=document.getElementById('source-updated-drop');
-  const appName=document.getElementById('source-name-app');
-  const appUpdated=document.getElementById('source-updated-app');
   if(sourcePanel){
     sourcePanel.style.display='block';
     if(!supported){
       sourceTitle.textContent='Connected export file';
-      sourceName.textContent='Browser does not support one-click refresh.';
-      sourceUpdated.textContent='Import file manually.';
-      if(appName){appName.style.display='none';appName.textContent='';}
-      if(appUpdated){appUpdated.style.display='none';appUpdated.textContent='';}
+      sourceName.textContent=S.connectedSource.supportReason||'One-click refresh is unavailable in this browser or page context.';
     }else if(!connected){
       sourceTitle.textContent='Connected export file';
-      sourceName.textContent='Not connected';
-      sourceUpdated.textContent='Connect once, then use Refresh messages.';
-      if(appName){appName.style.display='none';appName.textContent='';}
-      if(appUpdated){appUpdated.style.display='none';appUpdated.textContent='';}
+      sourceName.textContent=S.connectedSource.canPersist
+        ? 'Connect once, then use Re-read export file.'
+        : 'Connect file for this session, then use Re-read export file.';
     }else{
-      const nameText=`Connected to: ${S.connectedSource.fileName||'miranda2_messages.json'}`;
-      const updatedText=formatSourceUpdated(S.connectedSource.lastRefreshedAt);
+      const nameText=`Connected file: ${S.connectedSource.fileName||'miranda2_messages.json'}`;
       sourceTitle.textContent='Connected export file';
       sourceName.textContent=nameText;
-      sourceUpdated.textContent=updatedText;
-      if(appName){appName.style.display='inline';appName.textContent=nameText;}
-      if(appUpdated){appUpdated.style.display='inline';appUpdated.textContent=updatedText;}
     }
   }
   const connectIds=['connect-export-btn-drop','connect-export-btn-app'];
@@ -723,8 +723,21 @@ async function clearConnectedSourceRecord(){
 }
 
 async function initConnectedSource(){
-  S.connectedSource.supported=typeof window.showOpenFilePicker==='function'&&typeof window.indexedDB!=='undefined';
-  if(!S.connectedSource.supported)return;
+  const hasPicker=typeof window.showOpenFilePicker==='function';
+  const hasIndexedDb=typeof window.indexedDB!=='undefined';
+  const secureContext=window.isSecureContext===true;
+  S.connectedSource.supported=hasPicker;
+  S.connectedSource.canPersist=hasIndexedDb;
+  if(!hasPicker){
+    S.connectedSource.supportReason=secureContext
+      ? 'One-click refresh is unavailable in this browser.'
+      : 'One-click refresh is unavailable in this page context. Use localhost/HTTPS.';
+    return;
+  }
+  if(!hasIndexedDb){
+    S.connectedSource.supportReason='One-click refresh is available, but connected file won’t persist after reload.';
+    return;
+  }
   try{
     const saved=await loadConnectedSourceRecord();
     if(!saved||!saved.handle)return;
@@ -732,7 +745,8 @@ async function initConnectedSource(){
     S.connectedSource.fileName=saved.fileName||'miranda2_messages.json';
     S.connectedSource.lastRefreshedAt=saved.lastRefreshedAt||null;
   }catch(_){
-    setSourceError('Connected source unavailable. Import file manually.');
+    S.connectedSource.canPersist=false;
+    setSourceError('Connected source could not be restored. Re-connect export file for this session.');
   }
 }
 
@@ -753,11 +767,13 @@ async function connectExportFile(){
     if(!handle)return;
     const file=await handle.getFile();
     const refreshedAt=new Date().toISOString();
-    await saveConnectedSourceRecord({handle,fileName:file.name,lastRefreshedAt:refreshedAt});
+    if(S.connectedSource.canPersist){
+      await saveConnectedSourceRecord({handle,fileName:file.name,lastRefreshedAt:refreshedAt});
+    }
     S.connectedSource.handle=handle;
     S.connectedSource.fileName=file.name;
     S.connectedSource.lastRefreshedAt=refreshedAt;
-    loadFile(file);
+    await loadFile(file);
     renderSourceUi();
   }catch(ex){
     if(ex&&ex.name==='AbortError')return;
@@ -775,8 +791,10 @@ async function refreshMessages(){
     const file=await S.connectedSource.handle.getFile();
     const refreshedAt=new Date().toISOString();
     S.connectedSource.lastRefreshedAt=refreshedAt;
-    await saveConnectedSourceRecord({handle:S.connectedSource.handle,fileName:file.name,lastRefreshedAt:refreshedAt});
-    loadFile(file);
+    if(S.connectedSource.canPersist){
+      await saveConnectedSourceRecord({handle:S.connectedSource.handle,fileName:file.name,lastRefreshedAt:refreshedAt});
+    }
+    await loadFile(file);
     renderSourceUi();
   }catch(_){
     setSourceError('Refresh failed. Import file manually.');
@@ -785,7 +803,7 @@ async function refreshMessages(){
 
 async function changeSource(){
   setSourceError('');
-  try{if(S.connectedSource.supported)await clearConnectedSourceRecord();}catch(_){}
+  try{if(S.connectedSource.supported&&S.connectedSource.canPersist)await clearConnectedSourceRecord();}catch(_){}
   S.connectedSource.handle=null;
   S.connectedSource.fileName='';
   S.connectedSource.lastRefreshedAt=null;
@@ -858,7 +876,7 @@ function renderLastUpdated(){
   const ts=new Date(S.exportTimestamp);
   if(Number.isNaN(ts.getTime())){clearLastUpdatedTimestamp();return;}
   const rel=relativeLastUpdated(S.exportTimestamp);
-  el.textContent=`Last updated: ${rel}`;
+  el.textContent=`Last exported: ${rel}`;
   el.title=ts.toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
   const ageHrs=(Date.now()-ts.getTime())/3600000;
   if(ageHrs>24)el.classList.add('stale');else el.classList.remove('stale');

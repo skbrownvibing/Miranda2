@@ -2,6 +2,13 @@
 
 ## Current development cycle
 
+### 2026-03-31 — Refresh reliability + single-source top-bar time
+- Simplified top-bar freshness display to a single source of truth: **Last exported: …** (derived from `exported_at`), removing conflicting secondary "updated" copy.
+- Renamed connected-source refresh action to **Re-read export file** to clarify that it re-reads the selected JSON and does not run `export.command`.
+- Hardened connected-source refresh/connect flow by making `loadFile(file)` return a Promise and awaiting it in one-click actions, so parse/read failures are surfaced instead of failing silently.
+- Simplified connected-source status text to only show the connected file name in the drop-screen panel.
+- Fixed one-click support gating to depend on File System Access availability (not IndexedDB), so Chrome no longer falls back to “unsupported” when persistence is blocked.
+- Added clearer source-state messaging for context restrictions and session-only mode when IndexedDB is unavailable.
 ### 2026-03-31 — Filtered-out review UX simplified (Spam + Logistics merged in UI)
 - Replaced separate **Spam** and **Logistics** tabs in Auto-filtered texts with one **Filtered out** tab showing the combined total.
 - Kept categorization behavior unchanged (`spam` and `delivery` rules/overrides stay the same); this is a presentation-only merge.
