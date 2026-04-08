@@ -98,6 +98,7 @@ Multiple numbers per contact, reactions/attachments/non-standard events, missing
 - Needs Action / Other polish  
 
 ## Recently completed  
+- one-click local refresh via **Run export + reload** when a local runner is available, with **Reload current JSON** fallback  
 - dynamic score updates  
 - score labels  
 - light mode + toggle  

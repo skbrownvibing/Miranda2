@@ -2,6 +2,15 @@
 
 ## Current development cycle
 
+### 2026-04-08 — Refresh split into two explicit actions + local export runner hook
+- Added two separate connected-source actions:
+  - **Run export + reload** (new): calls a local localhost runner to execute `export.command`, waits for completion, then reloads JSON.
+  - **Reload current JSON** (existing fallback): re-reads the currently connected JSON file only.
+- Added explicit refresh status messaging states in-app: idle, running export, reloading data, success, export failed, runner unavailable, and output unchanged.
+- Kept `loadFile(file)` parsing/import flow intact and reused it for all reload behavior.
+- Preserved last successful loaded data if export or reload fails.
+- Updated source-panel copy/tooltips to remove ambiguity between rerunning export vs re-reading current JSON.
+
 ### 2026-04-07 — Top-bar actions simplified for main workflow
 - In the loaded app header, kept only **Refresh messages** and **Home** as primary actions.
 - Renamed **New export** to **Home** and removed **Connect export file** / **Change source** from the loaded-app top bar.
