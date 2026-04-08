@@ -96,6 +96,9 @@ body[data-theme="dark"] {
 }
 .btn-secondary:hover { background:var(--border);color:var(--text); }
 .source-error { margin-top:8px;font-size:12px;color:var(--red); }
+.source-status { margin-top:8px;font-size:12px;color:#60a5fa;display:none; }
+.source-status.is-error { color:var(--red); }
+.source-status.is-success { color:#22c55e; }
 
 /* ── App ──────────────────────────────────────────────────── */
 #app { display:none;flex-direction:column;min-height:100vh; }
@@ -401,9 +404,11 @@ body[data-theme="dark"] .saved-prompt button:hover { color:#fff; }
       <div class="source-panel-line" id="source-name-drop"></div>
       <div class="source-panel-actions">
         <button class="btn-primary" id="connect-export-btn-drop" onclick="connectExportFile()">Connect export file</button>
-        <button class="btn-primary" id="refresh-source-btn-drop" onclick="refreshMessages()">Re-read export file</button>
+        <button class="btn-primary" id="run-export-btn-drop" onclick="runExportAndReload()" title="Run export.command, then reload the newly generated JSON">Run export + reload</button>
+        <button class="btn-secondary" id="refresh-source-btn-drop" onclick="refreshMessages()" title="Reload the currently selected JSON file only">Reload current JSON</button>
         <button class="btn-secondary" id="change-source-btn-drop" onclick="changeSource()">Change source</button>
       </div>
+      <div class="source-status" id="source-status-drop" style="display:none"></div>
       <div class="source-error" id="source-error-drop" style="display:none"></div>
     </div>
   </div>
@@ -423,7 +428,9 @@ body[data-theme="dark"] .saved-prompt button:hover { color:#fff; }
         <option value="">All time</option>
       </select>
       <span class="last-updated" id="last-updated" style="display:none"></span>
-      <button id="refresh-source-btn-app" class="source-btn-primary" style="display:none" onclick="refreshMessages()">Refresh messages</button>
+      <button id="run-export-btn-app" class="source-btn-primary" style="display:none" onclick="runExportAndReload()" title="Run export.command, then reload the newly generated JSON">Run export + reload</button>
+      <button id="refresh-source-btn-app" class="source-btn-primary" style="display:none" onclick="refreshMessages()" title="Reload the currently selected JSON file only">Reload current JSON</button>
+      <span class="source-status" id="source-status-app" style="display:none"></span>
       <span class="source-error" id="source-error-app" style="display:none"></span>
       <button onclick="resetData()">Home</button>
     </div>
@@ -562,7 +569,8 @@ const S = {
   replyAssistById: {}, // { [threadId]: { isGenerating, suggestedReply, wasSkipped, copied } }
   connectedSource: {
     supported: false, canPersist: false, supportReason: '',
-    handle: null, fileName: '', lastRefreshedAt: null
+    handle: null, fileName: '', lastRefreshedAt: null,
+    refreshState: 'idle', runnerUrl: 'http://127.0.0.1:8765'
   }
 };
 const OVERRIDE_KEY='miranda2_overrides_v1', DISMISS_KEY='miranda2_dismissed_v1',
@@ -593,6 +601,7 @@ async function init() {
   document.getElementById('file-input').addEventListener('change',e=>{if(e.target.files[0])loadFile(e.target.files[0]);});
   await initConnectedSource();
   renderSourceUi();
+  setRefreshState('idle');
 }
 
 function checkSavedData(){
@@ -647,6 +656,39 @@ function setSourceError(msg){
   });
 }
 
+function setSourceStatus(msg,tone){
+  ['source-status-drop','source-status-app'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    if(!msg){
+      el.style.display='none';
+      el.textContent='';
+      el.classList.remove('is-error','is-success');
+      return;
+    }
+    el.style.display='block';
+    el.textContent=msg;
+    el.classList.remove('is-error','is-success');
+    if(tone==='error')el.classList.add('is-error');
+    if(tone==='success')el.classList.add('is-success');
+  });
+}
+
+function setRefreshState(state){
+  S.connectedSource.refreshState=state;
+  const labels={
+    idle:'Idle',
+    running_export:'Running export.command…',
+    reloading_data:'Reloading data…',
+    success:'Refresh complete.',
+    export_failed:'Export failed. Keeping last successful data loaded.',
+    runner_unavailable:'Runner unavailable. You can still reload current JSON.',
+    output_unchanged:'Export finished, but output is unchanged.'
+  };
+  const tone=state==='export_failed'||state==='runner_unavailable'?'error':(state==='success'?'success':'');
+  setSourceStatus(labels[state]||'Idle',tone);
+}
+
 function renderSourceUi(){
   const supported=S.connectedSource.supported;
   const connected=!!S.connectedSource.handle;
@@ -661,8 +703,8 @@ function renderSourceUi(){
     }else if(!connected){
       sourceTitle.textContent='Connected export file';
       sourceName.textContent=S.connectedSource.canPersist
-        ? 'Connect once, then use Re-read export file.'
-        : 'Connect file for this session, then use Re-read export file.';
+        ? 'Connect once, then use Run export + reload or Reload current JSON.'
+        : 'Connect file for this session, then use Run export + reload or Reload current JSON.';
     }else{
       const nameText=`Connected file: ${S.connectedSource.fileName||'miranda2_messages.json'}`;
       sourceTitle.textContent='Connected export file';
@@ -670,9 +712,11 @@ function renderSourceUi(){
     }
   }
   const connectIds=['connect-export-btn-drop'];
+  const runExportIds=['run-export-btn-drop','run-export-btn-app'];
   const refreshIds=['refresh-source-btn-drop','refresh-source-btn-app'];
   const changeIds=['change-source-btn-drop'];
   connectIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=(supported&&!connected)?'inline-block':'none';});
+  runExportIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=(supported&&connected)?'inline-block':'none';});
   refreshIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=(supported&&connected)?'inline-block':'none';});
   changeIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=(supported&&connected)?'inline-block':'none';});
 }
@@ -772,6 +816,7 @@ async function connectExportFile(){
     S.connectedSource.fileName=file.name;
     S.connectedSource.lastRefreshedAt=refreshedAt;
     await loadFile(file);
+    setRefreshState('idle');
     renderSourceUi();
   }catch(ex){
     if(ex&&ex.name==='AbortError')return;
@@ -781,11 +826,17 @@ async function connectExportFile(){
 
 async function refreshMessages(){
   setSourceError('');
-  if(!S.connectedSource.supported){setSourceError('Refresh failed. Import file manually.');return;}
-  if(!S.connectedSource.handle){setSourceError('Refresh failed. Import file manually.');renderSourceUi();return;}
+  setSourceStatus('',null);
+  if(!S.connectedSource.supported){setSourceError('Refresh failed. Import file manually.');return false;}
+  if(!S.connectedSource.handle){setSourceError('Refresh failed. Import file manually.');renderSourceUi();return false;}
   try{
+    setRefreshState('reloading_data');
     const allowed=await ensureReadPermission(S.connectedSource.handle);
-    if(!allowed){setSourceError('Refresh failed (permission denied). Import file manually.');return;}
+    if(!allowed){
+      setRefreshState('export_failed');
+      setSourceError('Reload failed (permission denied). Import file manually.');
+      return false;
+    }
     const file=await S.connectedSource.handle.getFile();
     const refreshedAt=new Date().toISOString();
     S.connectedSource.lastRefreshedAt=refreshedAt;
@@ -793,9 +844,60 @@ async function refreshMessages(){
       await saveConnectedSourceRecord({handle:S.connectedSource.handle,fileName:file.name,lastRefreshedAt:refreshedAt});
     }
     await loadFile(file);
+    setRefreshState('success');
     renderSourceUi();
+    return true;
   }catch(_){
-    setSourceError('Refresh failed. Import file manually.');
+    setRefreshState('export_failed');
+    setSourceError('Reload failed. Import file manually.');
+    return false;
+  }
+}
+
+async function runExportAndReload(){
+  setSourceError('');
+  setSourceStatus('',null);
+  if(!S.connectedSource.supported||!S.connectedSource.handle){
+    setRefreshState('runner_unavailable');
+    setSourceError('Run export + reload requires a connected JSON file. Connect export file first.');
+    return;
+  }
+  const beforeTs=S.exportTimestamp||null;
+  let runResult=null;
+  try{
+    setRefreshState('running_export');
+    const resp=await fetch(`${S.connectedSource.runnerUrl}/run-export`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({})
+    });
+    if(!resp.ok){
+      setRefreshState('export_failed');
+      const payload=await resp.json().catch(()=>({}));
+      setSourceError(payload.error||'Export failed. Keeping last successful data loaded.');
+      return;
+    }
+    runResult=await resp.json();
+  }catch(_){
+    setRefreshState('runner_unavailable');
+    setSourceError('Local export runner is unavailable. Start the runner, or use Reload current JSON.');
+    return;
+  }
+  if(!runResult||runResult.ok!==true){
+    setRefreshState('export_failed');
+    setSourceError((runResult&&runResult.error)||'Export failed. Keeping last successful data loaded.');
+    return;
+  }
+  try{
+    setRefreshState('reloading_data');
+    const reloaded=await refreshMessages();
+    if(!reloaded)return;
+    if(runResult.changed===false||(beforeTs&&S.exportTimestamp===beforeTs)){
+      setRefreshState('output_unchanged');
+    }
+  }catch(_){
+    setRefreshState('export_failed');
+    setSourceError('Export ran, but reload failed. Keeping last successful data loaded.');
   }
 }
 
@@ -805,6 +907,7 @@ async function changeSource(){
   S.connectedSource.handle=null;
   S.connectedSource.fileName='';
   S.connectedSource.lastRefreshedAt=null;
+  setRefreshState('idle');
   renderSourceUi();
 }
 
@@ -826,6 +929,7 @@ function resetData(){
   document.getElementById('drop-screen').style.display='flex';
   document.getElementById('drop-error').style.display='none';
   document.getElementById('file-input').value='';checkSavedData();renderSourceUi();
+  setRefreshState('idle');
 }
 
 function setLastUpdatedTimestamp(data){
