@@ -2,6 +2,12 @@
 
 ## Current development cycle
 
+### 2026-04-09 — Ignored conversations now survive re-imports
+- Refactored ignored-conversation persistence to store records keyed by stable participant identity instead of transient export thread IDs.
+- Added an inbound-message checkpoint to each ignore record so ignored threads reappear only after a real new incoming text message arrives.
+- Added fallback migration from legacy dismissed storage (`miranda2_dismissed_v1`) into the new persistence model when possible.
+- Kept ignored conversations hidden across reload/refresh/re-import when underlying inbound text state has not changed.
+
 ### 2026-04-08 — Refresh split into two explicit actions + local export runner hook
 - Added two separate connected-source actions:
   - **Run export + reload** (new): calls a local localhost runner to execute `export.command`, waits for completion, then reloads JSON.
