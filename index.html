@@ -573,10 +573,11 @@ const S = {
     refreshState: 'idle', runnerUrl: 'http://127.0.0.1:8765'
   }
 };
-const OVERRIDE_KEY='miranda2_overrides_v1', DISMISS_KEY='miranda2_dismissed_v1',
+const OVERRIDE_KEY='miranda2_overrides_v1', DISMISS_KEY='miranda2_dismissed_v2',
       DATA_KEY='miranda2_data_v1', META_KEY='miranda2_meta_v1', HISTORY_KEY='miranda2_history_v1',
       NAME_SIGNAL_KEY='miranda2_name_signal_v1', THEME_KEY='miranda2_theme_v1',
       CONNECTED_SOURCE_DB='miranda2_connected_source_v1', CONNECTED_SOURCE_STORE='sources', CONNECTED_SOURCE_KEY='primary';
+const LEGACY_DISMISS_KEY='miranda2_dismissed_v1';
 const PREVIEW_INCLUDE_ATTACHMENT=true; // set false to hide "📎 Attachment" rows in collapsed previews
 // Local-only testing path: browser-side API keys are exposed to anyone with client access.
 // Do not treat this as a shareable/public deployment setup.
@@ -586,7 +587,14 @@ const DEFAULT_AI_MODEL='gpt-4.1-mini';
 
 async function init() {
   try { const r=localStorage.getItem(OVERRIDE_KEY); if(r) S.overrides=JSON.parse(r); } catch(_){}
-  try { const r=localStorage.getItem(DISMISS_KEY); if(r) S.dismissed=JSON.parse(r); } catch(_){}
+  try {
+    const r=localStorage.getItem(DISMISS_KEY);
+    if(r)S.dismissed=JSON.parse(r);
+    else{
+      const legacy=localStorage.getItem(LEGACY_DISMISS_KEY);
+      if(legacy)S.dismissed=JSON.parse(legacy);
+    }
+  } catch(_){}
   try { const r=localStorage.getItem(NAME_SIGNAL_KEY); if(r) S.nameSignalFirst=JSON.parse(r).firstName||''; } catch(_){}
   try {
     const savedTheme=localStorage.getItem(THEME_KEY);
@@ -914,6 +922,7 @@ async function changeSource(){
 function loadData(data,save){
   S.conversations=data.conversations||[];S.selectedId=null;
   recategorize();
+  reconcileDismissedState();
   document.getElementById('drop-screen').style.display='none';
   document.getElementById('app').classList.add('loaded');
   if(save){try{localStorage.setItem(DATA_KEY,JSON.stringify(data));
@@ -1053,13 +1062,126 @@ function getCategory(c){
   return raw;
 }
 
+function normalizeIdentityToken(value){
+  return String(value||'').trim().toLowerCase();
+}
+
+function normalizeHandleValue(value){
+  const raw=String(value||'').trim().toLowerCase();
+  if(!raw)return'';
+  if(raw.includes('@'))return raw;
+  return raw.replace(/[^0-9]/g,'');
+}
+
+function participantDismissKey(c){
+  if(!c)return'';
+  if(c.is_group){
+    const groupName=normalizeIdentityToken(c.group_name);
+    const handle=normalizeHandleValue(c.phone);
+    if(groupName||handle)return`g:${groupName}|${handle}`;
+    return`g:id:${normalizeIdentityToken(c.id)}`;
+  }
+  const handle=normalizeHandleValue(c.phone);
+  if(handle)return`p:${handle}`;
+  const contact=normalizeIdentityToken(c.contact_name);
+  if(contact)return`p:name:${contact}`;
+  return`p:id:${normalizeIdentityToken(c.id)}`;
+}
+
+function isRealTextMessageContent(text){
+  const t=String(text||'').trim();
+  if(!t)return false;
+  if(t==='📎 Attachment')return false;
+  return true;
+}
+
+function latestInboundTextAt(c){
+  const inbound=(c?.messages||[])
+    .filter(m=>!m?.from_me&&isRealTextMessageContent(m?.text))
+    .map(m=>m?.date)
+    .map(d=>new Date(d))
+    .filter(d=>!Number.isNaN(d.getTime()));
+  if(!inbound.length)return null;
+  return new Date(Math.max(...inbound.map(d=>d.getTime()))).toISOString();
+}
+
+function makeDismissRecord(c){
+  return {
+    key:participantDismissKey(c),
+    dismissedAt:new Date().toISOString(),
+    inboundCheckpointAt:latestInboundTextAt(c)||null,
+    threadId:c?.id||''
+  };
+}
+
+function saveDismissed(){
+  try{localStorage.setItem(DISMISS_KEY,JSON.stringify(S.dismissed));}catch(_){}
+}
+
+function hasNewInboundSinceCheckpoint(c,rec){
+  const nowInbound=latestInboundTextAt(c);
+  if(!nowInbound)return false;
+  if(!rec?.inboundCheckpointAt)return true;
+  const nowTs=new Date(nowInbound).getTime();
+  const checkpointTs=new Date(rec.inboundCheckpointAt).getTime();
+  if(Number.isNaN(nowTs)||Number.isNaN(checkpointTs))return false;
+  return nowTs>checkpointTs;
+}
+
+function getDismissRecord(c){
+  if(!c)return null;
+  const key=participantDismissKey(c);
+  if(key&&S.dismissed[key]&&typeof S.dismissed[key]==='object')return S.dismissed[key];
+  if(S.dismissed[c.id]===true||typeof S.dismissed[c.id]==='object'){
+    const rec=makeDismissRecord(c);
+    if(S.dismissed[c.id]&&typeof S.dismissed[c.id]==='object'){
+      const old=S.dismissed[c.id];
+      rec.dismissedAt=old.dismissedAt||rec.dismissedAt;
+      rec.inboundCheckpointAt=old.inboundCheckpointAt||rec.inboundCheckpointAt;
+    }
+    if(key)S.dismissed[key]=rec;
+    delete S.dismissed[c.id];
+    saveDismissed();
+    return rec;
+  }
+  return null;
+}
+
+function isDismissed(c){
+  const rec=getDismissRecord(c);
+  if(!rec)return false;
+  if(hasNewInboundSinceCheckpoint(c,rec)){
+    const key=participantDismissKey(c);
+    if(key)delete S.dismissed[key];
+    saveDismissed();
+    return false;
+  }
+  return true;
+}
+
+function reconcileDismissedState(){
+  let changed=false;
+  S.conversations.forEach(c=>{
+    const rec=getDismissRecord(c);
+    if(!rec)return;
+    if(hasNewInboundSinceCheckpoint(c,rec)){
+      const key=participantDismissKey(c);
+      if(key&&S.dismissed[key]){
+        delete S.dismissed[key];
+        changed=true;
+      }
+    }
+  });
+  if(changed)saveDismissed();
+}
+
 // ── Core filters ─────────────────────────────────────────────────────────────
 function needsResponse(c){
   const cat=getCategory(c);
   if(cat==='spam'||cat==='delivery')return false;
   if(c.is_group)return false;
   if(c.i_replied_last)return false;
-  if(S.dismissed[c.id])return false;
+  if(isDismissed(c))return false;
   return true;
 }
 function inTimeline(c){
@@ -1089,8 +1211,8 @@ function allPersonalInTrailingDays(days){
 // ── Score ─────────────────────────────────────────────────────────────────────
 function computeScoreFromPersonal(personal){
   if(!personal.length)return{score:100,rate:100,speed:0,speedScore:100,hanging:0,hangingScore:100,replied:0,total:0};
-  const replied=personal.filter(c=>c.i_replied_last||S.dismissed[c.id]);
-  const unreplied=personal.filter(c=>!c.i_replied_last&&!S.dismissed[c.id]);
+  const replied=personal.filter(c=>c.i_replied_last||isDismissed(c));
+  const unreplied=personal.filter(c=>!c.i_replied_last&&!isDismissed(c));
   const total=personal.length;
   const rate=Math.round((replied.length/total)*100);
   let avgWait=0;
@@ -1585,8 +1707,16 @@ function handleTimeline(val){
 function setActionFilter(f){S.actionFilter=f;
   document.querySelectorAll('.filter-chip').forEach(b=>b.classList.toggle('active',b.dataset.filter===f));renderActions();}
 function toggleExpand(id){S.selectedId=S.selectedId===id?null:id;renderActions();renderOtherTexts();}
-function dismissConvo(id){S.dismissed[id]=true;
-  try{localStorage.setItem(DISMISS_KEY,JSON.stringify(S.dismissed));}catch(_){}renderAll();}
+function dismissConvo(id){
+  const thread=S.conversations.find(c=>c.id===id);
+  if(!thread)return;
+  const key=participantDismissKey(thread);
+  if(!key)return;
+  S.dismissed[key]=makeDismissRecord(thread);
+  delete S.dismissed[id];
+  saveDismissed();
+  renderAll();
+}
 
 async function generateReplyForThread(id){
   const thread=S.conversations.find(c=>c.id===id);
