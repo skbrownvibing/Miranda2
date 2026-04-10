@@ -404,8 +404,7 @@ body[data-theme="dark"] .saved-prompt button:hover { color:#fff; }
       <div class="source-panel-line" id="source-name-drop"></div>
       <div class="source-panel-actions">
         <button class="btn-primary" id="connect-export-btn-drop" onclick="connectExportFile()">Connect export file</button>
-        <button class="btn-primary" id="run-export-btn-drop" onclick="runExportAndReload()" title="Run export.command, then reload the newly generated JSON">Run export + reload</button>
-        <button class="btn-secondary" id="refresh-source-btn-drop" onclick="refreshMessages()" title="Reload the currently selected JSON file only">Reload current JSON</button>
+        <button class="btn-primary" id="refresh-btn-drop" onclick="refresh()" style="display:none">Refresh</button>
         <button class="btn-secondary" id="change-source-btn-drop" onclick="changeSource()">Change source</button>
       </div>
       <div class="source-status" id="source-status-drop" style="display:none"></div>
@@ -428,8 +427,7 @@ body[data-theme="dark"] .saved-prompt button:hover { color:#fff; }
         <option value="">All time</option>
       </select>
       <span class="last-updated" id="last-updated" style="display:none"></span>
-      <button id="run-export-btn-app" class="source-btn-primary" style="display:none" onclick="runExportAndReload()" title="Run export.command, then reload the newly generated JSON">Run export + reload</button>
-      <button id="refresh-source-btn-app" class="source-btn-primary" style="display:none" onclick="refreshMessages()" title="Reload the currently selected JSON file only">Reload current JSON</button>
+      <button id="refresh-btn-app" class="source-btn-primary" style="display:none" onclick="refresh()">Refresh</button>
       <span class="source-status" id="source-status-app" style="display:none"></span>
       <span class="source-error" id="source-error-app" style="display:none"></span>
       <button onclick="resetData()">Home</button>
@@ -711,8 +709,8 @@ function renderSourceUi(){
     }else if(!connected){
       sourceTitle.textContent='Connected export file';
       sourceName.textContent=S.connectedSource.canPersist
-        ? 'Connect once, then use Run export + reload or Reload current JSON.'
-        : 'Connect file for this session, then use Run export + reload or Reload current JSON.';
+        ? 'Connect once, then use Refresh.'
+        : 'Connect file for this session, then use Refresh.';
     }else{
       const nameText=`Connected file: ${S.connectedSource.fileName||'miranda2_messages.json'}`;
       sourceTitle.textContent='Connected export file';
@@ -720,11 +718,9 @@ function renderSourceUi(){
     }
   }
   const connectIds=['connect-export-btn-drop'];
-  const runExportIds=['run-export-btn-drop','run-export-btn-app'];
-  const refreshIds=['refresh-source-btn-drop','refresh-source-btn-app'];
+  const refreshIds=['refresh-btn-drop','refresh-btn-app'];
   const changeIds=['change-source-btn-drop'];
   connectIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=(supported&&!connected)?'inline-block':'none';});
-  runExportIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=(supported&&connected)?'inline-block':'none';});
   refreshIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=(supported&&connected)?'inline-block':'none';});
   changeIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=(supported&&connected)?'inline-block':'none';});
 }
@@ -862,16 +858,17 @@ async function refreshMessages(){
   }
 }
 
-async function runExportAndReload(){
+async function refresh(){
   setSourceError('');
   setSourceStatus('',null);
   if(!S.connectedSource.supported||!S.connectedSource.handle){
-    setRefreshState('runner_unavailable');
-    setSourceError('Run export + reload requires a connected JSON file. Connect export file first.');
+    setSourceError('No connected file. Use Home to reconnect.');
+    renderSourceUi();
     return;
   }
   const beforeTs=S.exportTimestamp||null;
   let runResult=null;
+  // Try local runner; silently fall through to file reload if unavailable
   try{
     setRefreshState('running_export');
     const resp=await fetch(`${S.connectedSource.runnerUrl}/run-export`,{
@@ -886,26 +883,16 @@ async function runExportAndReload(){
       return;
     }
     runResult=await resp.json();
-  }catch(_){
-    setRefreshState('runner_unavailable');
-    setSourceError('Local export runner is unavailable. Start the runner, or use Reload current JSON.');
-    return;
-  }
-  if(!runResult||runResult.ok!==true){
-    setRefreshState('export_failed');
-    setSourceError((runResult&&runResult.error)||'Export failed. Keeping last successful data loaded.');
-    return;
-  }
-  try{
-    setRefreshState('reloading_data');
-    const reloaded=await refreshMessages();
-    if(!reloaded)return;
-    if(runResult.changed===false||(beforeTs&&S.exportTimestamp===beforeTs)){
-      setRefreshState('output_unchanged');
+    if(!runResult||runResult.ok!==true){
+      setRefreshState('export_failed');
+      setSourceError((runResult&&runResult.error)||'Export failed. Keeping last successful data loaded.');
+      return;
     }
-  }catch(_){
-    setRefreshState('export_failed');
-    setSourceError('Export ran, but reload failed. Keeping last successful data loaded.');
+  }catch(_){/* runner not running — fall through to file reload */}
+  const reloaded=await refreshMessages();
+  if(!reloaded)return;
+  if(runResult&&(runResult.changed===false||(beforeTs&&S.exportTimestamp===beforeTs))){
+    setRefreshState('output_unchanged');
   }
 }
 
