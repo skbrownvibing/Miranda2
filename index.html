@@ -690,7 +690,7 @@ function setRefreshState(state){
     export_failed:'Export failed. Keeping last successful data loaded.',
     runner_unavailable:'Runner unavailable. You can still reload current JSON.',
     output_unchanged:'Export finished, but output is unchanged.',
-    stale_file:'No new data — run export.command to get latest messages.'
+    stale_file:'No new data — double-click export.command to refresh.'
   };
   const tone=state==='export_failed'||state==='runner_unavailable'?'error':(state==='success'?'success':'');
   setSourceStatus(labels[state]||'Idle',tone);

@@ -469,6 +469,16 @@ PYTHON_EOF
 STATUS=$?
 echo ""
 if [ $STATUS -eq 0 ]; then
+  SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+  RUNNER_PY="$SCRIPT_DIR/tools/runner/local_export_runner.py"
+  if [ -f "$RUNNER_PY" ]; then
+    if curl -sf --max-time 1 http://127.0.0.1:8765 >/dev/null 2>&1; then
+      echo "  Refresh runner already running — Refresh button is ready."
+    else
+      nohup python3 "$RUNNER_PY" >/tmp/miranda2_runner.log 2>&1 &
+      echo "  Refresh runner started (pid $!). The Refresh button will now work."
+    fi
+  fi
   echo "  Export complete. You can close this window."
 else
   echo "  Export failed. See errors above."
