@@ -892,8 +892,10 @@ async function refresh(){
   }catch(_){/* runner not running — fall through to file reload */}
   const reloaded=await refreshMessages();
   if(!reloaded)return;
-  if(beforeTs&&S.exportTimestamp===beforeTs){
-    setRefreshState(runResult?'output_unchanged':'stale_file');
+  if(runResult){
+    if(runResult.changed===false){setRefreshState('output_unchanged');}
+  }else if(beforeTs&&S.exportTimestamp===beforeTs){
+    setRefreshState('stale_file');
   }
 }
 
