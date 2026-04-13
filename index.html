@@ -1118,7 +1118,14 @@ function saveDismissed(){
 function hasNewInboundSinceCheckpoint(c,rec){
   const nowInbound=latestInboundTextAt(c);
   if(!nowInbound)return false;
-  if(!rec?.inboundCheckpointAt)return true;
+  if(!rec?.inboundCheckpointAt){
+    // Legacy dismiss records may not have inboundCheckpointAt.
+    // Fall back to dismissedAt so ignored threads don't auto-reappear on every load.
+    const dismissedTs=new Date(rec?.dismissedAt||'').getTime();
+    const nowTs=new Date(nowInbound).getTime();
+    if(Number.isNaN(nowTs)||Number.isNaN(dismissedTs))return false;
+    return nowTs>dismissedTs;
+  }
   const nowTs=new Date(nowInbound).getTime();
   const checkpointTs=new Date(rec.inboundCheckpointAt).getTime();
   if(Number.isNaN(nowTs)||Number.isNaN(checkpointTs))return false;
