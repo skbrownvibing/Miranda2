@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-04-13 — Dismissed-thread checkpoint fallback hardened for legacy records
+- Fixed a legacy-dismiss edge case where threads could reappear after reload when older dismiss records had no `inboundCheckpointAt`.
+- Updated new-inbound detection to fall back to `dismissedAt` (when checkpoint is missing) instead of auto-treating every thread as having new inbound activity.
+- Kept normal behavior unchanged for current exports that include `latest_inbound_at` and set checkpoint timestamps at dismiss time.
+
 ### 2026-04-09 — Ignored conversations now survive re-imports
 - Refactored ignored-conversation persistence to store records keyed by stable participant identity instead of transient export thread IDs.
 - Added an inbound-message checkpoint to each ignore record so ignored threads reappear only after a real new incoming text message arrives.
