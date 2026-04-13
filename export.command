@@ -314,9 +314,13 @@ def is_substantive(row):
 
     associated_message_type != 0  →  tapback or reaction (e.g. ❤️, 👍, laugh)
     item_type != 0                →  group membership / name-change system event
+
+    Use falsy checks (not strict == 0) so that NULL values from SQLite are treated
+    the same as 0 — a real message whose column happens to be NULL must not be
+    mistaken for a tapback and silently dropped from the substantive list.
     """
     _t, _fm, _d, _ab, assoc_type, item_type, _att = row
-    return assoc_type == 0 and item_type == 0
+    return not assoc_type and not item_type
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
@@ -409,6 +413,14 @@ def main():
         last_preview = resolve_text(last_t, last_ab, last_has_att)
         msg_count    = sum(1 for r in rows if r[2] > cutoff)
 
+        # Most recent inbound (not from me) substantive message — used by the
+        # frontend's dismissal checkpoint so it doesn't have to guess from the
+        # 5-message preview (which may contain only outbound messages).
+        latest_inbound = next(
+            (fmt(apple_ts(d)) for _t, fm, d, _ab, _a, _i, _att in substantive if not fm),
+            None,
+        )
+
         conversations.append({
             'id':                guid,
             'contact_name':      contact_name,
@@ -419,6 +431,7 @@ def main():
             'last_message_at':   last_at,
             'last_message_text': last_preview,
             'i_replied_last':    bool(last_fm),
+            'latest_inbound_at': latest_inbound,
             'message_count_30d': msg_count,
             'messages':          list(reversed(msg_list[:5])),
         })

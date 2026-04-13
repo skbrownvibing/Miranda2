@@ -1084,6 +1084,13 @@ function isRealTextMessageContent(text){
 }
 
 function latestInboundTextAt(c){
+  // Prefer the export-computed field, which covers the full message history
+  // rather than just the 5-message preview stored in c.messages.
+  if(c?.latest_inbound_at){
+    const d=new Date(c.latest_inbound_at);
+    if(!Number.isNaN(d.getTime()))return d.toISOString();
+  }
+  // Fallback: scan the 5-message preview (older exports without latest_inbound_at).
   const inbound=(c?.messages||[])
     .filter(m=>!m?.from_me&&isRealTextMessageContent(m?.text))
     .map(m=>m?.date)
