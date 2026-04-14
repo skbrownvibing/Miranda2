@@ -1,0 +1,657 @@
+{
+  "app": "Miranda2",
+  "version": "2.0",
+  "exported_at": "2026-04-14T22:18:46.846815+00:00",
+  "conversations": [
+    {
+      "id": "iMessage;-;+12125550101",
+      "contact_name": "Larry David",
+      "phone": "+12125550101",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-08T22:18:00+00:00",
+      "last_message_text": "Don\u2019t act like you were looking at a bird. There was no bird.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-08T22:18:00+00:00",
+      "message_count_30d": 66,
+      "messages": [
+        {
+          "text": "I saw you across the street and you did not acknowledge me.",
+          "from_me": false,
+          "date": "2026-04-14T21:48:46.846815+00:00"
+        },
+        {
+          "text": "That is a very strange social choice.",
+          "from_me": false,
+          "date": "2026-04-14T21:49:46.846815+00:00"
+        },
+        {
+          "text": "Don\u2019t act like you were looking at a bird. There was no bird.",
+          "from_me": false,
+          "date": "2026-04-08T22:18:00+00:00"
+        }
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550102",
+      "contact_name": "Michael Scott",
+      "phone": "+12125550102",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-14T14:18:00+00:00",
+      "last_message_text": "I think that means it\u2019s good.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-14T14:18:00+00:00",
+      "message_count_30d": 82,
+      "messages": [
+        {
+          "text": "Any chance you can review my keynote title: 'Business Is War, But Fun'?",
+          "from_me": true,
+          "date": "2026-04-14T13:18:00+00:00"
+        },
+        {
+          "text": "Update: Jan says it sounds aggressive.",
+          "from_me": false,
+          "date": "2026-04-14T13:28:00+00:00"
+        },
+        {
+          "text": "I think that means it\u2019s good.",
+          "from_me": false,
+          "date": "2026-04-14T14:18:00+00:00"
+        }
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550103",
+      "contact_name": "Tony Soprano",
+      "phone": "+12125550103",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-03-31T22:18:00+00:00",
+      "last_message_text": "Nobody knows where to eat anymore. Society\u2019s collapsing.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-03-31T22:18:00+00:00",
+      "message_count_30d": 70,
+      "messages": [
+        {
+          "text": "We gotta discuss dinner.",
+          "from_me": false,
+          "date": "2026-04-14T13:58:46.846815+00:00"
+        },
+        {
+          "text": "Nobody knows where to eat anymore. Society\u2019s collapsing.",
+          "from_me": false,
+          "date": "2026-03-31T22:18:00+00:00"
+        }
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550104",
+      "contact_name": "Don Draper",
+      "phone": "+12125550104",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-13T22:20:46.846815+00:00",
+      "last_message_text": "It\u2019s about longing.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-13T22:20:46.846815+00:00",
+      "message_count_30d": 44,
+      "messages": [
+        {
+          "text": "I have an idea.",
+          "from_me": false,
+          "date": "2026-04-13T22:18:46.846815+00:00"
+        },
+        {
+          "text": "It\u2019s about longing.",
+          "from_me": false,
+          "date": "2026-04-13T22:20:46.846815+00:00"
+        }
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550105",
+      "contact_name": "Carrie Bradshaw",
+      "phone": "+12125550105",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-14T20:48:46.846815+00:00",
+      "last_message_text": "I couldn\u2019t help but wonder: is replying late a red flag or a branding exercise?",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-14T20:48:46.846815+00:00",
+      "message_count_30d": 70,
+      "messages": [
+        {
+          "text": "I couldn\u2019t help but wonder: is replying late a red flag or a branding exercise?",
+          "from_me": false,
+          "date": "2026-04-14T20:48:46.846815+00:00"
+        }
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550106",
+      "contact_name": "Shiv Roy",
+      "phone": "+12125550106",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2025-12-15T22:18:00+00:00",
+      "last_message_text": "It is not tiny.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2025-12-15T22:18:00+00:00",
+      "message_count_30d": 47,
+      "messages": [
+        {
+          "text": "Can you review something tiny.",
+          "from_me": false,
+          "date": "2026-04-14T21:08:46.846815+00:00"
+        },
+        {
+          "text": "It is not tiny.",
+          "from_me": false,
+          "date": "2025-12-15T22:18:00+00:00"
+        }
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550107",
+      "contact_name": "Saul Goodman",
+      "phone": "+12125550107",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-03-23T22:18:00+00:00",
+      "last_message_text": "Hypothetically, how bad is it to ignore a parking ticket for emotional reasons?",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-03-23T22:18:00+00:00",
+      "message_count_30d": 14,
+      "messages": [
+        {
+          "text": "Hypothetically, how bad is it to ignore a parking ticket for emotional reasons?",
+          "from_me": false,
+          "date": "2026-03-23T22:18:00+00:00"
+        }
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550108",
+      "contact_name": "Fleabag",
+      "phone": "+12125550108",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-14T21:23:46.846815+00:00",
+      "last_message_text": "Are you free later or are you doing that thing where you avoid your phone to feel superior?",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-14T21:23:46.846815+00:00",
+      "message_count_30d": 23,
+      "messages": [
+        {
+          "text": "Are you free later or are you doing that thing where you avoid your phone to feel superior?",
+          "from_me": false,
+          "date": "2026-04-14T21:23:46.846815+00:00"
+        }
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550109",
+      "contact_name": "Kendall Roy",
+      "phone": "+12125550109",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-14T21:29:46.846815+00:00",
+      "last_message_text": "\u2018Hyperlocal media disruption engine.\u2019 Too small?",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-14T21:29:46.846815+00:00",
+      "message_count_30d": 29,
+      "messages": [
+        {
+          "text": "Need gut check on a phrase.",
+          "from_me": false,
+          "date": "2026-04-14T21:28:46.846815+00:00"
+        },
+        {
+          "text": "\u2018Hyperlocal media disruption engine.\u2019 Too small?",
+          "from_me": false,
+          "date": "2026-04-14T21:29:46.846815+00:00"
+        }
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550110",
+      "contact_name": "Cher Horowitz",
+      "phone": "+12125550110",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-14T21:34:46.846815+00:00",
+      "last_message_text": "Need yes/no. Is this outfit saying \u2018charity lunch\u2019 or \u2018minor European princess\u2019?",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-14T21:34:46.846815+00:00",
+      "message_count_30d": 51,
+      "messages": [
+        {
+          "text": "Need yes/no. Is this outfit saying \u2018charity lunch\u2019 or \u2018minor European princess\u2019?",
+          "from_me": false,
+          "date": "2026-04-14T21:34:46.846815+00:00"
+        }
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550111",
+      "contact_name": "Rachel Green",
+      "phone": "+12125550111",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-14T17:22:46.846815+00:00",
+      "last_message_text": "Always.",
+      "i_replied_last": true,
+      "latest_inbound_at": "2026-04-14T17:21:46.846815+00:00",
+      "message_count_30d": 52,
+      "messages": [
+        {
+          "text": "I bought boots I absolutely did not need.",
+          "from_me": false,
+          "date": "2026-04-14T17:18:46.846815+00:00"
+        },
+        {
+          "text": "Respect.",
+          "from_me": true,
+          "date": "2026-04-14T17:20:46.846815+00:00"
+        },
+        {
+          "text": "Thank you for supporting me in my journey.",
+          "from_me": false,
+          "date": "2026-04-14T17:21:46.846815+00:00"
+        },
+        {
+          "text": "Always.",
+          "from_me": true,
+          "date": "2026-04-14T17:22:46.846815+00:00"
+        }
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550112",
+      "contact_name": "Blair Waldorf",
+      "phone": "+12125550112",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-14T19:38:46.846815+00:00",
+      "last_message_text": "Do we need to dress up?",
+      "i_replied_last": true,
+      "latest_inbound_at": "2026-04-14T19:00:46.846815+00:00",
+      "message_count_30d": 36,
+      "messages": [
+        {
+          "text": "Brunch at one. Be on time, or at least be impressive.",
+          "from_me": false,
+          "date": "2026-04-14T18:18:46.846815+00:00"
+        },
+        {
+          "text": "I can do one.",
+          "from_me": true,
+          "date": "2026-04-14T18:58:46.846815+00:00"
+        },
+        {
+          "text": "Good.",
+          "from_me": false,
+          "date": "2026-04-14T19:00:46.846815+00:00"
+        },
+        {
+          "text": "Do we need to dress up?",
+          "from_me": true,
+          "date": "2026-04-14T19:38:46.846815+00:00"
+        }
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550113",
+      "contact_name": "Jess Day",
+      "phone": "+12125550113",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-14T12:28:46.846815+00:00",
+      "last_message_text": "Honestly yes.",
+      "i_replied_last": true,
+      "latest_inbound_at": "2026-04-14T12:18:46.846815+00:00",
+      "message_count_30d": 66,
+      "messages": [
+        {
+          "text": "Important: do adults need a glue gun in their home at all times?",
+          "from_me": false,
+          "date": "2026-04-14T12:18:46.846815+00:00"
+        },
+        {
+          "text": "Honestly yes.",
+          "from_me": true,
+          "date": "2026-04-14T12:28:46.846815+00:00"
+        }
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550114",
+      "contact_name": "Joey Tribbiani",
+      "phone": "+12125550114",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-14T09:01:46.846815+00:00",
+      "last_message_text": "How many sandwiches are we talking?",
+      "i_replied_last": true,
+      "latest_inbound_at": "2026-04-14T09:00:46.846815+00:00",
+      "message_count_30d": 72,
+      "messages": [
+        {
+          "text": "You wanna get sandwiches?",
+          "from_me": false,
+          "date": "2026-04-14T08:58:46.846815+00:00"
+        },
+        {
+          "text": "Yes.",
+          "from_me": true,
+          "date": "2026-04-14T08:59:46.846815+00:00"
+        },
+        {
+          "text": "Nice.",
+          "from_me": false,
+          "date": "2026-04-14T09:00:46.846815+00:00"
+        },
+        {
+          "text": "How many sandwiches are we talking?",
+          "from_me": true,
+          "date": "2026-04-14T09:01:46.846815+00:00"
+        }
+      ]
+    },
+    {
+      "id": "iMessage;+;chat1001",
+      "contact_name": "Leslie Knope",
+      "phone": "+13125550101",
+      "is_group": true,
+      "group_name": "Pawnee Planning Committee",
+      "category": "personal",
+      "last_message_at": "2026-04-14T15:41:46.846815+00:00",
+      "last_message_text": "I\u2019ve made a 14-tab spreadsheet.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-14T15:41:46.846815+00:00",
+      "message_count_30d": 4,
+      "messages": [
+        {
+          "text": "Galentine\u2019s should be a federal holiday.",
+          "from_me": false,
+          "date": "2026-04-14T15:38:46.846815+00:00"
+        },
+        {
+          "text": "Strong agree.",
+          "from_me": true,
+          "date": "2026-04-14T15:40:46.846815+00:00"
+        },
+        {
+          "text": "I\u2019ve made a 14-tab spreadsheet.",
+          "from_me": false,
+          "date": "2026-04-14T15:41:46.846815+00:00"
+        }
+      ]
+    },
+    {
+      "id": "iMessage;+;chat1002",
+      "contact_name": "Regina George",
+      "phone": "+13125550102",
+      "is_group": true,
+      "group_name": "Burn Book Editorial Board",
+      "category": "personal",
+      "last_message_at": "2026-04-14T20:20:46.846815+00:00",
+      "last_message_text": "That feels right.",
+      "i_replied_last": true,
+      "latest_inbound_at": "2026-04-14T20:19:46.846815+00:00",
+      "message_count_30d": 71,
+      "messages": [
+        {
+          "text": "Who approved this font.",
+          "from_me": false,
+          "date": "2026-04-14T20:18:46.846815+00:00"
+        },
+        {
+          "text": "The font approved itself.",
+          "from_me": false,
+          "date": "2026-04-14T20:19:46.846815+00:00"
+        },
+        {
+          "text": "That feels right.",
+          "from_me": true,
+          "date": "2026-04-14T20:20:46.846815+00:00"
+        }
+      ]
+    },
+    {
+      "id": "iMessage;+;chat1003",
+      "contact_name": "Lorelai Gilmore",
+      "phone": "+13125550103",
+      "is_group": true,
+      "group_name": "Coffee Emergency",
+      "category": "personal",
+      "last_message_at": "2026-04-14T21:00:46.846815+00:00",
+      "last_message_text": "On my way.",
+      "i_replied_last": true,
+      "latest_inbound_at": "2026-04-14T20:59:46.846815+00:00",
+      "message_count_30d": 3,
+      "messages": [
+        {
+          "text": "I need coffee strong enough to change my tax bracket.",
+          "from_me": false,
+          "date": "2026-04-14T20:58:46.846815+00:00"
+        },
+        {
+          "text": "Same.",
+          "from_me": false,
+          "date": "2026-04-14T20:59:46.846815+00:00"
+        },
+        {
+          "text": "On my way.",
+          "from_me": true,
+          "date": "2026-04-14T21:00:46.846815+00:00"
+        }
+      ]
+    },
+    {
+      "id": "iMessage;+;chat1004",
+      "contact_name": "Moira Rose",
+      "phone": "+13125550104",
+      "is_group": true,
+      "group_name": "The Crows Have Texted",
+      "category": "personal",
+      "last_message_at": "2026-04-14T21:37:46.846815+00:00",
+      "last_message_text": "No one touch the cape.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-14T21:37:46.846815+00:00",
+      "message_count_30d": 76,
+      "messages": [
+        {
+          "text": "Who among us has seen my dramatic black cape.",
+          "from_me": false,
+          "date": "2026-04-14T21:36:46.846815+00:00"
+        },
+        {
+          "text": "No one touch the cape.",
+          "from_me": false,
+          "date": "2026-04-14T21:37:46.846815+00:00"
+        }
+      ]
+    },
+    {
+      "id": "SMS;-;+12125550999",
+      "contact_name": null,
+      "phone": "+12125550999",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-14T21:43:46.846815+00:00",
+      "last_message_text": "I realize that narrows it down to nothing.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-14T21:43:46.846815+00:00",
+      "message_count_30d": 68,
+      "messages": [
+        {
+          "text": "Hey is this Sarah. We met briefly at a rooftop where someone was aggressively describing venture debt.",
+          "from_me": false,
+          "date": "2026-04-14T21:42:46.846815+00:00"
+        },
+        {
+          "text": "I realize that narrows it down to nothing.",
+          "from_me": false,
+          "date": "2026-04-14T21:43:46.846815+00:00"
+        }
+      ]
+    },
+    {
+      "id": "SMS;-;+12125550888",
+      "contact_name": null,
+      "phone": "+12125550888",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-04-14T21:58:46.846815+00:00",
+      "last_message_text": "Your Dasher is approaching with 1 item from Bagel Pub.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-14T21:58:46.846815+00:00",
+      "message_count_30d": 80,
+      "messages": [
+        {
+          "text": "Your Dasher is approaching with 1 item from Bagel Pub.",
+          "from_me": false,
+          "date": "2026-04-14T21:58:46.846815+00:00"
+        }
+      ]
+    },
+    {
+      "id": "SMS;-;898287",
+      "contact_name": null,
+      "phone": "898287",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-14T19:54:46.846815+00:00",
+      "last_message_text": "SARAH, CVS Pharmacy: pick up something cryptically abbreviated by Friday.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-14T19:54:46.846815+00:00",
+      "message_count_30d": 21,
+      "messages": [
+        {
+          "text": "SARAH, CVS Pharmacy: pick up something cryptically abbreviated by Friday.",
+          "from_me": false,
+          "date": "2026-04-14T19:54:46.846815+00:00"
+        }
+      ]
+    },
+    {
+      "id": "SMS;-;83992",
+      "contact_name": null,
+      "phone": "83992",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-12T20:18:46.846815+00:00",
+      "last_message_text": "Skip the line at Elephant Sushi. Reply STOP to end texts and joy.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-12T20:18:46.846815+00:00",
+      "message_count_30d": 17,
+      "messages": [
+        {
+          "text": "Skip the line at Elephant Sushi. Reply STOP to end texts and joy.",
+          "from_me": false,
+          "date": "2026-04-12T20:18:46.846815+00:00"
+        }
+      ]
+    },
+    {
+      "id": "RCS;-;+18044901387",
+      "contact_name": null,
+      "phone": "+18044901387",
+      "is_group": false,
+      "group_name": null,
+      "category": "uncategorized",
+      "last_message_at": "2026-04-11T10:58:46.846815+00:00",
+      "last_message_text": "Amazon Product Recall Notice: this link definitely looks normal and trustworthy.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-11T10:58:46.846815+00:00",
+      "message_count_30d": 44,
+      "messages": [
+        {
+          "text": "Amazon Product Recall Notice: this link definitely looks normal and trustworthy.",
+          "from_me": false,
+          "date": "2026-04-11T10:58:46.846815+00:00"
+        }
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550115",
+      "contact_name": "Elaine Benes",
+      "phone": "+12125550115",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-14T10:38:46.846815+00:00",
+      "last_message_text": "Also I support the anti-dancing stance.",
+      "i_replied_last": true,
+      "latest_inbound_at": "2026-04-14T10:29:46.846815+00:00",
+      "message_count_30d": 55,
+      "messages": [
+        {
+          "text": "Do not let me go back to that office party.",
+          "from_me": false,
+          "date": "2026-04-14T10:18:46.846815+00:00"
+        },
+        {
+          "text": "I won\u2019t.",
+          "from_me": true,
+          "date": "2026-04-14T10:28:46.846815+00:00"
+        },
+        {
+          "text": "Thank you.",
+          "from_me": false,
+          "date": "2026-04-14T10:29:46.846815+00:00"
+        },
+        {
+          "text": "Also I support the anti-dancing stance.",
+          "from_me": true,
+          "date": "2026-04-14T10:38:46.846815+00:00"
+        }
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550116",
+      "contact_name": "Miranda Priestly",
+      "phone": "+12125550116",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-14T05:39:46.846815+00:00",
+      "last_message_text": "Understood.",
+      "i_replied_last": true,
+      "latest_inbound_at": "2026-04-14T05:38:46.846815+00:00",
+      "message_count_30d": 32,
+      "messages": [
+        {
+          "text": "By all means move at a glacial pace. You know how that thrills me.",
+          "from_me": false,
+          "date": "2026-04-14T05:38:46.846815+00:00"
+        },
+        {
+          "text": "Understood.",
+          "from_me": true,
+          "date": "2026-04-14T05:39:46.846815+00:00"
+        }
+      ]
+    }
+  ]
+}
