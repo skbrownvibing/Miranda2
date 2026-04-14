@@ -2,6 +2,12 @@
 
 ## Current development cycle
 
+### 2026-04-14 — Bundled demo auto-load + relative timestamp shifting
+- Added startup fallback to auto-load `data/miranda_demo.json` when there is no user-uploaded JSON saved locally.
+- Added a minimal demo-only timestamp shifter so demo data always feels current on load.
+- Shift logic computes `delta = now - exported_at` and applies it to `exported_at`, `conversation.last_message_at`, `conversation.latest_inbound_at`, and each `message.date`.
+- Kept uploaded/imported JSON behavior unchanged.
+
 ### 2026-04-13 — Dismissed-thread checkpoint fallback hardened for legacy records
 - Fixed a legacy-dismiss edge case where threads could reappear after reload when older dismiss records had no `inboundCheckpointAt`.
 - Updated new-inbound detection to fall back to `dismissedAt` (when checkpoint is missing) instead of auto-treating every thread as having new inbound activity.
