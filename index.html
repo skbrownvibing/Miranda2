@@ -605,6 +605,15 @@ async function init() {
   ds.addEventListener('dragleave',()=>ds.classList.remove('drag-over'));
   ds.addEventListener('drop',e=>{e.preventDefault();ds.classList.remove('drag-over');if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);});
   document.getElementById('file-input').addEventListener('change',e=>{if(e.target.files[0])loadFile(e.target.files[0]);});
+  if(!localStorage.getItem(DATA_KEY)){
+    try{
+      const response=await fetch('./data/miranda_demo.json');
+      if(response.ok){
+        const demoData=await response.json();
+        loadData(timeShiftBundledDemoData(demoData),false);
+      }
+    }catch(_){}
+  }
   await initConnectedSource();
   renderSourceUi();
   setRefreshState('idle');
@@ -919,6 +928,27 @@ function loadData(data,save){
     localStorage.setItem(META_KEY,JSON.stringify({savedAt:new Date().toISOString(),count:S.conversations.length}));}catch(_){}}
   setLastUpdatedTimestamp(data);
   handleTimeline(document.getElementById('timeline-filter').value);
+}
+
+function timeShiftBundledDemoData(data){
+  const cloned=(typeof structuredClone==='function')
+    ? structuredClone(data)
+    : JSON.parse(JSON.stringify(data));
+  const exportedMs=new Date(cloned.exported_at).getTime();
+  if(Number.isNaN(exportedMs))return cloned;
+  const deltaMs=Date.now()-exportedMs;
+  const shiftIso=(iso)=>{
+    const ms=new Date(iso).getTime();
+    if(Number.isNaN(ms))return iso;
+    return new Date(ms+deltaMs).toISOString();
+  };
+  cloned.exported_at=shiftIso(cloned.exported_at);
+  (cloned.conversations||[]).forEach(c=>{
+    c.last_message_at=shiftIso(c.last_message_at);
+    c.latest_inbound_at=shiftIso(c.latest_inbound_at);
+    (c.messages||[]).forEach(m=>{m.date=shiftIso(m.date);});
+  });
+  return cloned;
 }
 
 function resetData(){
