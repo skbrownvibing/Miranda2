@@ -497,4 +497,7 @@ else
   echo "  Export failed. See errors above."
 fi
 echo ""
-read -rp "  Press Enter to close..." _
+if [ -t 0 ]; then
+  read -rp "  Press Enter to close..." _
+fi
+exit $STATUS
