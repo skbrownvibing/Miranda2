@@ -497,4 +497,10 @@ else
   echo "  Export failed. See errors above."
 fi
 echo ""
-read -rp "  Press Enter to close..." _
+# Keep the close prompt for double-click Terminal runs, but skip it in
+# non-interactive contexts (e.g., local runner subprocess) so exit status
+# reflects the actual export result.
+if [ -t 0 ] && [ -t 1 ]; then
+  read -rp "  Press Enter to close..." _
+fi
+exit $STATUS
