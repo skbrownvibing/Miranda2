@@ -5,7 +5,7 @@
 ### 2026-04-15 — AI Suggested Reply endpoint switched to Vercel API route
 - Replaced frontend AI call target from localhost runner to same-origin `POST /api/ai-suggest-reply`.
 - Added a Vercel-compatible server endpoint at `api/ai-suggest-reply.js` that calls OpenAI using server env var `OPENAI_API_KEY`.
-- Removed localhost-runner AI proxy endpoint usage so AI generation no longer depends on `http://127.0.0.1:8765` in deployed environments.
+- Removed localhost-runner Ai proxy endpoint usage so AI generation no longer depends on `http://127.0.0.1:8765` in deployed environments.
 
 ### 2026-04-15 — Demo-only AI Suggested Reply now uses server-side model calls
 - Replaced the visible **Generate reply** demo action with **AI Suggested Reply** for an explicit allowlist of seeded demo thread IDs only.
