@@ -9,7 +9,7 @@
 
 ### 2026-04-15 — Demo-only AI Suggested Reply now uses server-side model calls
 - Replaced the visible **Generate reply** demo action with **AI Suggested Reply** for an explicit allowlist of seeded demo thread IDs only.
-- Added explicit v1 gating: AI UI renders only when an allowlisted seeded thread’s latest visible plain-text message is inbound.
+- Added explicit v1 gating: Ai UI renders only when an allowlisted seeded thread’s latest visible plain-text message is inbound.
 - Updated interaction flow to user-triggered generation only (no auto-generate on open), with **Generating...** loading, **Use**, and **Regenerate** actions.
 - Added a centralized AI pipeline in the web app for allowlist checks, prompt/context construction (last ~6 text messages), output validation, and suppression of invalid outputs.
 - Switched AI calls to server-side via the local runner (`POST /ai-suggest-reply`) so API keys are no longer read from browser config/localStorage.
