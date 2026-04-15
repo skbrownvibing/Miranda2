@@ -209,6 +209,15 @@ body[data-theme="dark"] {
   border-radius:10px;background:none;color:var(--text2);cursor:pointer;transition:all .12s;
 }
 .btn-dismiss:hover { border-color:var(--text3);color:var(--text); }
+.ai-trigger-row { display:flex;justify-content:flex-start;margin-top:6px; }
+.ai-suggest-card {
+  border:1px solid var(--blue);background:color-mix(in srgb, var(--blue) 8%, var(--surface));
+  border-radius:12px;padding:10px 12px;min-width:0;max-width:100%;
+}
+.ai-suggest-label { font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--blue);margin-bottom:6px; }
+.ai-suggest-text { font-size:13px;color:var(--text);line-height:1.35;word-break:break-word; }
+.ai-suggest-actions { display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap; }
+.ai-use-note { font-size:11px;color:var(--text3); }
 
 .action-empty { text-align:center;padding:48px 20px;color:var(--text3);font-size:14px; }
 .action-empty-icon { font-size:36px;margin-bottom:12px; }
@@ -564,7 +573,7 @@ const S = {
   nameSignalFirst: '', nameSignalEditing: false,
   filter: { timelineAfter: null, timelineBefore: null },
   exportTimestamp: null, exportTimestampSource: null, lastUpdatedTimer: null,
-  replyAssistById: {}, // { [threadId]: { isGenerating, suggestedReply, wasSkipped, copied } }
+  replyAssistById: {}, // { [threadId]: { isGenerating, suggestedReply, generationAttempted, copied, regenerateCount } }
   connectedSource: {
     supported: false, canPersist: false, supportReason: '',
     handle: null, fileName: '', lastRefreshedAt: null,
@@ -577,11 +586,19 @@ const OVERRIDE_KEY='miranda2_overrides_v1', DISMISS_KEY='miranda2_dismissed_v2',
       CONNECTED_SOURCE_DB='miranda2_connected_source_v1', CONNECTED_SOURCE_STORE='sources', CONNECTED_SOURCE_KEY='primary';
 const LEGACY_DISMISS_KEY='miranda2_dismissed_v1';
 const PREVIEW_INCLUDE_ATTACHMENT=true; // set false to hide "📎 Attachment" rows in collapsed previews
-// Local-only testing path: browser-side API keys are exposed to anyone with client access.
-// Do not treat this as a shareable/public deployment setup.
-const AI_API_KEY_STORAGE_KEY='miranda2_ai_api_key_v1';
-const AI_MODEL_STORAGE_KEY='miranda2_ai_model_v1';
 const DEFAULT_AI_MODEL='gpt-4.1-mini';
+const AI_SUGGEST_ROUTE='/api/ai-suggest-reply';
+const AI_ALLOWED_DEMO_THREAD_IDS=new Set([
+  'iMessage;-;+12125550101', // bird accusation
+  'iMessage;-;+12125550102', // Michael Scott
+  'iMessage;-;+12125550110', // minor European princess
+  'iMessage;-;+12125550109', // hyperlocal media disruption engine
+  'iMessage;-;+12125550105', // branding exercise
+  'iMessage;-;+12125550107', // parking ticket for emotional reasons
+  'iMessage;-;+12125550108', // Fleabag
+  'iMessage;-;+12125550103', // society's collapsing dinner
+  'iMessage;-;+12125550104'  // it's about longing
+]);
 
 async function init() {
   try { const r=localStorage.getItem(OVERRIDE_KEY); if(r) S.overrides=JSON.parse(r); } catch(_){}
@@ -1303,72 +1320,105 @@ function previewRows(c){
     }));
 }
 
+
 function getReplyAssistState(threadId){
   if(!S.replyAssistById[threadId]){
     S.replyAssistById[threadId]={
       isGenerating:false,
       suggestedReply:'',
-      wasSkipped:false,
-      copied:false
+      generationAttempted:false,
+      blockedReason:'',
+      copied:false,
+      regenerateCount:0
     };
   }
   return S.replyAssistById[threadId];
 }
 
+function isPlainTextMessage(msg){
+  const text=String(msg?.text??'').trim();
+  if(!text)return false;
+  return text!=='📎 Attachment';
+}
+
+function latestVisibleTextMessage(thread){
+  const msgs=Array.isArray(thread?.messages)?thread.messages:[];
+  for(let i=msgs.length-1;i>=0;i--){
+    if(isPlainTextMessage(msgs[i])) return msgs[i];
+  }
+  return null;
+}
+
+function isAiThreadAllowlisted(thread){
+  return !!thread&&AI_ALLOWED_DEMO_THREAD_IDS.has(String(thread.id||''));
+}
+
+function aiReplyBlockReason(thread){
+  if(!isAiThreadAllowlisted(thread))return 'Not on demo allowlist';
+  const lastVisible=latestVisibleTextMessage(thread);
+  if(!lastVisible)return 'Need an incoming text to reply to';
+  if(lastVisible.from_me)return 'Need an incoming text to reply to';
+  return '';
+}
+
+function isAiReplyAllowed(thread){
+  return aiReplyBlockReason(thread)==='';
+}
+
 function buildReplyContext(thread){
   const msgs=(thread?.messages||[])
+    .filter(m=>isPlainTextMessage(m))
     .map(m=>({
       speaker:m?.from_me?'Me':'Them',
       text:String(m?.text??'').trim()
     }))
     .filter(m=>m.text.length>0);
 
-  // Gather the latest context window (up to 15; can be fewer if thread is short)
-  return msgs.slice(-15);
+  return msgs.slice(-6);
 }
 
-function getAiConfig(){
-  const cfg=(window.MIRANDA2_AI_CONFIG&&typeof window.MIRANDA2_AI_CONFIG==='object')?window.MIRANDA2_AI_CONFIG:{};
-  const key=(cfg.apiKey||localStorage.getItem(AI_API_KEY_STORAGE_KEY)||'').trim();
-  const model=(cfg.model||localStorage.getItem(AI_MODEL_STORAGE_KEY)||DEFAULT_AI_MODEL).trim();
-  const endpoint=(cfg.endpoint||'https://api.openai.com/v1/chat/completions').trim();
-  return { key, model, endpoint };
+function getAiEndpoint(){
+  return AI_SUGGEST_ROUTE;
 }
 
-async function requestSuggestedReplyFromModel(context){
-  const { key, model, endpoint }=getAiConfig();
-  if(!key)throw new Error('Missing AI API key');
-
+function buildAiPrompt(context, latestInbound){
   const conversation=context.map(m=>`${m.speaker}: ${m.text}`).join('\n');
-  const prompt=`You are helping draft a text message reply.
-Write one natural reply the user could send next.
+  return `Write exactly one short text reply to the latest inbound message.
 
 Rules:
-- Use only the conversation shown below
-- Do not invent facts, plans, times, or commitments not grounded in the thread
-- If a time or plan is already mentioned in the thread, you may reference it
-- Keep it natural, casual, and human
-- Usually 1 to 3 sentences
-- Match the tone of the conversation
-- Do not explain your reasoning
-- Output only the reply text
+- One reply only, plain text only
+- 4 to 12 words preferred
+- Never exceed 20 words
+- Keep it short, natural, and sendable
+- Sound like a normal text reply
+- Light wit only when appropriate
+- Soften if the message is delicate
+- No greetings or signoffs
+- No quotation marks
+- No multiple options
+- Do not use em dashes
+- No preamble like "Here's a reply" or "You could say"
+- No corporate, formal, or assistant tone
+- Do not invent facts outside the thread context
 
-Conversation:
+Latest inbound message:
+${latestInbound}
+
+Recent text context:
 ${conversation}`;
+}
 
-  const response=await fetch(endpoint,{
+async function requestSuggestedReplyFromModel(thread, context){
+  const latest=context[context.length-1];
+  if(!latest||latest.speaker!=='Them') throw new Error('Latest message is not inbound text');
+  const response=await fetch(getAiEndpoint(),{
     method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'Authorization':`Bearer ${key}`
-    },
+    headers:{ 'Content-Type':'application/json' },
     body:JSON.stringify({
-      model,
-      temperature:0.7,
-      messages:[
-        { role:'system', content:'You draft concise, natural text message replies.' },
-        { role:'user', content:prompt }
-      ]
+      model:DEFAULT_AI_MODEL,
+      prompt:buildAiPrompt(context,latest.text),
+      latestInbound:latest.text,
+      context
     })
   });
 
@@ -1378,60 +1428,96 @@ ${conversation}`;
   }
 
   const data=await response.json();
-  const reply=String(data?.choices?.[0]?.message?.content||'').trim();
+  const reply=String(data?.reply||'').trim();
   if(!reply)throw new Error('AI returned empty reply');
   return reply;
 }
 
-async function generateSuggestedReply(context){
-  const SKIP_MSG='Too complex to suggest a reply';
-  if(!Array.isArray(context)||!context.length){
-    return { skipped:true, reply:SKIP_MSG };
-  }
+function containsBannedPreamble(text){
+  return /(here'?s\s+(a\s+)?reply|you\s+could\s+say|response\s+you\s+could\s+send|i\s+hope\s+you'?re\s+doing\s+well|thank\s+you\s+for\s+reaching\s+out|i\s+apologize\s+for\s+the\s+delay)/i.test(text);
+}
 
-  const last=context[context.length-1];
-  const lastText=String(last?.text||'').trim();
-  const lastSpeaker=String(last?.speaker||'').trim();
-  if(!lastText){
-    return { skipped:true, reply:SKIP_MSG };
-  }
+function hasGreetingOrSignoff(text){
+  return /(^|\s)(hi|hello|hey|dear)\b|\b(best|sincerely|regards|thanks[,!]?|thank you[,!]?|cheers)\s*$|\bthanks for\b/i.test(text);
+}
 
-  if(lastSpeaker==='Me'){
-    return { skipped:true, reply:SKIP_MSG };
-  }
+function looksAssistantLike(text){
+  return /(absolutely|certainly|let me know|happy to help|as an ai|please feel free|that sounds great!?$)/i.test(text);
+}
 
-  try{
-    const reply=await requestSuggestedReplyFromModel(context);
-    return { skipped:false, reply };
-  }catch(err){
-    console.warn('Suggested reply generation failed',err);
-    return { skipped:true, reply:SKIP_MSG };
+function validateAiReply(output, thread){
+  const text=String(output||'').trim();
+  if(!text)return { valid:false, reason:'empty' };
+  const words=text.split(/\s+/).filter(Boolean);
+  if(words.length<2)return { valid:false, reason:'near-empty' };
+  if(words.length>20)return { valid:false, reason:'too-long' };
+  if(text.includes('—'))return { valid:false, reason:'em-dash' };
+  if(/["“”]/.test(text))return { valid:false, reason:'quotes' };
+  if(containsBannedPreamble(text))return { valid:false, reason:'preamble' };
+  if(hasGreetingOrSignoff(text))return { valid:false, reason:'greeting-signoff' };
+  if(looksAssistantLike(text))return { valid:false, reason:'assistant-tone' };
+  if(/[\n•]|\boption\s*1\b|\bor\s+\w+\s*\?/i.test(text))return { valid:false, reason:'multiple-options' };
+  const inbound=buildReplyContext(thread).slice(-1)[0]?.text?.toLowerCase()||'';
+  if(inbound){
+    const inboundTerms=inbound.split(/[^a-z0-9']+/i).filter(w=>w.length>=4).slice(0,8);
+    const out=text.toLowerCase();
+    const overlap=inboundTerms.some(t=>out.includes(t));
+    if(!overlap&&words.length>=10)return { valid:false, reason:'may-not-respond' };
   }
+  return { valid:true, reason:'ok' };
+}
+
+async function generateAiReply(thread){
+  const context=buildReplyContext(thread);
+  if(!context.length)return { ok:false, reason:'no-context' };
+  const latest=context[context.length-1];
+  if(latest.speaker!=='Them')return { ok:false, reason:'latest-not-inbound' };
+  const candidate=await requestSuggestedReplyFromModel(thread,context);
+  const check=validateAiReply(candidate,thread);
+  if(!check.valid)return { ok:false, reason:check.reason };
+  return { ok:true, reply:candidate };
 }
 
 function renderSuggestedReplyUI(thread){
+  if(!isAiThreadAllowlisted(thread))return '';
+
   const st=getReplyAssistState(thread.id);
+  const triggerHtml=`<div class="ai-trigger-row"><button class="btn-dismiss" onclick="generateReplyForThread(${esc(JSON.stringify(thread.id))},false);event.stopPropagation()">AI Suggested Reply</button></div>`;
 
   if(st.isGenerating){
-    return `<button class="btn-dismiss" disabled>Generating\u2026</button>`;
+    return `${triggerHtml}<div class="ai-use-note">Generating...</div>`;
   }
 
   if(st.suggestedReply){
     return `
-      <div style="font-size:12px;color:var(--text2);padding:8px 10px;border:1px solid var(--border);border-radius:10px;max-width:100%;">
-        ${esc(st.suggestedReply)}
+      ${triggerHtml}
+      <div class="ai-suggest-card">
+        <div class="ai-suggest-label">AI Suggested Reply</div>
+        <div class="ai-suggest-text">${esc(st.suggestedReply)}</div>
+        <div class="ai-suggest-actions">
+          <button class="btn-dismiss" onclick="useSuggestedReply(${esc(JSON.stringify(thread.id))});event.stopPropagation()">Use</button>
+          <button class="btn-dismiss" onclick="generateReplyForThread(${esc(JSON.stringify(thread.id))},true);event.stopPropagation()">Regenerate</button>
+          <span class="ai-use-note">${st.copied?'Added to draft':''}</span>
+        </div>
       </div>
-      <button class="btn-dismiss" onclick="copySuggestedReply(${esc(JSON.stringify(thread.id))});event.stopPropagation()">
-        ${st.copied?'Copied':'Copy'}
-      </button>
     `;
   }
 
-  if(st.wasSkipped){
-    return `<div style="font-size:12px;color:var(--text3);">Too complex to suggest a reply</div>`;
+  if(st.generationAttempted&&st.blockedReason){
+    const primaryBlockedText=st.blockedReason==='Try again'
+      ? 'Couldn’t generate a reply right now'
+      : "Can't generate a reply for this message";
+    return `
+      ${triggerHtml}
+      <div class="ai-suggest-card">
+        <div class="ai-suggest-label">AI Suggested Reply</div>
+        <div class="ai-suggest-text">${primaryBlockedText}</div>
+        <div class="ai-use-note">${esc(st.blockedReason)}</div>
+      </div>
+    `;
   }
 
-  return `<button class="btn-dismiss" onclick="generateReplyForThread(${esc(JSON.stringify(thread.id))});event.stopPropagation()">Generate reply</button>`;
+  return triggerHtml;
 }
 
 // ── Render ───────────────────────────────────────────────────────────────────
@@ -1708,6 +1794,7 @@ function renderOtherTexts(){
           ${phone?`<a class="btn-reply" href="${smsHref}">Reply in Messages ↗</a>`:''}
           <button class="btn-dismiss" onclick="dismissConvo('${esc(c.id)}')">No reply needed</button>
           ${renderFilterOutMenu(c.id)}
+          ${renderSuggestedReplyUI(c)}
         </div>
       </div>
     </div>`;
@@ -1752,69 +1839,83 @@ function dismissConvo(id){
   renderAll();
 }
 
-async function generateReplyForThread(id){
+
+async function generateReplyForThread(id,isRegenerate){
   const thread=S.conversations.find(c=>c.id===id);
   if(!thread)return;
-  if(thread.is_group)return; // strict 1:1 only safeguard
+  if(!isAiThreadAllowlisted(thread))return;
 
   const st=getReplyAssistState(id);
-  if(st.isGenerating||st.suggestedReply||st.wasSkipped)return; // no regenerate
+  if(st.isGenerating)return;
+  const blockedReason=aiReplyBlockReason(thread);
+  if(blockedReason){
+    st.generationAttempted=true;
+    st.suggestedReply='';
+    st.blockedReason=blockedReason;
+    st.isGenerating=false;
+    renderActions();
+    return;
+  }
 
   st.isGenerating=true;
   st.copied=false;
+  st.blockedReason='';
   renderActions();
 
   try{
-    // Small UX delay so "Generating…" is visible
-    await new Promise(r=>setTimeout(r,350));
-
-    const context=buildReplyContext(thread);
-    console.log('REPLY_CONTEXT_AUDIT',{
-      threadId:id,
-      count:context.length,
-      speakers:[...new Set(context.map(m=>m.speaker))],
-      context
-    });
-    const result=await generateSuggestedReply(context);
-
-    if(result.skipped){
-      st.wasSkipped=true;
-      st.suggestedReply='';
-    }else{
-      st.wasSkipped=false;
+    await new Promise(r=>setTimeout(r,250));
+    const result=await generateAiReply(thread);
+    if(result.ok){
       st.suggestedReply=String(result.reply||'').trim();
-      console.log('REPLY_MODEL_OUTPUT_AUDIT',{
-        threadId:id,
-        reply:st.suggestedReply
-      });
+      st.generationAttempted=true;
+      st.blockedReason='';
+      if(isRegenerate)st.regenerateCount=(st.regenerateCount||0)+1;
+    }else{
+      st.suggestedReply='';
+      st.generationAttempted=true;
+      st.blockedReason='Try again';
+      console.warn('AI suggestion suppressed after validation',{threadId:id,reason:result.reason});
     }
-  }catch(_){
-    st.wasSkipped=true;
+  }catch(err){
     st.suggestedReply='';
+    st.generationAttempted=true;
+    st.blockedReason='Try again';
+    console.warn('AI suggestion failed',err);
   }finally{
     st.isGenerating=false;
     renderActions();
   }
 }
 
-async function copySuggestedReply(id){
+function buildSmsHref(phone,body){
+  const clean=String(phone||'').replace(/\s/g,'');
+  if(!clean)return '#';
+  const txt=String(body||'').trim();
+  if(!txt)return `sms:${clean}`;
+  return `sms:${clean}&body=${encodeURIComponent(txt)}`;
+}
+
+function useSuggestedReply(id){
+  const thread=S.conversations.find(c=>c.id===id);
+  if(!thread)return;
   const st=getReplyAssistState(id);
   const txt=String(st.suggestedReply||'').trim();
   if(!txt)return;
 
-  try{
-    await navigator.clipboard.writeText(txt);
+  const href=buildSmsHref(thread.phone||'',txt);
+  if(href!=='#'){
+    window.location.href=href;
     st.copied=true;
     renderActions();
-    setTimeout(()=>{
-      st.copied=false;
-      renderActions();
-    },1500);
-  }catch(_){
-    // Keep UI stable on clipboard errors
-    st.copied=false;
-    renderActions();
+    setTimeout(()=>{ st.copied=false; renderActions(); },1200);
+    return;
   }
+
+  navigator.clipboard.writeText(txt).then(()=>{
+    st.copied=true;
+    renderActions();
+    setTimeout(()=>{ st.copied=false; renderActions(); },1200);
+  }).catch(()=>{});
 }
 
 function toggleTrend(){
