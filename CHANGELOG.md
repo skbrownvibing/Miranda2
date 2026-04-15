@@ -2,6 +2,10 @@
 
 ## Current development cycle
 
+### 2026-04-15 — Homepage readability touch-up (secondary CTAs + score spacing)
+- Increased legibility for homepage secondary actions (`Upload export file`, `Set up one-click refresh`) by brightening text/border contrast and slightly increasing button label emphasis.
+- Tightened score headline spacing from `5% → 95%` to `5%→95%` for a more compact visual rhythm.
+
 ### 2026-04-15 — Homepage polish pass (desktop width, ghost motion, CTA hierarchy)
 - Widened homepage container to a desktop-friendly centered layout (up to ~900px) to reduce the narrow/mobile feel.
 - Replaced Ghost Slayer label treatment with a larger ghost visual near the title and added a one-time drop/glide animation (~1.8s).
