@@ -1477,13 +1477,15 @@ function renderSuggestedReplyUI(thread){
   if(!isAiThreadAllowlisted(thread))return '';
 
   const st=getReplyAssistState(thread.id);
+  const triggerHtml=`<div class="ai-trigger-row"><button class="btn-dismiss" onclick="generateReplyForThread(${esc(JSON.stringify(thread.id))},false);event.stopPropagation()">AI Suggested Reply</button></div>`;
 
   if(st.isGenerating){
-    return `<div class="ai-trigger-row"><button class="btn-dismiss" disabled>Generating...</button></div>`;
+    return `${triggerHtml}<div class="ai-use-note">Generating...</div>`;
   }
 
   if(st.suggestedReply){
     return `
+      ${triggerHtml}
       <div class="ai-suggest-card">
         <div class="ai-suggest-label">AI Suggested Reply</div>
         <div class="ai-suggest-text">${esc(st.suggestedReply)}</div>
@@ -1498,6 +1500,7 @@ function renderSuggestedReplyUI(thread){
 
   if(st.generationAttempted&&st.blockedReason){
     return `
+      ${triggerHtml}
       <div class="ai-suggest-card">
         <div class="ai-suggest-label">AI Suggested Reply</div>
         <div class="ai-suggest-text">Can't generate a reply for this message</div>
@@ -1506,7 +1509,7 @@ function renderSuggestedReplyUI(thread){
     `;
   }
 
-  return `<div class="ai-trigger-row"><button class="btn-dismiss" onclick="generateReplyForThread(${esc(JSON.stringify(thread.id))},false);event.stopPropagation()">AI Suggested Reply</button></div>`;
+  return triggerHtml;
 }
 
 // ── Render ───────────────────────────────────────────────────────────────────
@@ -1783,6 +1786,7 @@ function renderOtherTexts(){
           ${phone?`<a class="btn-reply" href="${smsHref}">Reply in Messages ↗</a>`:''}
           <button class="btn-dismiss" onclick="dismissConvo('${esc(c.id)}')">No reply needed</button>
           ${renderFilterOutMenu(c.id)}
+          ${renderSuggestedReplyUI(c)}
         </div>
       </div>
     </div>`;

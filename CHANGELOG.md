@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-04-15 — AI trigger visibility is now allowlist-only and always shown
+- Ensured **AI Suggested Reply** trigger is always rendered for every allowlisted demo thread, independent of inbound/outbound or message-type conditions.
+- Moved/duplicated AI trigger rendering into stable thread detail action areas so allowlisted threads in both **Action needed** and **Other texts** show the button consistently.
+- Kept generate-time constraints unchanged; blocked threads still show the existing blocked-state card after click.
+
 ### 2026-04-15 — AI Suggested Reply trigger always visible on allowlisted demo threads
 - Updated AI button visibility so allowlisted seeded demo threads always show the **AI Suggested Reply** trigger, even when latest message is outbound.
 - Kept generation constraints unchanged; generation still requires an inbound plain-text latest message.
