@@ -2,6 +2,13 @@
 
 ## Current development cycle
 
+### 2026-04-15 — Homepage visual restyle to screenshot reference
+- Restyled the homepage to match the provided dark screenshot direction: deep blue gradient background, large gradient **Reply or Die** hero, top ghost-count pill, and high-contrast call-to-action hierarchy.
+- Rebuilt the score visual as a large card with left/right score targets, center progress bar + bolt marker, and bottom stats row (`47h` avg reply time, `89` ghosted convos).
+- Restyled homepage CTAs to match screenshot structure: primary gradient **See Inbox with Demo Data** and two side-by-side outlined secondary actions.
+- Updated homepage helper line copy to **Your friends deserve better than left on read 💬** and added bottom-right help FAB visual.
+- Updated ghost count banner copy/animation target to `127` to align with screenshot text treatment.
+
 ### 2026-04-15 — Re-applied homepage updates on current PR branch
 - Re-applied homepage CTA styling on the active branch to ensure the current PR reflects the latest homepage pass.
 - Added explicit shared secondary CTA hook (`.home-secondary-btn`) so **Upload export file** and **Set up one-click refresh** render with matching size/legibility.

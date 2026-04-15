@@ -40,69 +40,99 @@ body[data-theme="dark"] {
 
 /* ── Drop screen ──────────────────────────────────────────── */
 #drop-screen {
-  display:flex;align-items:center;justify-content:center;height:100vh;
-  background:linear-gradient(160deg,#f5f7ff 0%,#eef2ff 40%,#f9f7ff 70%,#f5f7ff 100%);
-  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;min-height:100vh;
+  background:
+    radial-gradient(circle at 55% 45%,rgba(93,86,210,0.36) 0%,rgba(34,31,80,0.08) 34%,transparent 60%),
+    linear-gradient(180deg,#050a38 0%,#070a2d 42%,#060926 100%);
+  position:relative;overflow:hidden;padding:30px 18px;
 }
 #drop-screen::before {
   content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
-  background:radial-gradient(circle at 35% 45%,rgba(99,102,241,0.09) 0%,transparent 50%),
-  radial-gradient(circle at 65% 55%,rgba(45,212,160,0.08) 0%,transparent 50%);pointer-events:none;
+  background:radial-gradient(circle at 35% 45%,rgba(99,102,241,0.07) 0%,transparent 50%),
+  radial-gradient(circle at 65% 55%,rgba(45,212,160,0.06) 0%,transparent 50%);pointer-events:none;
 }
 #drop-screen.drag-over { background:linear-gradient(160deg,#eef2ff 0%,#e0e7ff 40%,#f5f3ff 70%,#eef2ff 100%); }
 .drop-card {
-  background:rgba(255,255,255,0.85);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
-  border:1px solid rgba(55,65,81,0.12);border-radius:28px;padding:56px 64px;text-align:center;
-  max-width:900px;width:min(92vw,900px);position:relative;z-index:1;box-shadow:0 16px 48px rgba(0,0,0,0.4);
+  max-width:1260px;width:min(98vw,1260px);position:relative;z-index:1;text-align:center;
+  color:#dbeafe;
 }
-#drop-screen.drag-over .drop-card { border-color:rgba(99,102,241,0.3); }
 .ghost-banner {
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  margin-bottom:22px;padding:8px 12px;border-radius:999px;
-  font-size:14px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);
+  display:inline-flex;align-items:center;justify-content:center;gap:12px;
+  margin-bottom:48px;padding:18px 38px;border-radius:999px;font-size:46px;
+  border:2px solid rgba(177,187,255,0.25);background:rgba(56,63,131,0.34);color:#9be7ff;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,0.03);
 }
-.ghost-banner-text strong { color:var(--text);font-family:'DM Mono',monospace; }
-.hero-row { position:relative;display:flex;justify-content:center;align-items:center;margin-bottom:14px; }
+.ghost-banner-text { font-size:48px;font-weight:700;letter-spacing:-1px; }
+.ghost-banner-text strong { color:#fff;font-family:'DM Mono',monospace;font-size:50px; }
+.ghost-banner-icon { font-size:54px;line-height:1;filter:drop-shadow(0 3px 8px rgba(0,0,0,0.35)); }
+.hero-row { position:relative;display:flex;justify-content:center;align-items:center;margin-bottom:18px; }
 .hero-ghost {
-  position:absolute;left:calc(50% - 220px);top:-48px;font-size:56px;line-height:1;
-  animation:ghostDropGlide 1.8s cubic-bezier(.22,.88,.28,1) 1;
+  display:none;
 }
-.drop-card h1 { font-size:48px;font-weight:700;color:var(--text);letter-spacing:-1px;margin-bottom:0; }
-.drop-tagline { font-size:14px;color:var(--text2);margin-bottom:28px;line-height:1.45; }
-@keyframes ghostDropGlide {
-  0% { transform:translateY(-110px) translateX(-16px) rotate(-6deg); opacity:0; }
-  55% { transform:translateY(4px) translateX(10px) rotate(2deg); opacity:1; }
-  75% { transform:translateY(-2px) translateX(20px) rotate(-1deg); opacity:1; }
-  100% { transform:translateY(0) translateX(28px) rotate(0); opacity:1; }
+.drop-card h1 {
+  font-size:164px;line-height:0.92;font-weight:700;margin-bottom:30px;letter-spacing:-2px;
+  background:linear-gradient(90deg,#62c6ff 0%,#b78cff 52%,#ec66d4 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.drop-tagline { font-size:64px;color:#c9f8ff;margin-bottom:20px;line-height:1.12;font-weight:500;letter-spacing:-0.6px; }
+.feature-line {
+  font-size:46px;color:#1bb3e2;line-height:1.22;margin:0 0 38px;font-weight:500;
 }
 .score-visual {
-  margin:34px 0 34px;padding:22px 18px;border:1px solid var(--border);
-  border-radius:14px;background:var(--surface2);
+  margin:0 0 40px;padding:38px 40px 34px;border:2px solid rgba(171,180,255,0.2);
+  border-radius:34px;background:linear-gradient(180deg,rgba(82,88,173,0.38) 0%,rgba(60,61,132,0.38) 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,0.03);
 }
-.score-visual-main { font-size:30px;font-weight:700;line-height:1.2;color:var(--text);letter-spacing:-0.35px; }
-.score-visual-sub { font-size:14px;color:var(--text3);margin-top:8px; }
-.score-visual-list { margin-top:10px;font-size:12px;color:var(--text3);line-height:1.5; }
+.score-main { display:flex;align-items:flex-start;justify-content:space-between;gap:30px; }
+.score-side { width:230px;text-align:center; }
+.score-side .badge { font-size:44px;line-height:1;margin-bottom:10px; }
+.score-side .cap { color:#63ecff;font-size:44px;font-weight:600;margin-bottom:8px;letter-spacing:-0.4px; }
+.score-side .num { font-size:70px;font-weight:700;line-height:1;color:#ff6969;margin-bottom:6px; }
+.score-side.right .num { color:#8cb5ff; }
+.score-side .lbl { color:rgba(215,221,255,0.7);font-size:41px;letter-spacing:-0.2px; }
+.score-center { flex:1;display:flex;flex-direction:column;align-items:center;padding-top:28px; }
+.score-track {
+  width:100%;height:22px;border-radius:999px;background:rgba(140,153,214,0.34);position:relative;
+}
+.score-track::before{
+  content:'';position:absolute;left:0;top:0;height:100%;width:5.5%;
+  background:linear-gradient(90deg,#ff3b1f 0%,#ff9434 52%,#8ee7f8 100%);border-radius:999px;
+}
+.score-bolt { font-size:44px;color:#00dfff;margin-top:18px;line-height:1; }
+.score-divider { margin:30px 0 24px;border:0;border-top:2px solid rgba(167,176,239,0.24); }
+.score-bottom { display:flex;justify-content:space-around;gap:24px; }
+.score-stat { text-align:center; }
+.score-stat .icon { font-size:40px;line-height:1;margin-bottom:8px;color:#ff9f22; }
+.score-stat .icon.people { color:#f9cc2f; }
+.score-stat .value { font-size:66px;font-weight:700;line-height:1;color:#ffac2a; }
+.score-stat .value.people { color:#ffcf2d; }
+.score-stat .label { color:rgba(215,221,255,0.7);font-size:41px;line-height:1.18; }
 .btn-primary {
   display:inline-block;background:var(--blue);color:#fff;border:none;border-radius:12px;
   padding:12px 28px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;
   transition:opacity .15s,transform .1s;
 }
 .btn-primary:hover { opacity:.88;transform:translateY(-1px); }
-.primary-cta { width:100%;padding:14px 24px;font-size:15px; }
-#drop-error { margin-top:16px;color:var(--red);font-size:13px;display:none; }
-.own-data { margin-top:22px;padding-top:18px;border-top:1px solid var(--border);text-align:left; }
-.own-data h2 { font-size:14px;color:var(--text);margin-bottom:4px;font-weight:600; }
-.own-data-note { font-size:14px;color:var(--text3);margin-bottom:12px; }
-.own-data-option { margin-top:12px; }
-.own-data-option .btn-secondary,
-.home-secondary-btn {
-  width:100%;text-align:center;background:rgba(255,255,255,0.03);color:#dbeafe;border-color:rgba(219,234,254,0.34);
-  padding:12px 16px;font-size:14px;border-radius:12px;font-weight:600;min-height:48px;
+.primary-cta {
+  width:100%;padding:28px 30px;border-radius:24px;font-size:64px;font-weight:700;
+  background:linear-gradient(90deg,#13bce8 0%,#78a6f0 50%,#a712ff 100%);
+  box-shadow:0 10px 34px rgba(16,175,232,0.33), inset 0 1px 0 rgba(255,255,255,0.2);
+  margin-bottom:20px;
 }
-.option-subtext { margin-top:6px;font-size:11px;color:var(--text3); }
-.source-panel-title { font-size:12px;color:var(--text3);margin-bottom:6px; }
-.source-panel-line { font-size:12px;color:var(--text2);margin-bottom:4px; }
-.source-panel-actions { display:flex;gap:8px;flex-wrap:wrap;margin-top:2px; }
+#drop-error { margin-top:16px;color:#ff9ea4;font-size:24px;display:none; }
+.own-data { margin-top:0;padding-top:0;text-align:left; }
+.own-data h2,.own-data-note { display:none; }
+.own-data-option { margin-top:0; }
+.source-panel-actions { display:grid;grid-template-columns:1fr 1fr;gap:18px; }
+.home-secondary-btn,.source-panel-actions .btn-secondary {
+  width:100%;display:flex;align-items:center;justify-content:center;gap:12px;
+  border-radius:22px;padding:24px 18px;font-size:52px;font-weight:500;
+  border:2px solid rgba(171,180,255,0.45);background:rgba(40,47,111,0.45);color:#e8eeff;
+}
+.source-panel-line { display:none; }
+.option-subtext {
+  margin-top:28px;text-align:center;color:#10bff4;font-size:52px;font-weight:500;
+}
 .btn-secondary {
   font-family:inherit;font-size:12px;padding:8px 12px;border:1px solid var(--border);
   border-radius:10px;background:var(--surface);color:var(--text2);cursor:pointer;
@@ -112,6 +142,11 @@ body[data-theme="dark"] {
 .source-status { margin-top:8px;font-size:12px;color:#60a5fa;display:none; }
 .source-status.is-error { color:var(--red); }
 .source-status.is-success { color:#22c55e; }
+.help-fab {
+  position:fixed;right:24px;bottom:24px;width:76px;height:76px;border-radius:50%;
+  background:#f3f4f6;color:#1f2937;font-size:56px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 24px rgba(0,0,0,0.35);
+}
 
 /* ── App ──────────────────────────────────────────────────── */
 #app { display:none;flex-direction:column;min-height:100vh; }
@@ -388,10 +423,25 @@ body[data-theme="dark"] .drop-card h1 { color:#fff; }
   .score-ring svg { width:150px;height:150px; }
   .score-number { font-size:42px; }
   .score-summary { font-size:22px;text-align:center; }
-  .drop-card { padding:40px 28px; }
-  .hero-ghost { left:calc(50% - 140px);top:-40px;font-size:44px; }
-  .drop-card h1 { font-size:40px; }
-  .score-visual-main { font-size:24px; }
+  .drop-card { width:min(98vw,1260px); }
+  .ghost-banner { padding:10px 18px;font-size:22px;margin-bottom:24px; }
+  .ghost-banner-icon{font-size:28px;}
+  .ghost-banner-text,.ghost-banner-text strong{font-size:24px;}
+  .drop-card h1 { font-size:72px; }
+  .drop-tagline { font-size:34px; }
+  .feature-line { font-size:24px;margin-bottom:18px; }
+  .score-visual { padding:20px 16px;border-radius:20px; }
+  .score-side { width:120px; }
+  .score-side .cap,.score-side .lbl,.score-stat .label { font-size:20px; }
+  .score-side .num,.score-stat .value { font-size:36px; }
+  .score-track { height:10px; }
+  .score-bolt { font-size:24px; }
+  .score-stat .icon { font-size:22px; }
+  .primary-cta { font-size:34px;padding:16px 18px;border-radius:14px; }
+  .source-panel-actions { grid-template-columns:1fr;gap:10px; }
+  .home-secondary-btn,.source-panel-actions .btn-secondary { font-size:28px;padding:14px 12px;border-radius:14px; }
+  .option-subtext { font-size:28px;margin-top:16px; }
+  .help-fab { width:54px;height:54px;font-size:38px;right:14px;bottom:14px; }
 }
 </style>
 </head>
@@ -400,17 +450,46 @@ body[data-theme="dark"] .drop-card h1 { color:#fff; }
 <div id="drop-screen">
   <div class="drop-card">
     <div class="ghost-banner" id="ghost-banner">
-      <span class="ghost-banner-text">Uh oh — you’ve left <strong id="ghost-unanswered-number">0</strong> texts unanswered in the last 30 days.</span>
+      <span class="ghost-banner-icon">👻</span>
+      <span class="ghost-banner-text"><strong id="ghost-unanswered-number">0</strong> texts need your attention</span>
     </div>
     <div class="hero-row">
-      <span class="hero-ghost" aria-hidden="true">👻</span>
       <h1>Reply or Die</h1>
     </div>
-    <div class="drop-tagline">Don’t ghost — find buried texts and raise your response score.</div>
+    <div class="drop-tagline">Stop ghosting. Start responding.</div>
+    <div class="feature-line">Surface unanswered texts • Filter spam • Track your responsiveness score</div>
     <div class="score-visual">
-      <div class="score-visual-main">👻 5%→95% ⚡<br>Ghost → Elite Responder</div>
-      <div class="score-visual-sub">Raise your score by:</div>
-      <div class="score-visual-list">- replying faster<br>- replying more often<br>- closing conversations</div>
+      <div class="score-main">
+        <div class="score-side">
+          <div class="badge">👻</div>
+          <div class="cap">You right now</div>
+          <div class="num">5</div>
+          <div class="lbl">responsiveness score</div>
+        </div>
+        <div class="score-center">
+          <div class="score-track"></div>
+          <div class="score-bolt">⚡</div>
+        </div>
+        <div class="score-side right">
+          <div class="badge">🏆</div>
+          <div class="cap">Your goal</div>
+          <div class="num">95</div>
+          <div class="lbl">responsiveness score</div>
+        </div>
+      </div>
+      <hr class="score-divider">
+      <div class="score-bottom">
+        <div class="score-stat">
+          <div class="icon">🕒</div>
+          <div class="value">47h</div>
+          <div class="label">avg reply time</div>
+        </div>
+        <div class="score-stat">
+          <div class="icon people">👥</div>
+          <div class="value people">89</div>
+          <div class="label">ghosted convos</div>
+        </div>
+      </div>
     </div>
     <button class="btn-primary primary-cta" onclick="loadBundledDemoIntoInbox()">See Inbox with Demo Data</button>
     <input type="file" id="file-input" accept=".json" style="display:none">
@@ -419,17 +498,16 @@ body[data-theme="dark"] .drop-card h1 { color:#fff; }
       <h2>Use your own data</h2>
       <div class="own-data-note">(ask sarah for the script)</div>
       <div class="own-data-option">
-        <button class="btn-secondary home-secondary-btn" onclick="document.getElementById('file-input').click()">Upload export file</button>
-        <div class="option-subtext">Import a JSON once</div>
+        <button class="btn-secondary home-secondary-btn" onclick="document.getElementById('file-input').click()">💬 Upload Export File</button>
       </div>
       <div class="own-data-option">
         <div id="source-panel-drop" style="display:none">
           <div class="source-panel-actions">
-            <button class="btn-secondary home-secondary-btn" id="connect-export-btn-drop" onclick="connectExportFile()">Set up one-click refresh</button>
+            <button class="btn-secondary home-secondary-btn" id="connect-export-btn-drop" onclick="connectExportFile()">⚡ Set up One-click Refresh</button>
             <button class="btn-primary" id="refresh-btn-drop" onclick="refresh()" style="display:none">Refresh</button>
             <button class="btn-secondary" id="change-source-btn-drop" onclick="changeSource()">Change source</button>
           </div>
-          <div class="option-subtext">Connect once, then press Refresh</div>
+          <div class="option-subtext">Your friends deserve better than left on read 💬</div>
           <div class="source-panel-line" id="source-name-drop"></div>
         </div>
       </div>
@@ -437,6 +515,7 @@ body[data-theme="dark"] .drop-card h1 { color:#fff; }
       <div class="source-error" id="source-error-drop" style="display:none"></div>
     </div>
   </div>
+  <div class="help-fab" aria-hidden="true">?</div>
 </div>
 
 <div id="app">
@@ -649,7 +728,7 @@ function loadSavedData(){try{const r=localStorage.getItem(DATA_KEY);if(!r)return
 function startGhostBannerAnimation(){
   const numberEl=document.getElementById('ghost-unanswered-number');
   if(!numberEl)return;
-  const finalValue=143;
+  const finalValue=127;
   const durationMs=1500;
   const start=performance.now();
   function tick(now){
