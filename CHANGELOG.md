@@ -2,11 +2,6 @@
 
 ## Current development cycle
 
-### 2026-04-15 — Homepage desktop scale + secondary CTA parity polish
-- Reduced homepage desktop scale so the hero section feels like a normal landing page (smaller hero typography, tighter spacing, shorter buttons, and a less oversized score card).
-- Kept the same dark redesign direction while tuning above-the-fold fit for laptop screens.
-- Unified homepage secondary CTA structure so **Upload Export File** now uses the same component pattern as **Set up One-click Refresh** (same icon slot, label slot, padding, sizing, and alignment).
-
 ### 2026-04-15 — Homepage visual restyle to screenshot reference
 - Restyled the homepage to match the provided dark screenshot direction: deep blue gradient background, large gradient **Reply or Die** hero, top ghost-count pill, and high-contrast call-to-action hierarchy.
 - Rebuilt the score visual as a large card with left/right score targets, center progress bar + bolt marker, and bottom stats row (`47h` avg reply time, `89` ghosted convos).
