@@ -2,6 +2,10 @@
 
 ## Current development cycle
 
+### 2026-04-15 — Re-applied homepage updates on current PR branch
+- Re-applied homepage CTA styling on the active branch to ensure the current PR reflects the latest homepage pass.
+- Added explicit shared secondary CTA hook (`.home-secondary-btn`) so **Upload export file** and **Set up one-click refresh** render with matching size/legibility.
+
 ### 2026-04-15 — Homepage readability touch-up (secondary CTAs + score spacing)
 - Increased legibility for homepage secondary actions (`Upload export file`, `Set up one-click refresh`) by brightening text/border contrast and slightly increasing button label emphasis.
 - Tightened score headline spacing from `5% → 95%` to `5%→95%` for a more compact visual rhythm.
