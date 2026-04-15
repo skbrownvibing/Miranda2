@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-04-15 — AI prompt grounded with concrete reply style examples
+- Updated the AI reply prompt with explicit input→reply examples to anchor tone and style to concrete outputs.
+- Replaced the prior long rule list with a tighter constraint set: normal text-message voice, direct response to latest messages, avoid polished/formal phrasing, no em dashes, and witty/funny tone.
+- Kept UX and product behavior unchanged (same API route, allowlist gating, button visibility behavior, failure handling, regenerate flow, and homepage behavior).
+
 ### 2026-04-15 — Prompt/validation tweak for em-dash avoidance
 - Updated AI reply prompt guidance to explicitly favor short, natural, normal text-message phrasing and avoid em dashes.
 - Added client-side validation rejection when model output contains an em dash (`—`).
