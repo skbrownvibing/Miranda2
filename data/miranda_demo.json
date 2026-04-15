@@ -6,6 +6,7 @@
     {
       "id": "iMessage;-;+12125550101",
       "contact_name": "Larry David",
+      "avatar": "/avatars/larry-david.png",
       "phone": "+12125550101",
       "is_group": false,
       "group_name": null,
@@ -116,6 +117,7 @@
     {
       "id": "iMessage;-;+12125550105",
       "contact_name": "Carrie Bradshaw",
+      "avatar": "/avatars/carrie-bradshaw.png",
       "phone": "+12125550105",
       "is_group": false,
       "group_name": null,

@@ -95,6 +95,16 @@ body[data-theme="dark"] {
   border-radius:10px;background:var(--surface);color:var(--text2);cursor:pointer;
 }
 .btn-secondary:hover { background:var(--border);color:var(--text); }
+.home-secondary-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:42px;padding:10px 16px;border:1px solid var(--border);border-radius:12px;
+  background:var(--surface);color:var(--text2);font-family:inherit;font-size:13px;font-weight:600;
+  line-height:1;cursor:pointer;white-space:nowrap;text-align:center;
+}
+.home-secondary-btn:hover{ background:var(--surface2);color:var(--text); }
+.home-secondary-btn .btn-icon{
+  display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;line-height:1;
+}
 .source-error { margin-top:8px;font-size:12px;color:var(--red); }
 .source-status { margin-top:8px;font-size:12px;color:#60a5fa;display:none; }
 .source-status.is-error { color:var(--red); }
@@ -178,6 +188,10 @@ body[data-theme="dark"] {
 .action-avatar {
   width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;
   font-size:15px;font-weight:600;color:#fff;flex-shrink:0;background:var(--blue);
+  overflow:hidden;
+}
+.action-avatar img {
+  width:100%;height:100%;object-fit:cover;display:block;
 }
 .action-body { flex:1;min-width:0; }
 .action-name { font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px; }
@@ -195,6 +209,10 @@ body[data-theme="dark"] {
 
 .action-detail { display:none;padding:12px 0 4px;border-top:1px solid var(--border);margin-top:12px; }
 .action-item.expanded .action-detail { display:block; }
+.thread-header {
+  display:flex;align-items:center;gap:10px;margin-bottom:10px;
+}
+.thread-header-name { font-size:13px;font-weight:600;color:var(--text); }
 .detail-messages { display:flex;flex-direction:column;gap:6px;margin-bottom:12px;max-height:240px;overflow-y:auto; }
 .detail-messages > div { background:none;border:0;border-radius:0;padding:0;margin:0;text-align:left; }
 .msg-time { font-size:10px;color:var(--text3);margin-top:2px;padding:0 4px; }
@@ -379,6 +397,16 @@ body[data-theme="dark"] .saved-prompt button:hover { color:#fff; }
   .score-summary { font-size:22px;text-align:center; }
   .drop-card { padding:40px 28px; }
 }
+@media (min-width:901px) {
+  .drop-card { padding:50px 56px;max-width:440px; }
+  .drop-card h1 { font-size:24px; }
+  .score-section { padding:34px 24px 24px; }
+  .score-ring { width:170px;height:170px;margin-bottom:12px; }
+  .score-ring svg { width:170px;height:170px; }
+  .score-number { font-size:48px; }
+  .trend-section { padding:0 24px 6px; }
+  .action-section, .other-section, .review-section { padding-left:24px;padding-right:24px;padding-bottom:32px; }
+}
 </style>
 </head>
 <body>
@@ -389,7 +417,7 @@ body[data-theme="dark"] .saved-prompt button:hover { color:#fff; }
     <h1>Reply or Die</h1>
     <div class="drop-tagline">your text responsiveness score</div>
     <p>Drop your <strong>miranda2_messages.json</strong> here<br>to see how responsive you are.</p>
-    <button class="btn-primary" onclick="document.getElementById('file-input').click()">Choose file</button>
+    <button class="home-secondary-btn" onclick="document.getElementById('file-input').click()"><span class="btn-icon" aria-hidden="true">⤴</span><span>Choose file</span></button>
     <input type="file" id="file-input" accept=".json" style="display:none">
     <div class="drop-hint">Run <code>export.command</code> first to generate the JSON.<br>All data stays local — nothing leaves your browser.</div>
     <div id="drop-error"></div>
@@ -403,7 +431,7 @@ body[data-theme="dark"] .saved-prompt button:hover { color:#fff; }
       <div class="source-panel-title" id="source-title-drop">Connected export file</div>
       <div class="source-panel-line" id="source-name-drop"></div>
       <div class="source-panel-actions">
-        <button class="btn-primary" id="connect-export-btn-drop" onclick="connectExportFile()">Connect export file</button>
+        <button class="home-secondary-btn" id="connect-export-btn-drop" onclick="connectExportFile()"><span class="btn-icon" aria-hidden="true">⚡</span><span>Connect export file</span></button>
         <button class="btn-primary" id="refresh-btn-drop" onclick="refresh()" style="display:none">Refresh</button>
         <button class="btn-secondary" id="change-source-btn-drop" onclick="changeSource()">Change source</button>
       </div>
@@ -1285,6 +1313,18 @@ function relTime(d){if(!d)return'';const ms=Date.now()-new Date(d).getTime(),m=M
 function fullTime(d){if(!d)return'';return new Date(d).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});}
 function displayName(c){if(c.is_group&&c.group_name&&c.group_name.trim())return c.group_name.trim();return c.contact_name||c.phone||'Unknown';}
 function initial(c){return displayName(c).trim()[0].toUpperCase();}
+function avatarPath(c){
+  const raw=String(c?.avatar??'').trim();
+  if(!raw)return'';
+  if(raw.startsWith('/'))return raw;
+  return '/'+raw;
+}
+function renderAvatar(c,size=40){
+  const avatar=avatarPath(c);
+  const initials=esc(initial(c));
+  if(!avatar)return`<div class="action-avatar" style="width:${size}px;height:${size}px">${initials}</div>`;
+  return `<div class="action-avatar" style="width:${size}px;height:${size}px"><img src="${esc(avatar)}" alt="${esc(displayName(c))} avatar"></div>`;
+}
 function latestEventAt(c){return c.last_message_at||null;}
 function latestEventText(c){return c.last_message_text||'';}
 function literalRecentEvents(c){return(c.messages||[]).slice(-5);}
@@ -1647,7 +1687,7 @@ function renderActions(){
       .map(m=>`<div><div>${esc(String(m.text).trim())}</div><div class="msg-time">${esc(fullTime(m.date))}</div></div>`).join('');
     return`<div class="action-item${exp?' expanded':''}" onclick="toggleExpand('${esc(c.id)}')">
       <div class="action-item-top">
-        <div class="action-avatar">${esc(initial(c))}</div>
+        ${renderAvatar(c)}
         <div class="action-body">
           <div class="action-name">${esc(name)}</div>
           ${previewHtml}
@@ -1658,6 +1698,10 @@ function renderActions(){
         </div>
       </div>
       <div class="action-detail" onclick="event.stopPropagation()">
+        <div class="thread-header">
+          ${renderAvatar(c,30)}
+          <div class="thread-header-name">${esc(name)}</div>
+        </div>
         <div class="detail-messages">${textRows?textRows:'<div style="color:var(--text3);font-size:12px;text-align:center;padding:12px 0">No messages in export window</div>'}</div>
         <div class="detail-actions">
           ${phone?`<a class="btn-reply" href="${smsHref}">Reply in Messages ↗</a>`:''}
@@ -1693,7 +1737,7 @@ function renderOtherTexts(){
       .map(m=>`<div><div>${esc(String(m.text).trim())}</div><div class="msg-time">${esc(fullTime(m.date))}</div></div>`).join('');
     return `<div class="action-item${exp?' expanded':''}" onclick="toggleExpand('${esc(c.id)}')">
       <div class="action-item-top">
-        <div class="action-avatar">${esc(initial(c))}</div>
+        ${renderAvatar(c)}
         <div class="action-body">
           <div class="action-name">${esc(name)}</div>
           ${previewHtml}
@@ -1703,6 +1747,10 @@ function renderOtherTexts(){
         </div>
       </div>
       <div class="action-detail" onclick="event.stopPropagation()">
+        <div class="thread-header">
+          ${renderAvatar(c,30)}
+          <div class="thread-header-name">${esc(name)}</div>
+        </div>
         <div class="detail-messages">${textRows?textRows:'<div style="color:var(--text3);font-size:12px;text-align:center;padding:12px 0">No messages in export window</div>'}</div>
         <div class="detail-actions">
           ${phone?`<a class="btn-reply" href="${smsHref}">Reply in Messages ↗</a>`:''}

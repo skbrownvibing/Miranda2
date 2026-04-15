@@ -2,6 +2,22 @@
 
 ## Current development cycle
 
+### 2026-04-15 — Homepage polish: unified secondary buttons + desktop scale tune
+- Unified homepage secondary-action styling so the upload action and one-click setup action share the same button system (size, border, background, padding, typography, and icon alignment).
+- Applied a modest desktop-only scale reduction to homepage surfaces:
+  - slightly smaller hero headline
+  - slightly reduced score-section/ring footprint
+  - slightly tighter section spacing and vertical padding
+- Kept routing, data logic, and existing design direction unchanged.
+
+### 2026-04-15 — Demo-only local avatar support for conversations
+- Added optional demo conversation field `avatar` (string path), e.g. `"/avatars/larry-david.png"`.
+- Updated conversation identity UI to render avatar images in:
+  - Action list / inbox rows
+  - Expanded conversation thread header
+- Kept existing initials fallback unchanged when `avatar` is missing.
+- Scope is demo-only UI data; no changes to export flow or real contact-photo import logic.
+
 ### 2026-04-15 — Top-tier label keeps trophy emoji
 - Updated the highest score-tier copy to **ELITE responder 🏆**.
 
