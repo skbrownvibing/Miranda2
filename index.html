@@ -626,8 +626,13 @@ async function init() {
     try{
       const response=await fetch('./data/miranda_demo.json');
       if(response.ok){
-        const demoData=await response.json();
-        loadData(timeShiftBundledDemoData(demoData),false);
+        const demoData=timeShiftBundledDemoData(await response.json());
+        localStorage.setItem(DATA_KEY,JSON.stringify(demoData));
+        localStorage.setItem(META_KEY,JSON.stringify({
+          savedAt:new Date().toISOString(),
+          count:(demoData.conversations||[]).length
+        }));
+        checkSavedData();
       }
     }catch(_){}
   }

@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-04-15 — Homepage-first startup restored for bundled demo load
+- Fixed startup behavior so first load stays on the Home/import screen instead of auto-opening the inbox when bundled demo data is available.
+- Bundled demo JSON is still preloaded and time-shifted on first run, but it is now saved for explicit **Continue with last export** use rather than immediately rendering the loaded app.
+- Preserved normal in-app navigation and file import flows after the user intentionally enters the inbox.
+
 ### 2026-04-15 — Prompt/validation tweak for em-dash avoidance
 - Updated AI reply prompt guidance to explicitly favor short, natural, normal text-message phrasing and avoid em dashes.
 - Added client-side validation rejection when model output contains an em dash (`—`).
