@@ -2,6 +2,12 @@
 
 ## Current development cycle
 
+### 2026-04-15 — Top-tier label keeps trophy emoji
+- Updated the highest score-tier copy to **ELITE responder 🏆**.
+
+### 2026-04-15 — Score label copy tweak
+- Changed the top score-tier label from **top 5% responder 🏆** to **ELITE responder**.
+
 ### 2026-04-14 — Bundled demo auto-load + relative timestamp shifting
 - Added startup fallback to auto-load `data/miranda_demo.json` when there is no user-uploaded JSON saved locally.
 - Added a minimal demo-only timestamp shifter so demo data always feels current on load.
