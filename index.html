@@ -1354,7 +1354,6 @@ function isAiThreadAllowlisted(thread){
 }
 
 function aiReplyBlockReason(thread){
-  if(!isAiThreadAllowlisted(thread))return 'Not on demo allowlist';
   const lastVisible=latestVisibleTextMessage(thread);
   if(!lastVisible)return 'Need an incoming text to reply to';
   if(lastVisible.from_me)return 'Need an incoming text to reply to';
@@ -1385,21 +1384,35 @@ function buildAiPrompt(context, latestInbound){
   const conversation=context.map(m=>`${m.speaker}: ${m.text}`).join('\n');
   return `Write exactly one short text reply to the latest inbound message.
 
-Rules:
-- One reply only, plain text only
-- 4 to 12 words preferred
-- Never exceed 20 words
-- Keep it short, natural, and sendable
-- Sound like a normal text reply
-- Light wit only when appropriate
-- Soften if the message is delicate
-- No greetings or signoffs
-- No quotation marks
-- No multiple options
-- Do not use em dashes
-- No preamble like "Here's a reply" or "You could say"
-- No corporate, formal, or assistant tone
-- Do not invent facts outside the thread context
+Examples of good replies:
+
+Input: “I saw you across the street and you did not acknowledge me. Don’t act like you were looking at a bird.”
+Reply: “no fake bird, just poor situational awareness on my end”
+
+Input: “Need yes/no. Is this outfit saying ‘charity lunch’ or ‘minor European princess’?”
+Reply: “minor european princess, but like approachable”
+
+Input: “I have an idea. It’s about longing.”
+Reply: “no idea what that means, which is probably the problem”
+
+Input: “I couldn’t help but wonder: is replying late a red flag or a branding exercise?”
+Reply: “branding exercise, obviously”
+
+Input: “Hypothetically, how bad is it to ignore a parking ticket for emotional reasons?”
+Reply: “emotionally valid, financially inadvisable”
+
+Input: “We gotta discuss dinner. Nobody knows where to eat anymore. Society’s collapsing.”
+Reply: “agreed, we’ve lost the plot. where are we going?”
+
+Input: “Here’s the phrase: ‘Hyperlocal media disruption engine.’ Too small?”
+Reply: “that’s either a poem or a problem”
+
+Constraints:
+- write it like a normal text message
+- respond directly to the latest messages
+- avoid overly polished or formal phrasing
+- do not use em dashes
+- be witty and funny
 
 Latest inbound message:
 ${latestInbound}
@@ -1479,8 +1492,6 @@ async function generateAiReply(thread){
 }
 
 function renderSuggestedReplyUI(thread){
-  if(!isAiThreadAllowlisted(thread))return '';
-
   const st=getReplyAssistState(thread.id);
   const triggerHtml=`<div class="ai-trigger-row"><button class="btn-dismiss" onclick="generateReplyForThread(${esc(JSON.stringify(thread.id))},false);event.stopPropagation()">AI Suggested Reply</button></div>`;
 
@@ -1840,7 +1851,6 @@ function dismissConvo(id){
 async function generateReplyForThread(id,isRegenerate){
   const thread=S.conversations.find(c=>c.id===id);
   if(!thread)return;
-  if(!isAiThreadAllowlisted(thread))return;
 
   const st=getReplyAssistState(id);
   if(st.isGenerating)return;
