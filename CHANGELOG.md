@@ -2,6 +2,15 @@
 
 ## Current development cycle
 
+### 2026-04-15 — Homepage polish pass (desktop width, ghost motion, CTA hierarchy)
+- Widened homepage container to a desktop-friendly centered layout (up to ~900px) to reduce the narrow/mobile feel.
+- Replaced Ghost Slayer label treatment with a larger ghost visual near the title and added a one-time drop/glide animation (~1.8s).
+- Slowed unanswered-number animation to ~1.5s while keeping the final value fixed at `143`.
+- Removed redundant homepage copy lines and simplified typography hierarchy so `Reply or Die` remains the dominant text.
+- Replaced the score block copy with `👻 5% → 95% ⚡` and `Ghost → Elite Responder`, plus a compact three-line improvement list.
+- Updated CTA hierarchy so demo remains primary and both `Upload export file` and `Set up one-click refresh` are matching secondary buttons.
+- Removed extra boxed treatment around one-click setup and shortened helper copy to `Connect once, then press Refresh`.
+
 ### 2026-04-15 — Homepage structure refresh + explicit demo-entry flow
 - Replaced the homepage/import screen content with a clearer hierarchy: Ghost Slayer banner, hero/tagline, short description, feature line, score-range visual, and a primary demo CTA.
 - Added a one-time Ghost Slayer count animation on homepage load (lottery-style for ~1 second) that always settles on `143`.

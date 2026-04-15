@@ -53,28 +53,35 @@ body[data-theme="dark"] {
 .drop-card {
   background:rgba(255,255,255,0.85);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
   border:1px solid rgba(55,65,81,0.12);border-radius:28px;padding:56px 64px;text-align:center;
-  max-width:460px;width:90%;position:relative;z-index:1;box-shadow:0 16px 48px rgba(0,0,0,0.4);
+  max-width:900px;width:min(92vw,900px);position:relative;z-index:1;box-shadow:0 16px 48px rgba(0,0,0,0.4);
 }
 #drop-screen.drag-over .drop-card { border-color:rgba(99,102,241,0.3); }
 .ghost-banner {
   display:flex;align-items:center;justify-content:center;gap:8px;
-  margin-bottom:18px;padding:7px 10px;border-radius:999px;
-  font-size:12px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);
+  margin-bottom:22px;padding:8px 12px;border-radius:999px;
+  font-size:14px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);
 }
-.ghost-banner-label { font-weight:700;color:var(--text); }
 .ghost-banner-text strong { color:var(--text);font-family:'DM Mono',monospace; }
-.drop-card h1 { font-size:34px;font-weight:700;color:var(--text);letter-spacing:-0.8px;margin-bottom:8px; }
-.drop-tagline { font-size:16px;color:var(--text2);margin-bottom:16px;line-height:1.35; }
-.drop-card p { color:var(--text2);line-height:1.5;margin-bottom:18px;font-size:14px; }
-.feature-line { margin:18px 0 22px; }
-.feature-line-strong { display:block;font-weight:700;color:var(--text);font-size:14px; }
-.feature-line-soft { display:block;color:var(--text3);font-size:12px;margin-top:4px; }
+.hero-row { position:relative;display:flex;justify-content:center;align-items:center;margin-bottom:14px; }
+.hero-ghost {
+  position:absolute;left:calc(50% - 220px);top:-48px;font-size:56px;line-height:1;
+  animation:ghostDropGlide 1.8s cubic-bezier(.22,.88,.28,1) 1;
+}
+.drop-card h1 { font-size:48px;font-weight:700;color:var(--text);letter-spacing:-1px;margin-bottom:0; }
+.drop-tagline { font-size:14px;color:var(--text2);margin-bottom:28px;line-height:1.45; }
+@keyframes ghostDropGlide {
+  0% { transform:translateY(-110px) translateX(-16px) rotate(-6deg); opacity:0; }
+  55% { transform:translateY(4px) translateX(10px) rotate(2deg); opacity:1; }
+  75% { transform:translateY(-2px) translateX(20px) rotate(-1deg); opacity:1; }
+  100% { transform:translateY(0) translateX(28px) rotate(0); opacity:1; }
+}
 .score-visual {
-  margin:4px 0 24px;padding:14px 16px;border:1px solid var(--border);
+  margin:34px 0 34px;padding:22px 18px;border:1px solid var(--border);
   border-radius:14px;background:var(--surface2);
 }
-.score-visual-main { font-size:20px;font-weight:700;line-height:1.2;color:var(--text);letter-spacing:-0.2px; }
-.score-visual-sub { font-size:11px;color:var(--text3);margin-top:6px; }
+.score-visual-main { font-size:30px;font-weight:700;line-height:1.2;color:var(--text);letter-spacing:-0.3px; }
+.score-visual-sub { font-size:14px;color:var(--text3);margin-top:8px; }
+.score-visual-list { margin-top:10px;font-size:12px;color:var(--text3);line-height:1.5; }
 .btn-primary {
   display:inline-block;background:var(--blue);color:#fff;border:none;border-radius:12px;
   padding:12px 28px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;
@@ -84,19 +91,17 @@ body[data-theme="dark"] {
 .primary-cta { width:100%;padding:14px 24px;font-size:15px; }
 #drop-error { margin-top:16px;color:var(--red);font-size:13px;display:none; }
 .own-data { margin-top:22px;padding-top:18px;border-top:1px solid var(--border);text-align:left; }
-.own-data h2 { font-size:14px;color:var(--text);margin-bottom:4px; }
-.own-data-note { font-size:11px;color:var(--text3);margin-bottom:12px; }
-.own-data-option { margin-top:10px; }
-.own-data-option .btn-primary { width:100%;text-align:center; }
-.option-subtext { margin-top:6px;font-size:11px;color:var(--text3); }
-.source-panel {
-  margin-top:6px;padding:12px;border:1px solid var(--border);border-radius:12px;
-  background:var(--surface2);text-align:left;
+.own-data h2 { font-size:14px;color:var(--text);margin-bottom:4px;font-weight:600; }
+.own-data-note { font-size:14px;color:var(--text3);margin-bottom:12px; }
+.own-data-option { margin-top:12px; }
+.own-data-option .btn-secondary {
+  width:100%;text-align:center;background:transparent;color:var(--text);border-color:var(--border);
+  padding:12px 16px;font-size:14px;border-radius:12px;
 }
+.option-subtext { margin-top:6px;font-size:11px;color:var(--text3); }
 .source-panel-title { font-size:12px;color:var(--text3);margin-bottom:6px; }
 .source-panel-line { font-size:12px;color:var(--text2);margin-bottom:4px; }
-.source-panel-actions { display:flex;gap:8px;flex-wrap:wrap;margin-top:8px; }
-.source-panel .btn-primary { padding:8px 12px;font-size:12px; }
+.source-panel-actions { display:flex;gap:8px;flex-wrap:wrap;margin-top:2px; }
 .btn-secondary {
   font-family:inherit;font-size:12px;padding:8px 12px;border:1px solid var(--border);
   border-radius:10px;background:var(--surface);color:var(--text2);cursor:pointer;
@@ -383,6 +388,9 @@ body[data-theme="dark"] .drop-card h1 { color:#fff; }
   .score-number { font-size:42px; }
   .score-summary { font-size:22px;text-align:center; }
   .drop-card { padding:40px 28px; }
+  .hero-ghost { left:calc(50% - 140px);top:-40px;font-size:44px; }
+  .drop-card h1 { font-size:40px; }
+  .score-visual-main { font-size:24px; }
 }
 </style>
 </head>
@@ -391,19 +399,17 @@ body[data-theme="dark"] .drop-card h1 { color:#fff; }
 <div id="drop-screen">
   <div class="drop-card">
     <div class="ghost-banner" id="ghost-banner">
-      <span class="ghost-banner-label">👻 Ghost Slayer</span>
       <span class="ghost-banner-text">Uh oh — you’ve left <strong id="ghost-unanswered-number">0</strong> texts unanswered in the last 30 days.</span>
     </div>
-    <h1>Reply or Die</h1>
-    <div class="drop-tagline">Don’t ghost — find buried texts and raise your response score.</div>
-    <p>Reply or Die surfaces unanswered texts from your contacts and unsaved numbers.</p>
-    <div class="feature-line">
-      <span class="feature-line-strong">Filters out delivery + spam → surfaces real conversations</span>
-      <span class="feature-line-soft">even from unsaved numbers</span>
+    <div class="hero-row">
+      <span class="hero-ghost" aria-hidden="true">👻</span>
+      <h1>Reply or Die</h1>
     </div>
+    <div class="drop-tagline">Don’t ghost — find buried texts and raise your response score.</div>
     <div class="score-visual">
-      <div class="score-visual-main">👻 0–15 → 90–100 ⚡<br>Ghosting → Elite Responder</div>
-      <div class="score-visual-sub">Improve reply rate • reply speed • reduce loose ends</div>
+      <div class="score-visual-main">👻 5% → 95% ⚡<br>Ghost → Elite Responder</div>
+      <div class="score-visual-sub">Raise your score by:</div>
+      <div class="score-visual-list">- replying faster<br>- replying more often<br>- closing conversations</div>
     </div>
     <button class="btn-primary primary-cta" onclick="loadBundledDemoIntoInbox()">See Inbox with Demo Data</button>
     <input type="file" id="file-input" accept=".json" style="display:none">
@@ -412,17 +418,17 @@ body[data-theme="dark"] .drop-card h1 { color:#fff; }
       <h2>Use your own data</h2>
       <div class="own-data-note">(ask sarah for the script)</div>
       <div class="own-data-option">
-        <button class="btn-primary" onclick="document.getElementById('file-input').click()">Upload export file</button>
+        <button class="btn-secondary" onclick="document.getElementById('file-input').click()">Upload export file</button>
         <div class="option-subtext">Import a JSON once</div>
       </div>
       <div class="own-data-option">
-        <div class="source-panel" id="source-panel-drop" style="display:none">
+        <div id="source-panel-drop" style="display:none">
           <div class="source-panel-actions">
-            <button class="btn-primary" id="connect-export-btn-drop" onclick="connectExportFile()">Set up one-click refresh</button>
+            <button class="btn-secondary" id="connect-export-btn-drop" onclick="connectExportFile()">Set up one-click refresh</button>
             <button class="btn-primary" id="refresh-btn-drop" onclick="refresh()" style="display:none">Refresh</button>
             <button class="btn-secondary" id="change-source-btn-drop" onclick="changeSource()">Change source</button>
           </div>
-          <div class="option-subtext">Connect your export for easy updates</div>
+          <div class="option-subtext">Connect once, then press Refresh</div>
           <div class="source-panel-line" id="source-name-drop"></div>
         </div>
       </div>
@@ -643,7 +649,7 @@ function startGhostBannerAnimation(){
   const numberEl=document.getElementById('ghost-unanswered-number');
   if(!numberEl)return;
   const finalValue=143;
-  const durationMs=1000;
+  const durationMs=1500;
   const start=performance.now();
   function tick(now){
     const elapsed=now-start;
