@@ -1389,12 +1389,14 @@ Rules:
 - One reply only, plain text only
 - 4 to 12 words preferred
 - Never exceed 20 words
-- Concise, human, sendable
+- Keep it short, natural, and sendable
+- Sound like a normal text reply
 - Light wit only when appropriate
 - Soften if the message is delicate
 - No greetings or signoffs
 - No quotation marks
 - No multiple options
+- Do not use em dashes
 - No preamble like "Here's a reply" or "You could say"
 - No corporate, formal, or assistant tone
 - Do not invent facts outside the thread context
@@ -1449,6 +1451,7 @@ function validateAiReply(output, thread){
   const words=text.split(/\s+/).filter(Boolean);
   if(words.length<2)return { valid:false, reason:'near-empty' };
   if(words.length>20)return { valid:false, reason:'too-long' };
+  if(text.includes('—'))return { valid:false, reason:'em-dash' };
   if(/["“”]/.test(text))return { valid:false, reason:'quotes' };
   if(containsBannedPreamble(text))return { valid:false, reason:'preamble' };
   if(hasGreetingOrSignoff(text))return { valid:false, reason:'greeting-signoff' };

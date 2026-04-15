@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-04-15 — Prompt/validation tweak for em-dash avoidance
+- Updated AI reply prompt guidance to explicitly favor short, natural, normal text-message phrasing and avoid em dashes.
+- Added client-side validation rejection when model output contains an em dash (`—`).
+- Audited regenerate path for allowlisted demo threads (including Kendall Roy): regenerate still calls the same async generation function and is not gated by prior-attempt state.
+
 ### 2026-04-15 — AI demo trigger fixes for Michael/Fleabag + repeat clicks
 - Added `iMessage;-;+12125550102` (Michael Scott) and `iMessage;-;+12125550108` (Fleabag) to the AI demo allowlist.
 - Removed the no-op guard that blocked repeated clicks on the main **AI Suggested Reply** trigger after a prior generation attempt.
