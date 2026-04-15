@@ -2,6 +2,14 @@
 
 ## Current development cycle
 
+### 2026-04-15 — Homepage visual rebuild to match new hero mock
+- Rebuilt the Home screen layout and styling to match the provided desktop screenshot: hero pill, oversized gradient title, supporting copy, score showcase card, primary CTA, and two matching secondary action buttons.
+- Updated homepage CTAs to the requested labels and wiring:
+  - **See Inbox with Demo Data** now loads bundled demo JSON directly into inbox using the existing bundled demo/time-shift path (without resuming saved local session data).
+  - **Upload Export File** continues to use the existing manual file picker/import flow.
+  - **Set up One-click Refresh** continues to call the existing connect-export-file flow.
+- Removed **Continue with last export** from the homepage UI only; underlying saved-session logic remains in code.
+
 ### 2026-04-15 — AI prompt grounded with concrete reply style examples
 - Updated the AI reply prompt with explicit input→reply examples to anchor tone and style to concrete outputs.
 - Replaced the prior long rule list with a tighter constraint set: normal text-message voice, direct response to latest messages, avoid polished/formal phrasing, no em dashes, and witty/funny tone.
