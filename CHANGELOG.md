@@ -6,6 +6,10 @@
 - Updated the AI reply prompt with explicit input→reply examples to anchor tone and style to concrete outputs.
 - Replaced the prior long rule list with a tighter constraint set: normal text-message voice, direct response to latest messages, avoid polished/formal phrasing, no em dashes, and witty/funny tone.
 - Kept UX and product behavior unchanged (same API route, allowlist gating, button visibility behavior, failure handling, regenerate flow, and homepage behavior).
+### 2026-04-15 — Homepage-first startup restored for bundled demo load
+- Fixed startup behavior so first load stays on the Home/import screen instead of auto-opening the inbox when bundled demo data is available.
+- Bundled demo JSON is still preloaded and time-shifted on first run, but it is now saved for explicit **Continue with last export** use rather than immediately rendering the loaded app.
+- Preserved normal in-app navigation and file import flows after the user intentionally enters the inbox.
 
 ### 2026-04-15 — Prompt/validation tweak for em-dash avoidance
 - Updated AI reply prompt guidance to explicitly favor short, natural, normal text-message phrasing and avoid em dashes.
