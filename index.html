@@ -590,10 +590,12 @@ const DEFAULT_AI_MODEL='gpt-4.1-mini';
 const AI_SUGGEST_ROUTE='/api/ai-suggest-reply';
 const AI_ALLOWED_DEMO_THREAD_IDS=new Set([
   'iMessage;-;+12125550101', // bird accusation
+  'iMessage;-;+12125550102', // Michael Scott
   'iMessage;-;+12125550110', // minor European princess
   'iMessage;-;+12125550109', // hyperlocal media disruption engine
   'iMessage;-;+12125550105', // branding exercise
   'iMessage;-;+12125550107', // parking ticket for emotional reasons
+  'iMessage;-;+12125550108', // Fleabag
   'iMessage;-;+12125550103', // society's collapsing dinner
   'iMessage;-;+12125550104'  // it's about longing
 ]);
@@ -1839,7 +1841,6 @@ async function generateReplyForThread(id,isRegenerate){
 
   const st=getReplyAssistState(id);
   if(st.isGenerating)return;
-  if(!isRegenerate&&st.generationAttempted)return;
   const blockedReason=aiReplyBlockReason(thread);
   if(blockedReason){
     st.generationAttempted=true;

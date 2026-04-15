@@ -2,6 +2,10 @@
 
 ## Current development cycle
 
+### 2026-04-15 — AI demo trigger fixes for Michael/Fleabag + repeat clicks
+- Added `iMessage;-;+12125550102` (Michael Scott) and `iMessage;-;+12125550108` (Fleabag) to the AI demo allowlist.
+- Removed the no-op guard that blocked repeated clicks on the main **AI Suggested Reply** trigger after a prior generation attempt.
+
 ### 2026-04-15 — AI trigger visibility is now allowlist-only and always shown
 - Ensured **AI Suggested Reply** trigger is always rendered for every allowlisted demo thread, independent of inbound/outbound or message-type conditions.
 - Moved/duplicated AI trigger rendering into stable thread detail action areas so allowlisted threads in both **Action needed** and **Other texts** show the button consistently.
