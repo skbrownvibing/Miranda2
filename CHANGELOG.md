@@ -2,6 +2,14 @@
 
 ## Current development cycle
 
+### 2026-04-15 — Homepage structure refresh + explicit demo-entry flow
+- Replaced the homepage/import screen content with a clearer hierarchy: Ghost Slayer banner, hero/tagline, short description, feature line, score-range visual, and a primary demo CTA.
+- Added a one-time Ghost Slayer count animation on homepage load (lottery-style for ~1 second) that always settles on `143`.
+- Added **See Inbox with Demo Data** CTA wired to bundled demo JSON loading only (with existing demo timestamp shifting), independent from saved local sessions.
+- Stopped auto-entering the inbox on startup so homepage now always appears first.
+- Removed **Resume last session** from homepage UI while keeping underlying localStorage/session logic in code.
+- Kept existing upload and one-click connected-source flows (connect/refresh/change source) without inbox logic refactors.
+
 ### 2026-04-15 — Top-tier label keeps trophy emoji
 - Updated the highest score-tier copy to **ELITE responder 🏆**.
 
