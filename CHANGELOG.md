@@ -34,6 +34,9 @@
   - **Upload Export File** → opens JSON picker
   - **Set up One-Click Refresh** → connects export file when needed, or runs refresh when already connected
 - Preserved existing local-first behavior and source panel/status/error wiring; this change is visual/entry-flow polish only.
+### 2026-04-17 — Action-needed count copy now uses people-focused wording
+- Updated the Action needed header count text from `N texts` to `N people waiting for your response` (with singular `1 person` handling).
+- This is a copy-only UI change; action-list logic and counts are unchanged.
 
 ### 2026-04-15 — AI prompt grounded with concrete reply style examples
 - Updated the AI reply prompt with explicit input→reply examples to anchor tone and style to concrete outputs.
