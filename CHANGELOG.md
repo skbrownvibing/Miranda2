@@ -2,6 +2,9 @@
 
 ## Current development cycle
 
+### 2026-04-17 — Homepage hero emoji size bump
+- Increased the hero score-card emojis (ghost + trophy) by ~30% for clearer visual emphasis.
+
 ### 2026-04-17 — Homepage CTA dedupe + center arrow/emoji polish
 - Removed the extra lower **Continue with last export** box from the homepage so demo entry is routed through the single main CTA.
 - Kept **See Inbox with Demo Data** as the demo/saved inbox entry path.
