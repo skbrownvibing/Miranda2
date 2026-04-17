@@ -2,6 +2,15 @@
 
 ## Current development cycle
 
+### 2026-04-17 — Homepage hero visual refresh to match Reply or Die design
+- Rebuilt the Home/import hero into a centered, dark-indigo layout with restrained glow and stronger visual hierarchy.
+- Updated the hero to include the two translucent score cards (👻 YOU RIGHT NOW 5 and 🏆 YOUR GOAL 95) with an overlapping center arrow.
+- Kept existing onboarding actions but remapped the hero controls to the intended labels:
+  - **See Inbox with Demo Data** → loads bundled/saved demo data
+  - **Upload Export File** → opens JSON picker
+  - **Set up One-Click Refresh** → connects export file when needed, or runs refresh when already connected
+- Preserved existing local-first behavior and source panel/status/error wiring; this change is visual/entry-flow polish only.
+
 ### 2026-04-15 — AI prompt grounded with concrete reply style examples
 - Updated the AI reply prompt with explicit input→reply examples to anchor tone and style to concrete outputs.
 - Replaced the prior long rule list with a tighter constraint set: normal text-message voice, direct response to latest messages, avoid polished/formal phrasing, no em dashes, and witty/funny tone.
