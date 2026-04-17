@@ -1736,7 +1736,10 @@ function renderActions(){
   if(S.actionFilter==='urgent')list=list.filter(c=>waitHours(c)>=24);
   else if(S.actionFilter==='today')list=list.filter(c=>{if(!c.last_message_at)return false;
     return new Date(c.last_message_at).toDateString()===new Date().toDateString();});
-  document.getElementById('action-count').textContent=list.length===1?'1 text':list.length+' texts';
+  document.getElementById('action-count').textContent =
+    list.length === 1
+      ? '1 person waiting for your response'
+      : `${list.length} people waiting for your response`;
   const el=document.getElementById('action-list');
   if(!list.length){el.innerHTML='<div class="action-empty"><div class="action-empty-icon">✨</div><div>You\'re all caught up!</div></div>';return;}
   el.innerHTML=list.map(c=>{
