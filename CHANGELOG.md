@@ -21,6 +21,38 @@
 - Reduced top-bar visual weight with quieter controls and de-emphasized branding treatment so content hierarchy leads the page.
 - Applied consistent typography hierarchy and spacing polish across top section, score history, and action/review sections without changing information architecture or controls.
 
+### 2026-04-17 — Homepage hero emoji size bump
+- Increased the hero score-card emojis (ghost + trophy) by ~30% for clearer visual emphasis.
+
+### 2026-04-17 — Homepage CTA dedupe + center arrow/emoji polish
+- Removed the extra lower **Continue with last export** box from the homepage so demo entry is routed through the single main CTA.
+- Kept **See Inbox with Demo Data** as the demo/saved inbox entry path.
+- Refined the center arrow between score cards to render as a crisp circular arrow (not a glow blob).
+- Explicitly preserved the ghost/trophy emojis above **YOU RIGHT NOW** and **YOUR GOAL**.
+
+### 2026-04-17 — Homepage CTA behavior cleanup (single primary path + setup-only action)
+- Changed **See Inbox with Demo Data** to always enter inbox: it now loads saved/current data when available, or fetches bundled demo data, saves it, and then opens inbox.
+- Changed **Set up One-Click Refresh** to setup-only behavior: it opens/scrolls to the connected-source setup panel on the homepage and does not auto-enter inbox.
+- Kept **Upload Export File** on the existing import flow (file picker → load/import → save current data → enter inbox).
+- Hid the lower connected-source setup panel by default and only show it after the setup CTA is used, reducing duplicate/confusing entry points.
+
+### 2026-04-17 — Homepage hero fit fix (title clipping + additional downscale)
+- Fixed top-of-page clipping by making the home hero container start from the top with padding and scroll-safe overflow instead of vertically centering with hard viewport clipping.
+- Reduced hero scale again (headline, cards, arrow, CTA/buttons, footer) so the full title remains visible and the page feels less zoomed.
+
+### 2026-04-17 — Homepage hero sizing and cleanup pass
+- Reduced oversized hero typography and card/control scaling so the home screen keeps the same horizontal composition but no longer appears zoomed in.
+- Kept the top hero brand copy explicit and unchanged: **Reply or Die** + **Stop ghosting. Start responding.**
+- Removed the bottom helper sentence on the home screen (`Run export.command first... All data stays local.`) to reduce visual clutter.
+
+### 2026-04-17 — Homepage hero visual refresh to match Reply or Die design
+- Rebuilt the Home/import hero into a centered, dark-indigo layout with restrained glow and stronger visual hierarchy.
+- Updated the hero to include the two translucent score cards (👻 YOU RIGHT NOW 5 and 🏆 YOUR GOAL 95) with an overlapping center arrow.
+- Kept existing onboarding actions but remapped the hero controls to the intended labels:
+  - **See Inbox with Demo Data** → loads bundled/saved demo data
+  - **Upload Export File** → opens JSON picker
+  - **Set up One-Click Refresh** → connects export file when needed, or runs refresh when already connected
+- Preserved existing local-first behavior and source panel/status/error wiring; this change is visual/entry-flow polish only.
 ### 2026-04-17 — Action-needed count copy now uses people-focused wording
 - Updated the Action needed header count text from `N texts` to `N people waiting for your response` (with singular `1 person` handling).
 - This is a copy-only UI change; action-list logic and counts are unchanged.
