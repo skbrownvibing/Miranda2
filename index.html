@@ -539,10 +539,10 @@ body[data-theme="dark"] {
       </div>
     </div>
     <div class="hero-actions">
-      <button class="btn-primary hero-primary" onclick="loadSavedData()">See Inbox with Demo Data</button>
+      <button class="btn-primary hero-primary" onclick="enterDemoInbox()">See Inbox with Demo Data</button>
       <div class="hero-secondary-row">
         <button class="hero-secondary" onclick="document.getElementById('file-input').click()">💬 <span>Upload Export File</span></button>
-        <button class="hero-secondary" onclick="handleHeroRefreshClick()">⚡ <span>Set up One-Click Refresh</span></button>
+        <button class="hero-secondary" onclick="openRefreshSetup()">⚡ <span>Set up One-Click Refresh</span></button>
       </div>
       <div class="hero-footer">Your friends deserve better than left on read 💬</div>
     </div>
@@ -719,6 +719,7 @@ const S = {
   selectedId: null, actionFilter: 'all', reviewCat: 'filtered', reviewOpen: false,
   trendOpen: false, theme: 'light',
   nameSignalFirst: '', nameSignalEditing: false,
+  homeSetupOpen: false,
   filter: { timelineAfter: null, timelineBefore: null },
   exportTimestamp: null, exportTimestampSource: null, lastUpdatedTimer: null,
   replyAssistById: {}, // { [threadId]: { isGenerating, suggestedReply, generationAttempted, copied, regenerateCount } }
@@ -801,16 +802,37 @@ function timeSince(d){const ms=Date.now()-new Date(d).getTime(),m=Math.floor(ms/
 function loadSavedData(){try{const r=localStorage.getItem(DATA_KEY);if(!r)return;
   S.newIds.clear();loadData(JSON.parse(r),false);}catch(ex){showDropError('Could not load: '+ex.message);}}
 
-function handleHeroRefreshClick(){
-  if(S.connectedSource.supported && S.connectedSource.handle){
-    refresh();
-    return;
+async function enterDemoInbox(){
+  try{
+    const existing=localStorage.getItem(DATA_KEY);
+    if(existing){
+      S.newIds.clear();
+      loadData(JSON.parse(existing),false);
+      return;
+    }
+    const response=await fetch('./data/miranda_demo.json');
+    if(!response.ok)throw new Error('Could not load bundled demo data.');
+    const demoData=timeShiftBundledDemoData(await response.json());
+    localStorage.setItem(DATA_KEY,JSON.stringify(demoData));
+    localStorage.setItem(META_KEY,JSON.stringify({
+      savedAt:new Date().toISOString(),
+      count:(demoData.conversations||[]).length
+    }));
+    checkSavedData();
+    S.newIds.clear();
+    loadData(demoData,false);
+  }catch(ex){
+    showDropError(ex.message||'Could not open demo inbox.');
   }
-  if(S.connectedSource.supported){
-    connectExportFile();
-    return;
+}
+
+function openRefreshSetup(){
+  S.homeSetupOpen=true;
+  renderSourceUi();
+  const panel=document.getElementById('source-panel-drop');
+  if(panel){
+    panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
   }
-  setSourceError(S.connectedSource.supportReason || 'One-click refresh is unavailable in this browser or page context.');
 }
 
 function loadFile(file){
@@ -894,7 +916,12 @@ function renderSourceUi(){
   const sourceTitle=document.getElementById('source-title-drop');
   const sourceName=document.getElementById('source-name-drop');
   if(sourcePanel){
-    sourcePanel.style.display='block';
+    sourcePanel.style.display=S.homeSetupOpen?'block':'none';
+    if(!S.homeSetupOpen){
+      setSourceStatus('', '');
+      setSourceError('');
+      return;
+    }
     if(!supported){
       sourceTitle.textContent='Connected export file';
       sourceName.textContent=S.connectedSource.supportReason||'One-click refresh is unavailable in this browser or page context.';

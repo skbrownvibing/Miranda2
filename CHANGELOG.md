@@ -2,6 +2,12 @@
 
 ## Current development cycle
 
+### 2026-04-17 — Homepage CTA behavior cleanup (single primary path + setup-only action)
+- Changed **See Inbox with Demo Data** to always enter inbox: it now loads saved/current data when available, or fetches bundled demo data, saves it, and then opens inbox.
+- Changed **Set up One-Click Refresh** to setup-only behavior: it opens/scrolls to the connected-source setup panel on the homepage and does not auto-enter inbox.
+- Kept **Upload Export File** on the existing import flow (file picker → load/import → save current data → enter inbox).
+- Hid the lower connected-source setup panel by default and only show it after the setup CTA is used, reducing duplicate/confusing entry points.
+
 ### 2026-04-17 — Homepage hero fit fix (title clipping + additional downscale)
 - Fixed top-of-page clipping by making the home hero container start from the top with padding and scroll-safe overflow instead of vertically centering with hard viewport clipping.
 - Reduced hero scale again (headline, cards, arrow, CTA/buttons, footer) so the full title remains visible and the page feels less zoomed.
