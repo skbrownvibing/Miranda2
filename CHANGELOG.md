@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-04-17 — Top hero compacted vertically to surface Action needed sooner
+- Reduced top hero vertical footprint by tightening score-section padding, internal gaps, and score-history spacing.
+- Slightly reduced score ring size and headline/card sizing to keep hierarchy while bringing the next section higher on screen.
+- Tightened metric-card vertical stack spacing/padding so the right column remains readable but more compact.
+
 ### 2026-04-17 — Inbox top section switched to compact 2-column score/metrics layout + light mode fix
 - Fixed light-mode visual tokens so the updated dashboard styling remains readable and intentional when theme is set to light.
 - Updated the score hero area to a desktop 2-column layout: left column now groups score label + score ring, right column stacks the three metric cards vertically.
