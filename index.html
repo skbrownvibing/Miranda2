@@ -40,54 +40,189 @@ body[data-theme="dark"] {
 
 /* ── Drop screen ──────────────────────────────────────────── */
 #drop-screen {
-  display:flex;align-items:center;justify-content:center;height:100vh;
-  background:linear-gradient(160deg,#f5f7ff 0%,#eef2ff 40%,#f9f7ff 70%,#f5f7ff 100%);
-  position:relative;overflow:hidden;
+  display:flex;align-items:flex-start;justify-content:center;min-height:100vh;
+  padding:56px 20px 34px;
+  background:radial-gradient(circle at 50% 20%, #1f255f 0%, #14174a 42%, #090e2e 72%, #05081f 100%);
+  position:relative;overflow-x:hidden;overflow-y:auto;
 }
 #drop-screen::before {
-  content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
-  background:radial-gradient(circle at 35% 45%,rgba(99,102,241,0.09) 0%,transparent 50%),
-  radial-gradient(circle at 65% 55%,rgba(45,212,160,0.08) 0%,transparent 50%);pointer-events:none;
+  content:'';
+  position:absolute;
+  left:50%;
+  top:42%;
+  width:min(1120px,92vw);
+  height:min(760px,78vh);
+  transform:translate(-50%,-50%);
+  background:
+    radial-gradient(circle at 50% 34%, rgba(64,171,255,0.26) 0%, rgba(64,171,255,0.16) 24%, rgba(64,171,255,0.06) 46%, transparent 70%),
+    radial-gradient(circle at 50% 62%, rgba(204,87,255,0.22) 0%, rgba(204,87,255,0.09) 40%, transparent 70%);
+  filter:blur(12px);
+  pointer-events:none;
 }
-#drop-screen.drag-over { background:linear-gradient(160deg,#eef2ff 0%,#e0e7ff 40%,#f5f3ff 70%,#eef2ff 100%); }
+#drop-screen.drag-over { filter:saturate(1.08); }
 .drop-card {
-  background:rgba(255,255,255,0.85);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
-  border:1px solid rgba(55,65,81,0.12);border-radius:28px;padding:56px 64px;text-align:center;
-  max-width:460px;width:90%;position:relative;z-index:1;box-shadow:0 16px 48px rgba(0,0,0,0.4);
+  max-width:1020px;width:100%;position:relative;z-index:1;text-align:center;
+  padding:8px;
 }
-#drop-screen.drag-over .drop-card { border-color:rgba(99,102,241,0.3); }
-.drop-icon { font-size:48px;margin-bottom:20px;line-height:1; }
-.drop-card h1 { font-size:26px;font-weight:700;color:var(--text);letter-spacing:-0.5px;margin-bottom:4px; }
-.drop-tagline { font-size:14px;color:var(--text3);margin-bottom:24px; }
-.drop-card p { color:var(--text2);line-height:1.6;margin-bottom:24px;font-size:14px; }
-.drop-card strong { color:var(--text); }
+.hero-title {
+  font-size:clamp(42px,5.8vw,84px);
+  font-weight:700;
+  line-height:0.96;
+  letter-spacing:-0.05em;
+  margin-bottom:16px;
+  background:linear-gradient(90deg,#7ac9ff 0%, #a78bfa 48%, #ec72d8 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hero-subhead {
+  font-size:clamp(18px,1.5vw,28px);
+  line-height:1.24;
+  margin-bottom:26px;
+  color:#bceff6;
+  font-weight:500;
+  letter-spacing:-0.01em;
+}
+.hero-score-row {
+  position:relative;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  max-width:920px;
+  margin:0 auto 18px;
+}
+.hero-score-card {
+  border-radius:18px;
+  border:1px solid rgba(122,152,255,0.33);
+  background:linear-gradient(145deg, rgba(47,62,145,0.36), rgba(36,40,88,0.5));
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  min-height:200px;
+  box-shadow:0 12px 36px rgba(5,10,35,0.38), inset 0 1px 0 rgba(255,255,255,0.05);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:16px 16px 14px;
+}
+.hero-score-card.left {
+  border-color:rgba(231,114,216,0.28);
+  background:linear-gradient(145deg, rgba(95,45,95,0.47), rgba(52,36,90,0.48));
+}
+.hero-score-emoji { font-size:44px; line-height:1; margin-bottom:8px; }
+.hero-score-label {
+  font-size:20px;
+  font-weight:700;
+  letter-spacing:0.05em;
+  margin-bottom:6px;
+}
+.hero-score-label.left { color:#ff9ca8; }
+.hero-score-label.right { color:#34d4ff; }
+.hero-score-value {
+  font-size:56px;
+  line-height:0.95;
+  font-weight:700;
+  letter-spacing:-0.03em;
+  margin-bottom:6px;
+}
+.hero-score-value.left { color:#ff6e78; }
+.hero-score-value.right { color:#8fb5ff; }
+.hero-score-note {
+  font-size:20px;
+  color:rgba(211,218,247,0.72);
+  font-weight:500;
+}
+.hero-center-arrow {
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:58px;height:58px;border-radius:999px;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#35d0ff,#8f7dff);
+  border:1px solid rgba(190,225,255,0.45);
+  color:#f4f9ff;
+  font-size:34px;
+  font-weight:700;
+  box-shadow:0 8px 18px rgba(11,24,78,0.45);
+  z-index:2;
+}
+.hero-actions {
+  max-width:920px;
+  margin:0 auto;
+}
+.btn-primary.hero-primary {
+  width:100%;
+  border:none;
+  border-radius:14px;
+  padding:14px 20px;
+  font-size:30px;
+  font-weight:700;
+  letter-spacing:-0.01em;
+  color:#f5f7ff;
+  background:linear-gradient(90deg,#05b6df 0%, #6279ea 42%, #a214f0 100%);
+  box-shadow:0 0 0 1px rgba(255,255,255,0.08) inset, 0 18px 42px rgba(0,0,0,0.35);
+}
+.btn-primary.hero-primary:hover { opacity:0.97;transform:translateY(-1px); }
+.hero-secondary-row {
+  margin-top:14px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+}
+.hero-secondary {
+  border:1px solid rgba(152,170,247,0.28);
+  border-radius:12px;
+  background:rgba(50,57,111,0.42);
+  color:#e4e8fa;
+  font-family:inherit;
+  font-size:24px;
+  font-weight:600;
+  letter-spacing:-0.01em;
+  padding:12px 16px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+}
+.hero-secondary:hover {
+  border-color:rgba(186,199,255,0.4);
+  background:rgba(58,65,122,0.55);
+}
+.hero-footer {
+  margin-top:22px;
+  font-size:18px;
+  color:#0dc6df;
+  font-weight:600;
+  opacity:0.8;
+}
+.hero-supporting { margin-top:20px; display:flex; flex-direction:column; gap:10px; }
 .btn-primary {
   display:inline-block;background:var(--blue);color:#fff;border:none;border-radius:12px;
   padding:12px 28px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;
   transition:opacity .15s,transform .1s;
 }
 .btn-primary:hover { opacity:.88;transform:translateY(-1px); }
-.drop-hint { margin-top:20px;font-size:12px;color:var(--text3);line-height:1.5; }
+.drop-hint { margin-top:0;font-size:12px;color:rgba(203,214,245,0.72);line-height:1.5; }
 .drop-hint code {
-  background:rgba(255,255,255,0.06);border-radius:4px;padding:1px 5px;
-  font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);
+  background:rgba(255,255,255,0.08);border-radius:4px;padding:1px 5px;
+  font-family:'DM Mono',monospace;font-size:11px;color:#d8e5ff;
 }
-#drop-error { margin-top:16px;color:var(--red);font-size:13px;display:none; }
-.saved-prompt { margin-top:28px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.06); }
+#drop-error { margin-top:8px;color:#ff8f9d;font-size:13px;display:none; }
+.saved-prompt { margin-top:0;padding-top:0;border-top:none; }
 .saved-prompt button {
-  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;
-  padding:12px 20px;color:var(--text2);font-size:13px;font-family:inherit;cursor:pointer;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(145,164,245,0.24);border-radius:12px;
+  padding:12px 16px;color:#cfd8f6;font-size:13px;font-family:inherit;cursor:pointer;
   transition:all .15s;width:100%;text-align:left;line-height:1.4;
 }
-.saved-prompt button:hover { background:rgba(255,255,255,0.92);border-color:rgba(99,102,241,0.35);color:var(--text); }
-.saved-prompt .saved-label { display:block;font-weight:600;margin-bottom:2px;color:var(--text); }
-.saved-prompt .saved-meta { font-size:11px;color:var(--text3); }
+.saved-prompt button:hover { background:rgba(255,255,255,0.08);border-color:rgba(173,191,255,0.34);color:#edf2ff; }
+.saved-prompt .saved-label { display:block;font-weight:600;margin-bottom:2px;color:#edf2ff; }
+.saved-prompt .saved-meta { font-size:11px;color:rgba(194,206,241,0.78); }
 .source-panel {
-  margin-top:16px;padding:14px;border:1px solid var(--border);border-radius:12px;
-  background:var(--surface2);text-align:left;
+  margin-top:0;padding:10px 12px;border:1px solid rgba(145,164,245,0.2);border-radius:12px;
+  background:rgba(22,32,78,0.4);text-align:left;
 }
-.source-panel-title { font-size:12px;color:var(--text3);margin-bottom:6px; }
-.source-panel-line { font-size:12px;color:var(--text2);margin-bottom:4px; }
+.source-panel-title { font-size:12px;color:rgba(186,198,237,0.72);margin-bottom:4px; }
+.source-panel-line { font-size:12px;color:rgba(219,227,249,0.86);margin-bottom:4px; }
 .source-panel-actions { display:flex;gap:8px;flex-wrap:wrap;margin-top:8px; }
 .source-panel .btn-primary { padding:8px 12px;font-size:12px; }
 .btn-secondary {
@@ -360,24 +495,6 @@ body[data-theme="dark"] {
   background:var(--bg);color:var(--text);font-size:12px;
 }
 
-body[data-theme="dark"] #drop-screen {
-  background:linear-gradient(160deg,#0d0d12 0%,#151525 40%,#1a1230 70%,#0d0d12 100%);
-}
-body[data-theme="dark"] #drop-screen::before {
-  background:radial-gradient(circle at 35% 45%,rgba(99,102,241,0.06) 0%,transparent 50%),
-  radial-gradient(circle at 65% 55%,rgba(45,212,160,0.04) 0%,transparent 50%);
-}
-body[data-theme="dark"] #drop-screen.drag-over {
-  background:linear-gradient(160deg,#12121f 0%,#1c1c35 40%,#251a40 70%,#12121f 100%);
-}
-body[data-theme="dark"] .drop-card {
-  background:rgba(255,255,255,0.03);
-  border:1px solid rgba(255,255,255,0.06);
-}
-body[data-theme="dark"] .drop-card h1 { color:#fff; }
-body[data-theme="dark"] .saved-prompt .saved-label { color:rgba(255,255,255,0.85); }
-body[data-theme="dark"] .saved-prompt button:hover { color:#fff; }
-
 @media (max-width:600px) {
   .top-bar { flex-wrap:wrap; }
   .contributors { grid-template-columns:1fr; }
@@ -386,7 +503,19 @@ body[data-theme="dark"] .saved-prompt button:hover { color:#fff; }
   .score-ring svg { width:150px;height:150px; }
   .score-number { font-size:42px; }
   .score-summary { font-size:22px;text-align:center; }
-  .drop-card { padding:40px 28px; }
+  .drop-card { padding:0; }
+  .hero-title { margin-bottom:12px; }
+  .hero-subhead { margin-bottom:20px; }
+  .hero-score-row { grid-template-columns:1fr; gap:14px; margin-bottom:20px; }
+  .hero-score-card { min-height:168px; }
+  .hero-center-arrow { position:static; transform:none; margin:0 auto; width:50px; height:50px; font-size:26px; }
+  .btn-primary.hero-primary { padding:12px 12px; font-size:22px; }
+  .hero-secondary-row { grid-template-columns:1fr; gap:10px; }
+  .hero-secondary { font-size:18px; padding:11px 11px; }
+  .hero-score-label { font-size:16px; }
+  .hero-score-value { font-size:48px; }
+  .hero-score-note { font-size:16px; }
+  .hero-footer { font-size:15px; margin-top:16px; }
 }
 </style>
 </head>
@@ -394,30 +523,45 @@ body[data-theme="dark"] .saved-prompt button:hover { color:#fff; }
 
 <div id="drop-screen">
   <div class="drop-card">
-    <div class="drop-icon">⚡</div>
-    <h1>Reply or Die</h1>
-    <div class="drop-tagline">your text responsiveness score</div>
-    <p>Drop your <strong>miranda2_messages.json</strong> here<br>to see how responsive you are.</p>
-    <button class="btn-primary" onclick="document.getElementById('file-input').click()">Choose file</button>
-    <input type="file" id="file-input" accept=".json" style="display:none">
-    <div class="drop-hint">Run <code>export.command</code> first to generate the JSON.<br>All data stays local — nothing leaves your browser.</div>
-    <div id="drop-error"></div>
-    <div class="saved-prompt" id="saved-prompt" style="display:none">
-      <button onclick="loadSavedData()">
-        <span class="saved-label">Continue with last export →</span>
-        <span class="saved-meta" id="saved-meta"></span>
-      </button>
-    </div>
-    <div class="source-panel" id="source-panel-drop" style="display:none">
-      <div class="source-panel-title" id="source-title-drop">Connected export file</div>
-      <div class="source-panel-line" id="source-name-drop"></div>
-      <div class="source-panel-actions">
-        <button class="btn-primary" id="connect-export-btn-drop" onclick="connectExportFile()">Connect export file</button>
-        <button class="btn-primary" id="refresh-btn-drop" onclick="refresh()" style="display:none">Refresh</button>
-        <button class="btn-secondary" id="change-source-btn-drop" onclick="changeSource()">Change source</button>
+    <h1 class="hero-title">Reply or Die</h1>
+    <div class="hero-subhead">Stop ghosting. Start responding.</div>
+    <div class="hero-score-row">
+      <div class="hero-score-card left">
+        <div class="hero-score-emoji" aria-hidden="true">👻</div>
+        <div class="hero-score-label left">YOU RIGHT NOW</div>
+        <div class="hero-score-value left">5</div>
+        <div class="hero-score-note">responsiveness score</div>
       </div>
-      <div class="source-status" id="source-status-drop" style="display:none"></div>
-      <div class="source-error" id="source-error-drop" style="display:none"></div>
+      <div class="hero-center-arrow" aria-hidden="true">➜</div>
+      <div class="hero-score-card right">
+        <div class="hero-score-emoji" aria-hidden="true">🏆</div>
+        <div class="hero-score-label right">YOUR GOAL</div>
+        <div class="hero-score-value right">95</div>
+        <div class="hero-score-note">responsiveness score</div>
+      </div>
+    </div>
+    <div class="hero-actions">
+      <button class="btn-primary hero-primary" onclick="enterDemoInbox()">See Inbox with Demo Data</button>
+      <div class="hero-secondary-row">
+        <button class="hero-secondary" onclick="document.getElementById('file-input').click()">💬 <span>Upload Export File</span></button>
+        <button class="hero-secondary" onclick="openRefreshSetup()">⚡ <span>Set up One-Click Refresh</span></button>
+      </div>
+      <div class="hero-footer">Your friends deserve better than left on read 💬</div>
+    </div>
+    <input type="file" id="file-input" accept=".json" style="display:none">
+    <div class="hero-supporting">
+      <div id="drop-error"></div>
+      <div class="source-panel" id="source-panel-drop" style="display:none">
+        <div class="source-panel-title" id="source-title-drop">Connected export file</div>
+        <div class="source-panel-line" id="source-name-drop"></div>
+        <div class="source-panel-actions">
+          <button class="btn-primary" id="connect-export-btn-drop" onclick="connectExportFile()">Connect export file</button>
+          <button class="btn-primary" id="refresh-btn-drop" onclick="refresh()" style="display:none">Refresh</button>
+          <button class="btn-secondary" id="change-source-btn-drop" onclick="changeSource()">Change source</button>
+        </div>
+        <div class="source-status" id="source-status-drop" style="display:none"></div>
+        <div class="source-error" id="source-error-drop" style="display:none"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -571,6 +715,7 @@ const S = {
   selectedId: null, actionFilter: 'all', reviewCat: 'filtered', reviewOpen: false,
   trendOpen: false, theme: 'light',
   nameSignalFirst: '', nameSignalEditing: false,
+  homeSetupOpen: false,
   filter: { timelineAfter: null, timelineBefore: null },
   exportTimestamp: null, exportTimestampSource: null, lastUpdatedTimer: null,
   replyAssistById: {}, // { [threadId]: { isGenerating, suggestedReply, generationAttempted, copied, regenerateCount } }
@@ -643,8 +788,12 @@ async function init() {
 
 function checkSavedData(){
   try{const m=JSON.parse(localStorage.getItem(META_KEY)),d=localStorage.getItem(DATA_KEY);
-  if(m&&d){document.getElementById('saved-meta').textContent=`${m.count||'?'} conversations · saved ${timeSince(m.savedAt)}`;
-  document.getElementById('saved-prompt').style.display='block';}}catch(_){}
+  if(m&&d){
+    const metaEl=document.getElementById('saved-meta');
+    const promptEl=document.getElementById('saved-prompt');
+    if(metaEl)metaEl.textContent=`${m.count||'?'} conversations · saved ${timeSince(m.savedAt)}`;
+    if(promptEl)promptEl.style.display='block';
+  }}catch(_){}
 }
 function timeSince(d){const ms=Date.now()-new Date(d).getTime(),m=Math.floor(ms/60000);
   if(m<1)return'just now';if(m<60)return m+'m ago';const h=Math.floor(m/60);
@@ -652,6 +801,39 @@ function timeSince(d){const ms=Date.now()-new Date(d).getTime(),m=Math.floor(ms/
 
 function loadSavedData(){try{const r=localStorage.getItem(DATA_KEY);if(!r)return;
   S.newIds.clear();loadData(JSON.parse(r),false);}catch(ex){showDropError('Could not load: '+ex.message);}}
+
+async function enterDemoInbox(){
+  try{
+    const existing=localStorage.getItem(DATA_KEY);
+    if(existing){
+      S.newIds.clear();
+      loadData(JSON.parse(existing),false);
+      return;
+    }
+    const response=await fetch('./data/miranda_demo.json');
+    if(!response.ok)throw new Error('Could not load bundled demo data.');
+    const demoData=timeShiftBundledDemoData(await response.json());
+    localStorage.setItem(DATA_KEY,JSON.stringify(demoData));
+    localStorage.setItem(META_KEY,JSON.stringify({
+      savedAt:new Date().toISOString(),
+      count:(demoData.conversations||[]).length
+    }));
+    checkSavedData();
+    S.newIds.clear();
+    loadData(demoData,false);
+  }catch(ex){
+    showDropError(ex.message||'Could not open demo inbox.');
+  }
+}
+
+function openRefreshSetup(){
+  S.homeSetupOpen=true;
+  renderSourceUi();
+  const panel=document.getElementById('source-panel-drop');
+  if(panel){
+    panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+}
 
 function loadFile(file){
   document.getElementById('drop-error').style.display='none';
@@ -734,7 +916,12 @@ function renderSourceUi(){
   const sourceTitle=document.getElementById('source-title-drop');
   const sourceName=document.getElementById('source-name-drop');
   if(sourcePanel){
-    sourcePanel.style.display='block';
+    sourcePanel.style.display=S.homeSetupOpen?'block':'none';
+    if(!S.homeSetupOpen){
+      setSourceStatus('', '');
+      setSourceError('');
+      return;
+    }
     if(!supported){
       sourceTitle.textContent='Connected export file';
       sourceName.textContent=S.connectedSource.supportReason||'One-click refresh is unavailable in this browser or page context.';
