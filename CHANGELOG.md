@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-04-17 — Homepage hero sizing and cleanup pass
+- Reduced oversized hero typography and card/control scaling so the home screen keeps the same horizontal composition but no longer appears zoomed in.
+- Kept the top hero brand copy explicit and unchanged: **Reply or Die** + **Stop ghosting. Start responding.**
+- Removed the bottom helper sentence on the home screen (`Run export.command first... All data stays local.`) to reduce visual clutter.
+
 ### 2026-04-17 — Homepage hero visual refresh to match Reply or Die design
 - Rebuilt the Home/import hero into a centered, dark-indigo layout with restrained glow and stronger visual hierarchy.
 - Updated the hero to include the two translucent score cards (👻 YOU RIGHT NOW 5 and 🏆 YOUR GOAL 95) with an overlapping center arrow.
