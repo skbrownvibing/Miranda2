@@ -2,6 +2,14 @@
 
 ## Current development cycle
 
+### 2026-04-17 — Inbox dashboard visual system restyled to match homepage
+- Restyled the loaded inbox/dashboard experience with a darker gradient background and restrained glow treatment for stronger homepage alignment.
+- Reworked the score hero hierarchy so the score label reads as a clear headline and the circular score ring acts as the main visual anchor.
+- Upgraded the score ring to a branded cyan→purple→pink gradient treatment with subtle glow, while keeping score behavior and calculations unchanged.
+- Converted metric, history, and list containers to restrained glass-style panels (low-opacity backgrounds, soft tinted gradients, blur, and softer borders).
+- Reduced top-bar visual weight with quieter controls and de-emphasized branding treatment so content hierarchy leads the page.
+- Applied consistent typography hierarchy and spacing polish across top section, score history, and action/review sections without changing information architecture or controls.
+
 ### 2026-04-17 — Action-needed count copy now uses people-focused wording
 - Updated the Action needed header count text from `N texts` to `N people waiting for your response` (with singular `1 person` handling).
 - This is a copy-only UI change; action-list logic and counts are unchanged.
