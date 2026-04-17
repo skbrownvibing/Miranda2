@@ -2,6 +2,10 @@
 
 ## Current development cycle
 
+### 2026-04-17 — Action-needed count copy now uses people-focused wording
+- Updated the Action needed header count text from `N texts` to `N people waiting for your response` (with singular `1 person` handling).
+- This is a copy-only UI change; action-list logic and counts are unchanged.
+
 ### 2026-04-15 — AI prompt grounded with concrete reply style examples
 - Updated the AI reply prompt with explicit input→reply examples to anchor tone and style to concrete outputs.
 - Replaced the prior long rule list with a tighter constraint set: normal text-message voice, direct response to latest messages, avoid polished/formal phrasing, no em dashes, and witty/funny tone.
