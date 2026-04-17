@@ -135,12 +135,14 @@ body[data-theme="dark"] {
   left:50%;
   top:50%;
   transform:translate(-50%,-50%);
-  width:60px;height:60px;border-radius:999px;
+  width:58px;height:58px;border-radius:999px;
   display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,#10d8ff,#be67ff);
-  color:#e9f5ff;
-  font-size:30px;
-  box-shadow:0 12px 36px rgba(20,207,255,0.38), 0 10px 26px rgba(158,84,255,0.35);
+  background:linear-gradient(135deg,#35d0ff,#8f7dff);
+  border:1px solid rgba(190,225,255,0.45);
+  color:#f4f9ff;
+  font-size:34px;
+  font-weight:700;
+  box-shadow:0 8px 18px rgba(11,24,78,0.45);
   z-index:2;
 }
 .hero-actions {
@@ -506,7 +508,7 @@ body[data-theme="dark"] {
   .hero-subhead { margin-bottom:20px; }
   .hero-score-row { grid-template-columns:1fr; gap:14px; margin-bottom:20px; }
   .hero-score-card { min-height:168px; }
-  .hero-center-arrow { position:static; transform:none; margin:0 auto; width:54px; height:54px; font-size:28px; }
+  .hero-center-arrow { position:static; transform:none; margin:0 auto; width:50px; height:50px; font-size:26px; }
   .btn-primary.hero-primary { padding:12px 12px; font-size:22px; }
   .hero-secondary-row { grid-template-columns:1fr; gap:10px; }
   .hero-secondary { font-size:18px; padding:11px 11px; }
@@ -525,14 +527,14 @@ body[data-theme="dark"] {
     <div class="hero-subhead">Stop ghosting. Start responding.</div>
     <div class="hero-score-row">
       <div class="hero-score-card left">
-        <div class="hero-score-emoji">👻</div>
+        <div class="hero-score-emoji" aria-hidden="true">👻</div>
         <div class="hero-score-label left">YOU RIGHT NOW</div>
         <div class="hero-score-value left">5</div>
         <div class="hero-score-note">responsiveness score</div>
       </div>
-      <div class="hero-center-arrow">→</div>
+      <div class="hero-center-arrow" aria-hidden="true">➜</div>
       <div class="hero-score-card right">
-        <div class="hero-score-emoji">🏆</div>
+        <div class="hero-score-emoji" aria-hidden="true">🏆</div>
         <div class="hero-score-label right">YOUR GOAL</div>
         <div class="hero-score-value right">95</div>
         <div class="hero-score-note">responsiveness score</div>
@@ -549,12 +551,6 @@ body[data-theme="dark"] {
     <input type="file" id="file-input" accept=".json" style="display:none">
     <div class="hero-supporting">
       <div id="drop-error"></div>
-      <div class="saved-prompt" id="saved-prompt" style="display:none">
-      <button onclick="loadSavedData()">
-        <span class="saved-label">Continue with last export →</span>
-        <span class="saved-meta" id="saved-meta"></span>
-      </button>
-      </div>
       <div class="source-panel" id="source-panel-drop" style="display:none">
         <div class="source-panel-title" id="source-title-drop">Connected export file</div>
         <div class="source-panel-line" id="source-name-drop"></div>
@@ -792,8 +788,12 @@ async function init() {
 
 function checkSavedData(){
   try{const m=JSON.parse(localStorage.getItem(META_KEY)),d=localStorage.getItem(DATA_KEY);
-  if(m&&d){document.getElementById('saved-meta').textContent=`${m.count||'?'} conversations · saved ${timeSince(m.savedAt)}`;
-  document.getElementById('saved-prompt').style.display='block';}}catch(_){}
+  if(m&&d){
+    const metaEl=document.getElementById('saved-meta');
+    const promptEl=document.getElementById('saved-prompt');
+    if(metaEl)metaEl.textContent=`${m.count||'?'} conversations · saved ${timeSince(m.savedAt)}`;
+    if(promptEl)promptEl.style.display='block';
+  }}catch(_){}
 }
 function timeSince(d){const ms=Date.now()-new Date(d).getTime(),m=Math.floor(ms/60000);
   if(m<1)return'just now';if(m<60)return m+'m ago';const h=Math.floor(m/60);

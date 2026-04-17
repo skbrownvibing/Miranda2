@@ -2,6 +2,12 @@
 
 ## Current development cycle
 
+### 2026-04-17 — Homepage CTA dedupe + center arrow/emoji polish
+- Removed the extra lower **Continue with last export** box from the homepage so demo entry is routed through the single main CTA.
+- Kept **See Inbox with Demo Data** as the demo/saved inbox entry path.
+- Refined the center arrow between score cards to render as a crisp circular arrow (not a glow blob).
+- Explicitly preserved the ghost/trophy emojis above **YOU RIGHT NOW** and **YOUR GOAL**.
+
 ### 2026-04-17 — Homepage CTA behavior cleanup (single primary path + setup-only action)
 - Changed **See Inbox with Demo Data** to always enter inbox: it now loads saved/current data when available, or fetches bundled demo data, saves it, and then opens inbox.
 - Changed **Set up One-Click Refresh** to setup-only behavior: it opens/scrolls to the connected-source setup panel on the homepage and does not auto-enter inbox.
