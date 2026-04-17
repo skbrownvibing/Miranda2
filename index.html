@@ -40,10 +40,10 @@ body[data-theme="dark"] {
 
 /* ── Drop screen ──────────────────────────────────────────── */
 #drop-screen {
-  display:flex;align-items:center;justify-content:center;height:100vh;
-  padding:36px 20px;
+  display:flex;align-items:flex-start;justify-content:center;min-height:100vh;
+  padding:56px 20px 34px;
   background:radial-gradient(circle at 50% 20%, #1f255f 0%, #14174a 42%, #090e2e 72%, #05081f 100%);
-  position:relative;overflow:hidden;
+  position:relative;overflow-x:hidden;overflow-y:auto;
 }
 #drop-screen::before {
   content:'';
@@ -65,18 +65,18 @@ body[data-theme="dark"] {
   padding:8px;
 }
 .hero-title {
-  font-size:clamp(54px,7.2vw,110px);
+  font-size:clamp(42px,5.8vw,84px);
   font-weight:700;
   line-height:0.96;
   letter-spacing:-0.05em;
-  margin-bottom:24px;
+  margin-bottom:16px;
   background:linear-gradient(90deg,#7ac9ff 0%, #a78bfa 48%, #ec72d8 100%);
   -webkit-background-clip:text;background-clip:text;color:transparent;
 }
 .hero-subhead {
-  font-size:clamp(20px,1.9vw,34px);
+  font-size:clamp(18px,1.5vw,28px);
   line-height:1.24;
-  margin-bottom:34px;
+  margin-bottom:26px;
   color:#bceff6;
   font-weight:500;
   letter-spacing:-0.01em;
@@ -85,9 +85,9 @@ body[data-theme="dark"] {
   position:relative;
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:18px;
+  gap:16px;
   max-width:920px;
-  margin:0 auto 24px;
+  margin:0 auto 18px;
 }
 .hero-score-card {
   border-radius:18px;
@@ -95,38 +95,38 @@ body[data-theme="dark"] {
   background:linear-gradient(145deg, rgba(47,62,145,0.36), rgba(36,40,88,0.5));
   backdrop-filter:blur(8px);
   -webkit-backdrop-filter:blur(8px);
-  min-height:236px;
+  min-height:200px;
   box-shadow:0 12px 36px rgba(5,10,35,0.38), inset 0 1px 0 rgba(255,255,255,0.05);
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  padding:20px 18px 18px;
+  padding:16px 16px 14px;
 }
 .hero-score-card.left {
   border-color:rgba(231,114,216,0.28);
   background:linear-gradient(145deg, rgba(95,45,95,0.47), rgba(52,36,90,0.48));
 }
-.hero-score-emoji { font-size:40px; line-height:1; margin-bottom:10px; }
+.hero-score-emoji { font-size:34px; line-height:1; margin-bottom:8px; }
 .hero-score-label {
-  font-size:24px;
+  font-size:20px;
   font-weight:700;
   letter-spacing:0.05em;
-  margin-bottom:8px;
+  margin-bottom:6px;
 }
 .hero-score-label.left { color:#ff9ca8; }
 .hero-score-label.right { color:#34d4ff; }
 .hero-score-value {
-  font-size:68px;
+  font-size:56px;
   line-height:0.95;
   font-weight:700;
   letter-spacing:-0.03em;
-  margin-bottom:8px;
+  margin-bottom:6px;
 }
 .hero-score-value.left { color:#ff6e78; }
 .hero-score-value.right { color:#8fb5ff; }
 .hero-score-note {
-  font-size:24px;
+  font-size:20px;
   color:rgba(211,218,247,0.72);
   font-weight:500;
 }
@@ -135,11 +135,11 @@ body[data-theme="dark"] {
   left:50%;
   top:50%;
   transform:translate(-50%,-50%);
-  width:72px;height:72px;border-radius:999px;
+  width:60px;height:60px;border-radius:999px;
   display:flex;align-items:center;justify-content:center;
   background:linear-gradient(135deg,#10d8ff,#be67ff);
   color:#e9f5ff;
-  font-size:38px;
+  font-size:30px;
   box-shadow:0 12px 36px rgba(20,207,255,0.38), 0 10px 26px rgba(158,84,255,0.35);
   z-index:2;
 }
@@ -151,8 +151,8 @@ body[data-theme="dark"] {
   width:100%;
   border:none;
   border-radius:14px;
-  padding:18px 24px;
-  font-size:36px;
+  padding:14px 20px;
+  font-size:30px;
   font-weight:700;
   letter-spacing:-0.01em;
   color:#f5f7ff;
@@ -172,10 +172,10 @@ body[data-theme="dark"] {
   background:rgba(50,57,111,0.42);
   color:#e4e8fa;
   font-family:inherit;
-  font-size:28px;
+  font-size:24px;
   font-weight:600;
   letter-spacing:-0.01em;
-  padding:14px 18px;
+  padding:12px 16px;
   cursor:pointer;
   display:flex;
   align-items:center;
@@ -187,8 +187,8 @@ body[data-theme="dark"] {
   background:rgba(58,65,122,0.55);
 }
 .hero-footer {
-  margin-top:28px;
-  font-size:22px;
+  margin-top:22px;
+  font-size:18px;
   color:#0dc6df;
   font-weight:600;
   opacity:0.8;
@@ -502,18 +502,18 @@ body[data-theme="dark"] {
   .score-number { font-size:42px; }
   .score-summary { font-size:22px;text-align:center; }
   .drop-card { padding:0; }
-  .hero-title { margin-bottom:14px; }
+  .hero-title { margin-bottom:12px; }
   .hero-subhead { margin-bottom:20px; }
   .hero-score-row { grid-template-columns:1fr; gap:14px; margin-bottom:20px; }
-  .hero-score-card { min-height:180px; }
-  .hero-center-arrow { position:static; transform:none; margin:0 auto; width:64px; height:64px; font-size:34px; }
-  .btn-primary.hero-primary { padding:14px 14px; font-size:26px; }
+  .hero-score-card { min-height:168px; }
+  .hero-center-arrow { position:static; transform:none; margin:0 auto; width:54px; height:54px; font-size:28px; }
+  .btn-primary.hero-primary { padding:12px 12px; font-size:22px; }
   .hero-secondary-row { grid-template-columns:1fr; gap:10px; }
-  .hero-secondary { font-size:21px; padding:12px 12px; }
-  .hero-score-label { font-size:18px; }
-  .hero-score-value { font-size:56px; }
-  .hero-score-note { font-size:18px; }
-  .hero-footer { font-size:17px; margin-top:20px; }
+  .hero-secondary { font-size:18px; padding:11px 11px; }
+  .hero-score-label { font-size:16px; }
+  .hero-score-value { font-size:48px; }
+  .hero-score-note { font-size:16px; }
+  .hero-footer { font-size:15px; margin-top:16px; }
 }
 </style>
 </head>

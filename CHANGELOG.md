@@ -2,6 +2,10 @@
 
 ## Current development cycle
 
+### 2026-04-17 — Homepage hero fit fix (title clipping + additional downscale)
+- Fixed top-of-page clipping by making the home hero container start from the top with padding and scroll-safe overflow instead of vertically centering with hard viewport clipping.
+- Reduced hero scale again (headline, cards, arrow, CTA/buttons, footer) so the full title remains visible and the page feels less zoomed.
+
 ### 2026-04-17 — Homepage hero sizing and cleanup pass
 - Reduced oversized hero typography and card/control scaling so the home screen keeps the same horizontal composition but no longer appears zoomed in.
 - Kept the top hero brand copy explicit and unchanged: **Reply or Die** + **Stop ghosting. Start responding.**
