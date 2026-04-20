@@ -38,202 +38,247 @@ body[data-theme="dark"] {
   --text3: rgba(247, 248, 255, 0.5);
 }
 
-/* ── Drop screen ──────────────────────────────────────────── */
+/* ── Drop screen / landing ────────────────────────────────── */
 #drop-screen {
-  display:flex;align-items:flex-start;justify-content:center;min-height:100vh;
-  padding:56px 20px 34px;
-  background:radial-gradient(circle at 50% 20%, #1f255f 0%, #14174a 42%, #090e2e 72%, #05081f 100%);
-  position:relative;overflow-x:hidden;overflow-y:auto;
+  min-height:100vh;
+  background:var(--landing-bg);
+  color:var(--landing-text);
 }
-#drop-screen::before {
-  content:'';
-  position:absolute;
-  left:50%;
-  top:42%;
-  width:min(1120px,92vw);
-  height:min(760px,78vh);
-  transform:translate(-50%,-50%);
-  background:
-    radial-gradient(circle at 50% 34%, rgba(64,171,255,0.26) 0%, rgba(64,171,255,0.16) 24%, rgba(64,171,255,0.06) 46%, transparent 70%),
-    radial-gradient(circle at 50% 62%, rgba(204,87,255,0.22) 0%, rgba(204,87,255,0.09) 40%, transparent 70%);
-  filter:blur(12px);
-  pointer-events:none;
+
+:root {
+  --landing-bg:#efeee9;
+  --landing-border:rgba(35,35,35,0.16);
+  --landing-card:#f4f1e8;
+  --landing-panel:#f8f5ee;
+  --landing-text:#151515;
+  --landing-muted:rgba(15,15,15,0.66);
+  --landing-subtle:rgba(15,15,15,0.46);
+  --landing-accent:#df4f43;
+  --landing-accent-2:#123f74;
+  --landing-cta:#cfe85c;
 }
-#drop-screen.drag-over { filter:saturate(1.08); }
+body[data-theme="dark"] {
+  --landing-bg:#070914;
+  --landing-border:rgba(255,255,255,0.12);
+  --landing-card:#ece8df;
+  --landing-panel:#0d1020;
+  --landing-text:#f6f5f1;
+  --landing-muted:rgba(246,245,241,0.74);
+  --landing-subtle:rgba(246,245,241,0.56);
+  --landing-accent:#ff6359;
+  --landing-accent-2:#d7e7ff;
+  --landing-cta:#d2ef60;
+}
+
 .drop-card {
-  max-width:1020px;width:100%;position:relative;z-index:1;text-align:center;
-  padding:8px;
-}
-.hero-title {
-  font-size:clamp(42px,5.8vw,84px);
-  font-weight:700;
-  line-height:0.96;
-  letter-spacing:-0.05em;
-  margin-bottom:16px;
-  background:linear-gradient(90deg,#7ac9ff 0%, #a78bfa 48%, #ec72d8 100%);
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-}
-.hero-subhead {
-  font-size:clamp(18px,1.5vw,28px);
-  line-height:1.24;
-  margin-bottom:26px;
-  color:#bceff6;
-  font-weight:500;
-  letter-spacing:-0.01em;
-}
-.hero-score-row {
-  position:relative;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:16px;
-  max-width:920px;
-  margin:0 auto 18px;
-}
-.hero-score-card {
-  border-radius:18px;
-  border:1px solid rgba(122,152,255,0.33);
-  background:linear-gradient(145deg, rgba(47,62,145,0.36), rgba(36,40,88,0.5));
-  backdrop-filter:blur(8px);
-  -webkit-backdrop-filter:blur(8px);
-  min-height:200px;
-  box-shadow:0 12px 36px rgba(5,10,35,0.38), inset 0 1px 0 rgba(255,255,255,0.05);
+  width:min(1240px, 100%);
+  margin:0 auto;
+  min-height:100vh;
   display:flex;
   flex-direction:column;
+}
+.landing-topbar {
+  display:flex;
   align-items:center;
-  justify-content:center;
-  padding:16px 16px 14px;
+  justify-content:space-between;
+  gap:16px;
+  padding:16px 28px;
+  border-bottom:1px solid var(--landing-border);
 }
-.hero-score-card.left {
-  border-color:rgba(231,114,216,0.28);
-  background:linear-gradient(145deg, rgba(95,45,95,0.47), rgba(52,36,90,0.48));
-}
-.hero-score-emoji { font-size:44px; line-height:1; margin-bottom:8px; }
-.hero-score-label {
-  font-size:20px;
-  font-weight:700;
-  letter-spacing:0.05em;
-  margin-bottom:6px;
-}
-.hero-score-label.left { color:#ff9ca8; }
-.hero-score-label.right { color:#34d4ff; }
-.hero-score-value {
-  font-size:56px;
+.brand-wrap { display:flex; align-items:center; gap:12px; }
+.brand-dot { width:9px; height:9px; border-radius:999px; background:#d85145; }
+.brand-name {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size:42px;
+  font-style:italic;
   line-height:0.95;
-  font-weight:700;
-  letter-spacing:-0.03em;
-  margin-bottom:6px;
+  letter-spacing:-0.02em;
 }
-.hero-score-value.left { color:#ff6e78; }
-.hero-score-value.right { color:#8fb5ff; }
-.hero-score-note {
-  font-size:20px;
-  color:rgba(211,218,247,0.72);
-  font-weight:500;
+.landing-nav { display:flex; align-items:center; gap:10px; }
+.landing-pill {
+  padding:8px 16px;
+  border-radius:999px;
+  border:1px solid transparent;
+  font-size:26px;
+  color:var(--landing-muted);
+  text-decoration:none;
 }
-.hero-center-arrow {
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  width:58px;height:58px;border-radius:999px;
-  display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,#35d0ff,#8f7dff);
-  border:1px solid rgba(190,225,255,0.45);
-  color:#f4f9ff;
-  font-size:34px;
-  font-weight:700;
-  box-shadow:0 8px 18px rgba(11,24,78,0.45);
-  z-index:2;
+.landing-pill.active {
+  background:rgba(255,255,255,0.34);
+  border-color:var(--landing-border);
+  color:var(--landing-text);
 }
-.hero-actions {
-  max-width:920px;
-  margin:0 auto;
-}
-.btn-primary.hero-primary {
-  width:100%;
-  border:none;
-  border-radius:14px;
-  padding:14px 20px;
+.status-row { display:flex; align-items:center; gap:12px; }
+.sync-pill {
+  display:flex; align-items:center; gap:8px;
   font-size:30px;
-  font-weight:700;
-  letter-spacing:-0.01em;
-  color:#f5f7ff;
-  background:linear-gradient(90deg,#05b6df 0%, #6279ea 42%, #a214f0 100%);
-  box-shadow:0 0 0 1px rgba(255,255,255,0.08) inset, 0 18px 42px rgba(0,0,0,0.35);
+  color:var(--landing-muted);
 }
-.btn-primary.hero-primary:hover { opacity:0.97;transform:translateY(-1px); }
-.hero-secondary-row {
-  margin-top:14px;
+.sync-dot { width:8px; height:8px; border-radius:999px; background:#55ba86; }
+.refresh-pill {
+  border:1px solid var(--landing-border);
+  border-radius:999px;
+  background:rgba(255,255,255,0.3);
+  color:var(--landing-text);
+  font:inherit;
+  font-size:30px;
+  padding:8px 18px;
+}
+.landing-main {
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:18px;
+  grid-template-columns:minmax(0,1.05fr) minmax(340px,0.95fr);
+  gap:48px;
+  padding:26px 28px 34px;
 }
-.hero-secondary {
-  border:1px solid rgba(152,170,247,0.28);
-  border-radius:12px;
-  background:rgba(50,57,111,0.42);
-  color:#e4e8fa;
-  font-family:inherit;
-  font-size:24px;
-  font-weight:600;
+.hero-copy { padding-top:14px; }
+.eyebrow {
+  display:flex; align-items:center; gap:12px;
+  margin-bottom:10px;
+  color:var(--landing-muted);
+  font-size:36px;
+}
+.eyebrow::before { content:''; display:block; width:34px; height:1px; background:var(--landing-border); }
+.hero-headline {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size:120px;
+  line-height:0.93;
+  letter-spacing:-0.03em;
+  margin-bottom:14px;
+}
+.hero-headline .or { font-style:italic; color:var(--landing-subtle); font-weight:500; }
+.hero-headline .die { color:var(--landing-accent); font-style:italic; }
+.hero-sub {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size:70px;
+  line-height:0.96;
+  font-style:italic;
+  letter-spacing:-0.02em;
+  margin-bottom:10px;
+}
+.hero-sub .accent { color:var(--landing-accent); }
+.hero-detail {
+  font-size:39px;
+  line-height:1.35;
+  color:var(--landing-muted);
+  max-width:760px;
+  margin-bottom:24px;
+}
+.hero-detail .accent { color:var(--landing-accent); font-family: Georgia, 'Times New Roman', serif; font-style:italic; }
+.cta-stack { max-width:760px; display:flex; flex-direction:column; gap:14px; }
+.landing-cta-primary {
+  border:none;
+  border-radius:18px;
+  background:var(--landing-cta);
+  color:#182121;
+  font:inherit;
+  font-weight:700;
+  font-size:40px;
   letter-spacing:-0.01em;
-  padding:12px 16px;
-  cursor:pointer;
+  min-height:94px;
+  padding:0 26px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.landing-cta-secondary {
+  border:1px solid var(--landing-border);
+  border-radius:18px;
+  background:transparent;
+  color:var(--landing-text);
+  font:inherit;
+  font-size:38px;
+  min-height:84px;
+  padding:0 24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.card-shell {
+  border:1px solid var(--landing-border);
+  border-radius:28px;
+  background:var(--landing-card);
+  padding:24px 24px 20px;
+  color:#1e1e1a;
+  min-height:640px;
+  box-shadow:0 6px 20px rgba(0,0,0,0.05);
+}
+.card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; }
+.card-title {
+  font-size:21px;
+  letter-spacing:0.2em;
+  color:rgba(35,35,35,0.55);
+  text-transform:uppercase;
+}
+.demo-badge {
+  font-size:19px;
+  letter-spacing:0.13em;
+  text-transform:uppercase;
+  border:1px solid rgba(35,35,35,0.22);
+  border-radius:999px;
+  padding:6px 12px;
+  color:rgba(35,35,35,0.56);
+}
+.ring-wrap {
+  width:min(430px,100%);
+  aspect-ratio:1/1;
+  margin:0 auto 20px;
+  border:9px solid rgba(36,36,36,0.08);
+  border-radius:999px;
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:14px;
+  position:relative;
 }
-.hero-secondary:hover {
-  border-color:rgba(186,199,255,0.4);
-  background:rgba(58,65,122,0.55);
+.ring-wrap::before {
+  content:'';
+  position:absolute;
+  inset:16px;
+  border-radius:999px;
+  border:2px solid rgba(36,36,36,0.05);
 }
-.hero-footer {
-  margin-top:22px;
-  font-size:18px;
-  color:#0dc6df;
-  font-weight:600;
-  opacity:0.8;
+.ring-content { position:relative; text-align:center; }
+.ring-score { font-size:136px; line-height:0.9; letter-spacing:-0.04em; color:#161515; }
+.ring-label { margin-top:10px; font-size:17px; color:rgba(35,35,35,0.58); letter-spacing:0.18em; text-transform:uppercase; }
+.ring-tier { font-family: Georgia, 'Times New Roman', serif; font-style:italic; font-size:42px; color:rgba(35,35,35,0.82); }
+.ring-emoji { font-size:30px; margin-top:4px; }
+.metrics { border-top:1px solid rgba(35,35,35,0.16); padding-top:16px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+.metric-label { font-size:18px; letter-spacing:0.2em; text-transform:uppercase; color:rgba(35,35,35,0.5); margin-bottom:8px; }
+.metric-value { font-size:58px; letter-spacing:-0.03em; line-height:0.95; }
+.metric-value.wait { color:#ab7723; }
+.metric-value.hanging { color:#bf5f56; }
+.hero-supporting { margin-top:14px; }
+.drop-hint,.saved-prompt { display:none; }
+
+body[data-theme="dark"] .landing-pill.active { background:rgba(255,255,255,0.1); }
+body[data-theme="dark"] .refresh-pill { background:rgba(255,255,255,0.06); }
+body[data-theme="dark"] .landing-cta-secondary { background:rgba(255,255,255,0.03); }
+
+@media (max-width:1000px) {
+  .landing-topbar { padding:14px 16px; flex-wrap:wrap; }
+  .brand-name { font-size:32px; }
+  .landing-pill, .refresh-pill, .sync-pill { font-size:20px; }
+  .landing-main { grid-template-columns:1fr; gap:22px; padding:20px 16px 24px; }
+  .hero-headline { font-size:74px; }
+  .hero-sub { font-size:52px; }
+  .hero-detail { font-size:29px; max-width:none; }
+  .landing-cta-primary { font-size:30px; min-height:76px; }
+  .landing-cta-secondary { font-size:28px; min-height:72px; }
+  .card-shell { min-height:auto; }
+  .ring-score { font-size:96px; }
+  .ring-tier { font-size:30px; }
+  .metric-label { font-size:13px; }
+  .metric-value { font-size:43px; }
 }
-.hero-supporting { margin-top:20px; display:flex; flex-direction:column; gap:10px; }
-.btn-primary {
-  display:inline-block;background:var(--blue);color:#fff;border:none;border-radius:12px;
-  padding:12px 28px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;
-  transition:opacity .15s,transform .1s;
+
+@media (max-width:640px) {
+  .landing-topbar { align-items:flex-start; }
+  .landing-nav { order:3; width:100%; justify-content:flex-start; }
+  .landing-main { padding-top:12px; }
+  .hero-headline { font-size:62px; }
+  .hero-sub { font-size:44px; }
+  .hero-detail { font-size:24px; }
+  .metrics { grid-template-columns:1fr; gap:10px; }
 }
-.btn-primary:hover { opacity:.88;transform:translateY(-1px); }
-.drop-hint { margin-top:0;font-size:12px;color:rgba(203,214,245,0.72);line-height:1.5; }
-.drop-hint code {
-  background:rgba(255,255,255,0.08);border-radius:4px;padding:1px 5px;
-  font-family:'DM Mono',monospace;font-size:11px;color:#d8e5ff;
-}
-#drop-error { margin-top:8px;color:#ff8f9d;font-size:13px;display:none; }
-.saved-prompt { margin-top:0;padding-top:0;border-top:none; }
-.saved-prompt button {
-  background:rgba(255,255,255,0.04);border:1px solid rgba(145,164,245,0.24);border-radius:12px;
-  padding:12px 16px;color:#cfd8f6;font-size:13px;font-family:inherit;cursor:pointer;
-  transition:all .15s;width:100%;text-align:left;line-height:1.4;
-}
-.saved-prompt button:hover { background:rgba(255,255,255,0.08);border-color:rgba(173,191,255,0.34);color:#edf2ff; }
-.saved-prompt .saved-label { display:block;font-weight:600;margin-bottom:2px;color:#edf2ff; }
-.saved-prompt .saved-meta { font-size:11px;color:rgba(194,206,241,0.78); }
-.source-panel {
-  margin-top:0;padding:10px 12px;border:1px solid rgba(145,164,245,0.2);border-radius:12px;
-  background:rgba(22,32,78,0.4);text-align:left;
-}
-.source-panel-title { font-size:12px;color:rgba(186,198,237,0.72);margin-bottom:4px; }
-.source-panel-line { font-size:12px;color:rgba(219,227,249,0.86);margin-bottom:4px; }
-.source-panel-actions { display:flex;gap:8px;flex-wrap:wrap;margin-top:8px; }
-.source-panel .btn-primary { padding:8px 12px;font-size:12px; }
-.btn-secondary {
-  font-family:inherit;font-size:12px;padding:8px 12px;border:1px solid var(--border);
-  border-radius:10px;background:var(--surface);color:var(--text2);cursor:pointer;
-}
-.btn-secondary:hover { background:var(--border);color:var(--text); }
-.source-error { margin-top:8px;font-size:12px;color:var(--red); }
-.source-status { margin-top:8px;font-size:12px;color:#60a5fa;display:none; }
-.source-status.is-error { color:var(--red); }
-.source-status.is-success { color:#22c55e; }
 
 /* ── App ──────────────────────────────────────────────────── */
 #app {
@@ -537,22 +582,7 @@ body[data-theme="dark"] #app {
   .score-ring { width:150px;height:150px; }
   .score-ring svg { width:150px;height:150px; }
   .score-number { font-size:42px; }
-  .score-summary { font-size:32px;text-align:center; }
-  .drop-card { padding:40px 28px; }
   .score-summary { font-size:22px;text-align:center; }
-  .drop-card { padding:0; }
-  .hero-title { margin-bottom:12px; }
-  .hero-subhead { margin-bottom:20px; }
-  .hero-score-row { grid-template-columns:1fr; gap:14px; margin-bottom:20px; }
-  .hero-score-card { min-height:168px; }
-  .hero-center-arrow { position:static; transform:none; margin:0 auto; width:50px; height:50px; font-size:26px; }
-  .btn-primary.hero-primary { padding:12px 12px; font-size:22px; }
-  .hero-secondary-row { grid-template-columns:1fr; gap:10px; }
-  .hero-secondary { font-size:18px; padding:11px 11px; }
-  .hero-score-label { font-size:16px; }
-  .hero-score-value { font-size:48px; }
-  .hero-score-note { font-size:16px; }
-  .hero-footer { font-size:15px; margin-top:16px; }
 }
 @media (min-width:768px) {
   .score-hero { grid-template-columns:minmax(0,1fr) 330px; }
@@ -564,46 +594,81 @@ body[data-theme="dark"] #app {
 
 <div id="drop-screen">
   <div class="drop-card">
-    <h1 class="hero-title">Reply or Die</h1>
-    <div class="hero-subhead">Stop ghosting. Start responding.</div>
-    <div class="hero-score-row">
-      <div class="hero-score-card left">
-        <div class="hero-score-emoji" aria-hidden="true">👻</div>
-        <div class="hero-score-label left">YOU RIGHT NOW</div>
-        <div class="hero-score-value left">5</div>
-        <div class="hero-score-note">responsiveness score</div>
+    <header class="landing-topbar">
+      <div class="brand-wrap">
+        <span class="brand-dot" aria-hidden="true"></span>
+        <span class="brand-name">Reply or Die</span>
       </div>
-      <div class="hero-center-arrow" aria-hidden="true">➜</div>
-      <div class="hero-score-card right">
-        <div class="hero-score-emoji" aria-hidden="true">🏆</div>
-        <div class="hero-score-label right">YOUR GOAL</div>
-        <div class="hero-score-value right">95</div>
-        <div class="hero-score-note">responsiveness score</div>
+      <nav class="landing-nav" aria-label="Primary">
+        <a class="landing-pill active" href="#">Start</a>
+        <a class="landing-pill" href="#">Inbox</a>
+        <a class="landing-pill" href="#">Score</a>
+        <a class="landing-pill" href="#">Settings</a>
+      </nav>
+      <div class="status-row">
+        <div class="sync-pill"><span class="sync-dot" aria-hidden="true"></span>Local · synced 1m ago</div>
+        <button class="refresh-pill" onclick="refresh()">↻ Refresh</button>
       </div>
-    </div>
-    <div class="hero-actions">
-      <button class="btn-primary hero-primary" onclick="enterDemoInbox()">See Inbox with Demo Data</button>
-      <div class="hero-secondary-row">
-        <button class="hero-secondary" onclick="document.getElementById('file-input').click()">💬 <span>Upload Export File</span></button>
-        <button class="hero-secondary" onclick="openRefreshSetup()">⚡ <span>Set up One-Click Refresh</span></button>
-      </div>
-      <div class="hero-footer">Your friends deserve better than left on read 💬</div>
-    </div>
-    <input type="file" id="file-input" accept=".json" style="display:none">
-    <div class="hero-supporting">
-      <div id="drop-error"></div>
-      <div class="source-panel" id="source-panel-drop" style="display:none">
-        <div class="source-panel-title" id="source-title-drop">Connected export file</div>
-        <div class="source-panel-line" id="source-name-drop"></div>
-        <div class="source-panel-actions">
-          <button class="btn-primary" id="connect-export-btn-drop" onclick="connectExportFile()">Connect export file</button>
-          <button class="btn-primary" id="refresh-btn-drop" onclick="refresh()" style="display:none">Refresh</button>
-          <button class="btn-secondary" id="change-source-btn-drop" onclick="changeSource()">Change source</button>
+    </header>
+
+    <main class="landing-main">
+      <section class="hero-copy" aria-label="Hero copy">
+        <div class="eyebrow">A local-first text triage tool</div>
+        <h1 class="hero-headline">Reply <span class="or">or</span> <span class="die">Die.</span></h1>
+        <p class="hero-sub"><span class="accent">9 people</span> are waiting on a reply.<br><span>The oldest is </span><span class="accent">6 days</span><span> 👻</span></p>
+        <p class="hero-detail">This sorts your conversations and drafts replies when you're stuck.</p>
+
+        <div class="cta-stack">
+          <button class="landing-cta-primary" onclick="enterDemoInbox()"><span>See the demo inbox</span><span aria-hidden="true">→</span></button>
+          <button class="landing-cta-secondary" onclick="openRefreshSetup()"><span>One-click refresh</span><span aria-hidden="true">⌘R</span></button>
         </div>
-        <div class="source-status" id="source-status-drop" style="display:none"></div>
-        <div class="source-error" id="source-error-drop" style="display:none"></div>
-      </div>
-    </div>
+
+        <input type="file" id="file-input" accept=".json" style="display:none">
+        <div class="hero-supporting">
+          <div id="drop-error"></div>
+          <div class="source-panel" id="source-panel-drop" style="display:none">
+            <div class="source-panel-title" id="source-title-drop">Connected export file</div>
+            <div class="source-panel-line" id="source-name-drop"></div>
+            <div class="source-panel-actions">
+              <button class="btn-primary" id="connect-export-btn-drop" onclick="connectExportFile()">Connect export file</button>
+              <button class="btn-primary" id="refresh-btn-drop" onclick="refresh()" style="display:none">Refresh</button>
+              <button class="btn-secondary" id="change-source-btn-drop" onclick="changeSource()">Change source</button>
+            </div>
+            <div class="source-status" id="source-status-drop" style="display:none"></div>
+            <div class="source-error" id="source-error-drop" style="display:none"></div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="card-shell" aria-label="Score card preview">
+        <div class="card-header">
+          <div class="card-title">YOUR RESPONSIVENESS · LAST 7 DAYS</div>
+          <span class="demo-badge">DEMO</span>
+        </div>
+        <div class="ring-wrap">
+          <div class="ring-content">
+            <div class="ring-score">24</div>
+            <div class="ring-label">SCORE / 100</div>
+            <div class="ring-tier">bad texter</div>
+            <div class="ring-emoji">😬</div>
+          </div>
+        </div>
+        <div class="metrics">
+          <div>
+            <div class="metric-label">REPLY RATE</div>
+            <div class="metric-value">38%</div>
+          </div>
+          <div>
+            <div class="metric-label">AVG WAIT</div>
+            <div class="metric-value wait">2.1d</div>
+          </div>
+          <div>
+            <div class="metric-label">HANGING</div>
+            <div class="metric-value hanging">9</div>
+          </div>
+        </div>
+      </aside>
+    </main>
   </div>
 </div>
 

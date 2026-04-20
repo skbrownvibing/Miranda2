@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-04-20 — Landing page rebuilt to match Reply or Die marketing screenshots (light + dark)
+- Replaced the previous centered gradient home/import hero with a screenshot-matched landing layout: branded top nav, status/refresh controls, left serif marketing copy, and right responsiveness demo card.
+- Added matching CTA hierarchy and copy on the landing view (`See the demo inbox` primary + `One-click refresh` secondary), while keeping existing local-first actions wired to current behavior.
+- Added dedicated landing visual tokens for both light and dark themes so the same structure renders in either mode with consistent spacing, typography hierarchy, borders, and card density.
+
 ### 2026-04-17 — Top hero compacted vertically to surface Action needed sooner
 - Reduced top hero vertical footprint by tightening score-section padding, internal gaps, and score-history spacing.
 - Slightly reduced score ring size and headline/card sizing to keep hierarchy while bringing the next section higher on screen.
