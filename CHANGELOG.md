@@ -2,6 +2,14 @@
 
 ## Current development cycle
 
+### 2026-04-20 — Inbox hero refined to a compact single-row header
+- Refined the new Inbox hero treatment to a tighter single-row header so the dashboard keeps focus on **Action needed** without extra vertical bloat.
+- Adjusted sizing/spacing and mobile behavior for the Inbox title + helper copy; this remains a presentation-only change.
+
+### 2026-04-20 — Inbox now has an explicit hero heading/subheading
+- Added a dedicated **Inbox** heading and short helper subtitle at the top of the loaded app view.
+- Kept scoring, filtering, action-list logic, and all data behavior unchanged; this is a presentation-only inbox clarity pass.
+
 ### 2026-04-17 — Top hero compacted vertically to surface Action needed sooner
 - Reduced top hero vertical footprint by tightening score-section padding, internal gaps, and score-history spacing.
 - Slightly reduced score ring size and headline/card sizing to keep hierarchy while bringing the next section higher on screen.
