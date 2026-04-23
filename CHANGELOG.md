@@ -2,6 +2,12 @@
 
 ## Current development cycle
 
+### 2026-04-23 — Regression fix: functional inbox restored + script parse repaired
+- Fixed a JavaScript parse error in `wireInboxDesignIframe()` that could prevent the main `index.html` script from executing.
+- Stopped forcing `design-inbox-mode` during normal `loadData()` so loaded data returns to the original functional inbox path.
+- Kept AI Suggested Reply prompt/examples/validation/generation behavior unchanged.
+- Corrected score weighting to match PRD: reply rate 40%, reply speed 30%, open conversations penalty 30%.
+
 ### 2026-04-23 — Inbox redesign sync fix (loaded view now uses standalone Inbox)
 - Fixed inbox entry wiring so loaded data consistently enables `design-inbox-mode` and renders the standalone Inbox shell.
 - Updated `resetData()` to always clear `design-inbox-mode` when returning Home.

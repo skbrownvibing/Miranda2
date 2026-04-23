@@ -1200,9 +1200,6 @@ function loadData(data,save){
   reconcileDismissedState();
   document.getElementById('drop-screen').style.display='none';
   document.getElementById('app').classList.add('loaded');
-  document.getElementById('app').classList.add('design-inbox-mode');
-  wireInboxDesignIframe();
-  try{ localStorage.setItem('rod_screen','inbox'); }catch(_){}
   if(save){try{localStorage.setItem(DATA_KEY,JSON.stringify(data));
     localStorage.setItem(META_KEY,JSON.stringify({savedAt:new Date().toISOString(),count:S.conversations.length}));}catch(_){}}
   setLastUpdatedTimestamp(data);
@@ -1245,10 +1242,10 @@ function resetData(){
 function wireInboxDesignIframe(){
   const frame=document.getElementById('inbox-design-frame');
   if(!frame)return;
-  const apply=()=>{
-  if(!frame||frame.dataset.wired==='1')return;
+  if(frame.dataset.wired==='1')return;
   frame.dataset.wired='1';
-  frame.addEventListener('load',()=>{
+
+  const apply=()=>{
     let doc=null;
     let win=null;
     try{
@@ -1273,16 +1270,9 @@ function wireInboxDesignIframe(){
           clearInterval(timer);
           return;
         }
-      }catch(_){}
+      }catch(_){ }
       if(tries>40)clearInterval(timer);
     },50);
-    try{
-      if(win&&typeof win.go==='function')win.go('inbox');
-      else{
-        const inboxBtn=doc.querySelector('button[data-nav="inbox"]');
-        if(inboxBtn)inboxBtn.click();
-      }
-    }catch(_){ }
 
     const landingBtn=doc.querySelector('button[data-nav="landing"]');
     if(landingBtn){
@@ -1294,12 +1284,9 @@ function wireInboxDesignIframe(){
       refreshBtn.onclick=(e)=>{e.preventDefault();refresh();};
     }
   };
-  if(frame.dataset.wired!=='1'){
-    frame.dataset.wired='1';
-    frame.addEventListener('load',apply);
-  }
+
+  frame.addEventListener('load',apply);
   if(frame.contentDocument?.readyState==='complete')apply();
-  });
 }
 
 function setLastUpdatedTimestamp(data){
@@ -1598,7 +1585,7 @@ function computeScoreFromPersonal(personal){
     const h=(Date.now()-new Date(c.last_message_at).getTime())/3600000;
     if(h<1)hp+=1;else if(h<24)hp+=3;else if(h<72)hp+=6;else hp+=10;});
   const hangingScore=Math.max(0,100-hp);
-  const score=Math.round(rate*0.45+speedScore*0.25+hangingScore*0.30);
+  const score=Math.round(rate*0.40+speedScore*0.30+hangingScore*0.30);
   return{score:Math.max(0,Math.min(100,score)),rate,speed:avgWait,speedScore,hanging:unreplied.length,hangingScore,replied:replied.length,total};
 }
 function computeScore(){return computeScoreFromPersonal(allPersonalInTimeline());}
