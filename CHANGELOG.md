@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-04-23 — Start screen redesign pass (phase 1 of new Reply or Die design)
+- Fully redesigned the Home/start screen visual system to match the new editorial Reply or Die direction (darker canvas, serif headline treatment, lime primary accent, and cleaner hierarchy).
+- Replaced the previous score-card hero on the start screen with a simpler launch-focused composition while keeping core entry actions intact.
+- Preserved existing start-screen behavior and wiring: **See Inbox with Demo Data**, **Upload Export File**, and **Set up One-Click Refresh** continue using the same logic and handlers.
+
 ### 2026-04-17 — Top hero compacted vertically to surface Action needed sooner
 - Reduced top hero vertical footprint by tightening score-section padding, internal gaps, and score-history spacing.
 - Slightly reduced score ring size and headline/card sizing to keep hierarchy while bringing the next section higher on screen.
