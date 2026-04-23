@@ -40,141 +40,90 @@ body[data-theme="dark"] {
 
 /* ── Drop screen ──────────────────────────────────────────── */
 #drop-screen {
-  display:flex;align-items:flex-start;justify-content:center;min-height:100vh;
-  padding:56px 20px 34px;
-  background:radial-gradient(circle at 50% 20%, #1f255f 0%, #14174a 42%, #090e2e 72%, #05081f 100%);
-  position:relative;overflow-x:hidden;overflow-y:auto;
+  display:flex;
+  align-items:stretch;
+  justify-content:center;
+  min-height:100vh;
+  padding:0;
+  background:#0b0a10;
+  position:relative;
+  overflow:hidden;
 }
 #drop-screen::before {
-  content:'';
-  position:absolute;
-  left:50%;
-  top:42%;
-  width:min(1120px,92vw);
-  height:min(760px,78vh);
-  transform:translate(-50%,-50%);
-  background:
-    radial-gradient(circle at 50% 34%, rgba(64,171,255,0.26) 0%, rgba(64,171,255,0.16) 24%, rgba(64,171,255,0.06) 46%, transparent 70%),
-    radial-gradient(circle at 50% 62%, rgba(204,87,255,0.22) 0%, rgba(204,87,255,0.09) 40%, transparent 70%);
-  filter:blur(12px);
-  pointer-events:none;
+  display:none;
 }
 #drop-screen.drag-over { filter:saturate(1.08); }
 .drop-card {
-  max-width:1020px;width:100%;position:relative;z-index:1;text-align:center;
-  padding:8px;
+  width:100%;
+  min-height:100vh;
+  position:relative;
+}
+.start-design-frame {
+  width:100%;
+  height:100vh;
+  border:0;
+  display:block;
+  background:#0b0a10;
+}
+.start-design-support {
+  position:fixed;
+  left:12px;
+  right:12px;
+  bottom:12px;
+  z-index:50;
+  pointer-events:none;
+}
+.start-design-support > * {
+  pointer-events:auto;
 }
 .hero-title {
-  font-size:clamp(42px,5.8vw,84px);
-  font-weight:700;
-  line-height:0.96;
-  letter-spacing:-0.05em;
-  margin-bottom:16px;
-  background:linear-gradient(90deg,#7ac9ff 0%, #a78bfa 48%, #ec72d8 100%);
-  -webkit-background-clip:text;background-clip:text;color:transparent;
+  font-family: 'Times New Roman', Georgia, serif;
+  font-style:italic;
+  font-size:clamp(56px,8.2vw,134px);
+  font-weight:400;
+  line-height:0.88;
+  letter-spacing:-0.02em;
+  margin-bottom:10px;
+  color:#f4f1ea;
 }
 .hero-subhead {
-  font-size:clamp(18px,1.5vw,28px);
-  line-height:1.24;
-  margin-bottom:26px;
-  color:#bceff6;
+  font-size:clamp(18px,1.9vw,28px);
+  line-height:1.25;
+  margin-bottom:24px;
+  color:rgba(235, 236, 244, 0.88);
   font-weight:500;
   letter-spacing:-0.01em;
 }
-.hero-score-row {
-  position:relative;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:16px;
-  max-width:920px;
-  margin:0 auto 18px;
-}
-.hero-score-card {
-  border-radius:18px;
-  border:1px solid rgba(122,152,255,0.33);
-  background:linear-gradient(145deg, rgba(47,62,145,0.36), rgba(36,40,88,0.5));
-  backdrop-filter:blur(8px);
-  -webkit-backdrop-filter:blur(8px);
-  min-height:200px;
-  box-shadow:0 12px 36px rgba(5,10,35,0.38), inset 0 1px 0 rgba(255,255,255,0.05);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  padding:16px 16px 14px;
-}
-.hero-score-card.left {
-  border-color:rgba(231,114,216,0.28);
-  background:linear-gradient(145deg, rgba(95,45,95,0.47), rgba(52,36,90,0.48));
-}
-.hero-score-emoji { font-size:44px; line-height:1; margin-bottom:8px; }
-.hero-score-label {
-  font-size:20px;
-  font-weight:700;
-  letter-spacing:0.05em;
-  margin-bottom:6px;
-}
-.hero-score-label.left { color:#ff9ca8; }
-.hero-score-label.right { color:#34d4ff; }
-.hero-score-value {
-  font-size:56px;
-  line-height:0.95;
-  font-weight:700;
-  letter-spacing:-0.03em;
-  margin-bottom:6px;
-}
-.hero-score-value.left { color:#ff6e78; }
-.hero-score-value.right { color:#8fb5ff; }
-.hero-score-note {
-  font-size:20px;
-  color:rgba(211,218,247,0.72);
-  font-weight:500;
-}
-.hero-center-arrow {
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  width:58px;height:58px;border-radius:999px;
-  display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,#35d0ff,#8f7dff);
-  border:1px solid rgba(190,225,255,0.45);
-  color:#f4f9ff;
-  font-size:34px;
-  font-weight:700;
-  box-shadow:0 8px 18px rgba(11,24,78,0.45);
-  z-index:2;
-}
 .hero-actions {
-  max-width:920px;
+  max-width:760px;
   margin:0 auto;
 }
 .btn-primary.hero-primary {
   width:100%;
   border:none;
   border-radius:14px;
-  padding:14px 20px;
+  padding:16px 20px;
   font-size:30px;
   font-weight:700;
   letter-spacing:-0.01em;
-  color:#f5f7ff;
-  background:linear-gradient(90deg,#05b6df 0%, #6279ea 42%, #a214f0 100%);
-  box-shadow:0 0 0 1px rgba(255,255,255,0.08) inset, 0 18px 42px rgba(0,0,0,0.35);
+  color:#151318;
+  background:#e3f770;
+  box-shadow:0 0 0 1px rgba(255,255,255,0.24) inset, 0 18px 40px rgba(57, 70, 17, 0.4);
 }
 .btn-primary.hero-primary:hover { opacity:0.97;transform:translateY(-1px); }
 .hero-secondary-row {
-  margin-top:14px;
+  margin-top:12px;
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:18px;
+  gap:12px;
 }
 .hero-secondary {
-  border:1px solid rgba(152,170,247,0.28);
+  border:1px solid rgba(214, 216, 232, 0.24);
   border-radius:12px;
-  background:rgba(50,57,111,0.42);
-  color:#e4e8fa;
+  background:rgba(255,255,255,0.03);
+  color:#ececf3;
   font-family:inherit;
-  font-size:24px;
+  font-size:20px;
   font-weight:600;
   letter-spacing:-0.01em;
   padding:12px 16px;
@@ -185,15 +134,44 @@ body[data-theme="dark"] {
   gap:14px;
 }
 .hero-secondary:hover {
-  border-color:rgba(186,199,255,0.4);
-  background:rgba(58,65,122,0.55);
+  border-color:rgba(227,247,112,0.44);
+  background:rgba(227,247,112,0.08);
 }
 .hero-footer {
-  margin-top:22px;
-  font-size:18px;
-  color:#0dc6df;
-  font-weight:600;
-  opacity:0.8;
+  margin-top:18px;
+  font-size:17px;
+  color:rgba(227, 247, 112, 0.86);
+  font-weight:500;
+  font-style:italic;
+}
+.hero-accent {
+  color:#e3f770;
+}
+.hero-stats {
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:12px;
+  max-width:760px;
+  margin:0 auto 16px;
+}
+.hero-stat-card {
+  text-align:left;
+  border-radius:12px;
+  border:1px solid rgba(212, 214, 233, 0.18);
+  background:rgba(255,255,255,0.03);
+  padding:12px;
+}
+.hero-stat-label {
+  font-size:11px;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:rgba(235, 236, 244, 0.62);
+}
+.hero-stat-value {
+  margin-top:4px;
+  font-size:26px;
+  font-weight:700;
+  color:#f4f1ea;
 }
 .hero-supporting { margin-top:20px; display:flex; flex-direction:column; gap:10px; }
 .btn-primary {
@@ -219,7 +197,7 @@ body[data-theme="dark"] {
 .saved-prompt .saved-meta { font-size:11px;color:rgba(194,206,241,0.78); }
 .source-panel {
   margin-top:0;padding:10px 12px;border:1px solid rgba(145,164,245,0.2);border-radius:12px;
-  background:rgba(22,32,78,0.4);text-align:left;
+  background:rgba(255,255,255,0.02);text-align:left;
 }
 .source-panel-title { font-size:12px;color:rgba(186,198,237,0.72);margin-bottom:4px; }
 .source-panel-line { font-size:12px;color:rgba(219,227,249,0.86);margin-bottom:4px; }
@@ -244,6 +222,16 @@ body[data-theme="dark"] {
     linear-gradient(180deg, #f5f7ff 0%, #eef2ff 55%, #edf0ff 100%);
 }
 #app.loaded { display:flex; }
+#app.design-inbox-mode > :not(.design-inbox-shell) { display:none !important; }
+.design-inbox-shell { display:none; min-height:100vh; }
+#app.design-inbox-mode .design-inbox-shell { display:block; }
+.design-inbox-frame {
+  width:100%;
+  height:100vh;
+  border:0;
+  display:block;
+  background:#0b0a10;
+}
 #app::before {
   content:'';position:fixed;inset:0;pointer-events:none;
   background:radial-gradient(circle at 50% 20%, rgba(129,140,248,0.08), transparent 55%);
@@ -543,15 +531,10 @@ body[data-theme="dark"] #app {
   .drop-card { padding:0; }
   .hero-title { margin-bottom:12px; }
   .hero-subhead { margin-bottom:20px; }
-  .hero-score-row { grid-template-columns:1fr; gap:14px; margin-bottom:20px; }
-  .hero-score-card { min-height:168px; }
-  .hero-center-arrow { position:static; transform:none; margin:0 auto; width:50px; height:50px; font-size:26px; }
+  .hero-stats { grid-template-columns:1fr; margin-bottom:14px; }
   .btn-primary.hero-primary { padding:12px 12px; font-size:22px; }
   .hero-secondary-row { grid-template-columns:1fr; gap:10px; }
   .hero-secondary { font-size:18px; padding:11px 11px; }
-  .hero-score-label { font-size:16px; }
-  .hero-score-value { font-size:48px; }
-  .hero-score-note { font-size:16px; }
   .hero-footer { font-size:15px; margin-top:16px; }
 }
 @media (min-width:768px) {
@@ -564,33 +547,14 @@ body[data-theme="dark"] #app {
 
 <div id="drop-screen">
   <div class="drop-card">
-    <h1 class="hero-title">Reply or Die</h1>
-    <div class="hero-subhead">Stop ghosting. Start responding.</div>
-    <div class="hero-score-row">
-      <div class="hero-score-card left">
-        <div class="hero-score-emoji" aria-hidden="true">👻</div>
-        <div class="hero-score-label left">YOU RIGHT NOW</div>
-        <div class="hero-score-value left">5</div>
-        <div class="hero-score-note">responsiveness score</div>
-      </div>
-      <div class="hero-center-arrow" aria-hidden="true">➜</div>
-      <div class="hero-score-card right">
-        <div class="hero-score-emoji" aria-hidden="true">🏆</div>
-        <div class="hero-score-label right">YOUR GOAL</div>
-        <div class="hero-score-value right">95</div>
-        <div class="hero-score-note">responsiveness score</div>
-      </div>
-    </div>
-    <div class="hero-actions">
-      <button class="btn-primary hero-primary" onclick="enterDemoInbox()">See Inbox with Demo Data</button>
-      <div class="hero-secondary-row">
-        <button class="hero-secondary" onclick="document.getElementById('file-input').click()">💬 <span>Upload Export File</span></button>
-        <button class="hero-secondary" onclick="openRefreshSetup()">⚡ <span>Set up One-Click Refresh</span></button>
-      </div>
-      <div class="hero-footer">Your friends deserve better than left on read 💬</div>
-    </div>
+    <iframe
+      id="start-design-frame"
+      class="start-design-frame"
+      src="docs/Reply%20or%20Die%20_standalone_.html"
+      title="Reply or Die start design"
+    ></iframe>
     <input type="file" id="file-input" accept=".json" style="display:none">
-    <div class="hero-supporting">
+    <div class="hero-supporting start-design-support">
       <div id="drop-error"></div>
       <div class="source-panel" id="source-panel-drop" style="display:none">
         <div class="source-panel-title" id="source-title-drop">Connected export file</div>
@@ -608,6 +572,15 @@ body[data-theme="dark"] #app {
 </div>
 
 <div id="app">
+  <div class="design-inbox-shell">
+    <iframe
+      id="inbox-design-frame"
+      class="design-inbox-frame"
+      src="docs/Reply%20or%20Die%20_standalone_.html"
+      title="Reply or Die inbox design"
+    ></iframe>
+  </div>
+
   <div class="top-bar">
     <span class="top-bar-brand">Reply or Die</span>
     <div class="top-bar-actions">
@@ -811,6 +784,7 @@ async function init() {
     S.theme=savedTheme==='dark'?'dark':'light';
   } catch(_) { S.theme='light'; }
   applyTheme();
+  wireStartDesignIframe();
   checkSavedData();
   const ds=document.getElementById('drop-screen');
   ds.addEventListener('dragover',e=>{e.preventDefault();ds.classList.add('drag-over');});
@@ -834,6 +808,49 @@ async function init() {
   await initConnectedSource();
   renderSourceUi();
   setRefreshState('idle');
+}
+
+function wireStartDesignIframe(){
+  const frame=document.getElementById('start-design-frame');
+  if(!frame)return;
+  frame.addEventListener('load',()=>{
+    let doc=null;
+    try{doc=frame.contentDocument||frame.contentWindow.document;}catch(_){return;}
+    if(!doc)return;
+
+    const text=(el)=>(el&&el.textContent||'').trim().toLowerCase();
+    const allButtons=Array.from(doc.querySelectorAll('button'));
+
+    const demoBtn=allButtons.find(b=>text(b).includes('see the demo inbox'));
+    if(demoBtn){
+      demoBtn.onclick=(e)=>{e.preventDefault();enterDemoInbox();};
+    }
+
+    const refreshBtn=allButtons.find(b=>text(b).includes('one-click refresh'));
+    if(refreshBtn){
+      refreshBtn.onclick=(e)=>{e.preventDefault();openRefreshSetup();};
+    }
+
+    const uploadBtn=allButtons.find(b=>text(b).includes('upload export file'));
+    if(uploadBtn){
+      uploadBtn.onclick=(e)=>{e.preventDefault();document.getElementById('file-input').click();};
+    }
+
+    const navInbox=doc.querySelector('button[data-nav="inbox"]');
+    if(navInbox){
+      navInbox.onclick=(e)=>{e.preventDefault();enterDemoInbox();};
+    }
+
+    const navScore=doc.querySelector('button[data-nav="score"]');
+    if(navScore){
+      navScore.onclick=(e)=>{e.preventDefault();showDropError('Score redesign is coming next.');};
+    }
+
+    const navSettings=doc.querySelector('button[data-nav="settings"]');
+    if(navSettings){
+      navSettings.onclick=(e)=>{e.preventDefault();showDropError('Settings redesign is coming next.');};
+    }
+  });
 }
 
 function checkSavedData(){
@@ -1218,6 +1235,40 @@ function resetData(){
   document.getElementById('drop-error').style.display='none';
   document.getElementById('file-input').value='';checkSavedData();renderSourceUi();
   setRefreshState('idle');
+}
+
+
+function wireInboxDesignIframe(){
+  const frame=document.getElementById('inbox-design-frame');
+  if(!frame||frame.dataset.wired==='1')return;
+  frame.dataset.wired='1';
+  frame.addEventListener('load',()=>{
+    let doc=null;
+    let win=null;
+    try{
+      win=frame.contentWindow;
+      doc=frame.contentDocument||win.document;
+    }catch(_){return;}
+    if(!doc)return;
+
+    try{
+      if(win&&typeof win.go==='function')win.go('inbox');
+      else{
+        const inboxBtn=doc.querySelector('button[data-nav="inbox"]');
+        if(inboxBtn)inboxBtn.click();
+      }
+    }catch(_){ }
+
+    const landingBtn=doc.querySelector('button[data-nav="landing"]');
+    if(landingBtn){
+      landingBtn.onclick=(e)=>{e.preventDefault();resetData();};
+    }
+
+    const refreshBtn=doc.getElementById('refreshBtn');
+    if(refreshBtn){
+      refreshBtn.onclick=(e)=>{e.preventDefault();refresh();};
+    }
+  });
 }
 
 function setLastUpdatedTimestamp(data){
