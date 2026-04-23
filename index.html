@@ -593,6 +593,8 @@ body[data-theme="dark"] #app {
         <option value="90">Last 3 months</option>
         <option value="">All time</option>
       </select>
+      <button id="upload-btn-app" onclick="openFilePicker()">Upload export file</button>
+      <button id="one-click-refresh-btn-app" onclick="handleOneClickRefresh()">One-Click Refresh</button>
       <span class="last-updated" id="last-updated" style="display:none"></span>
       <button id="refresh-btn-app" class="source-btn-primary" style="display:none" onclick="refresh()">Refresh</button>
       <span class="source-status" id="source-status-app" style="display:none"></span>
@@ -902,6 +904,20 @@ function openRefreshSetup(){
   }
 }
 
+function openFilePicker(){
+  const input=document.getElementById('file-input');
+  if(input)input.click();
+}
+
+function handleOneClickRefresh(){
+  if(S.connectedSource.supported&&S.connectedSource.handle){
+    refresh();
+    return;
+  }
+  resetData();
+  openRefreshSetup();
+}
+
 function loadFile(file){
   document.getElementById('drop-error').style.display='none';
   if(!file.name.endsWith('.json')){
@@ -1004,7 +1020,7 @@ function renderSourceUi(){
     }
   }
   const connectIds=['connect-export-btn-drop'];
-  const refreshIds=['refresh-btn-drop','refresh-btn-app'];
+  const refreshIds=['refresh-btn-drop'];
   const changeIds=['change-source-btn-drop'];
   connectIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=(supported&&!connected)?'inline-block':'none';});
   refreshIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=(supported&&connected)?'inline-block':'none';});

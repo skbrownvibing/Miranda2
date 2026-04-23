@@ -2,6 +2,12 @@
 
 ## Current development cycle
 
+### 2026-04-23 — Inbox top-bar upload + one-click refresh actions restored
+- Added **Upload export file** and **One-Click Refresh** buttons back to the loaded Inbox top bar using the existing app button styling.
+- Wired **Upload export file** to the existing JSON picker/import flow.
+- Wired **One-Click Refresh** to run refresh immediately when a source is connected; otherwise it now returns to Home and opens the one-click setup panel.
+- Kept underlying local-first import, refresh, and scoring logic unchanged.
+
 ### 2026-04-23 — Inbox functional mode restored to preserve AI Suggested Reply
 - Restored the loaded inbox to use the original functional app view (instead of the embedded standalone inbox) so existing thread actions and **AI Suggested Reply** behavior continue to work as before.
 - Kept the standalone Start screen rendering unchanged.
