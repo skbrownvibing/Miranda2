@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-04-23 — Restored known-good ingestion behavior (upload + one-click refresh)
+- Restored one-click refresh controls and wiring on both Home/source panel and loaded inbox header.
+- Restored standalone Start/Inbox bridge handlers so **One-click refresh** again opens setup/refresh flow instead of being hidden.
+- Kept the upload import path unchanged (`Upload Export File` → `loadFile` → `loadData` + local save).
+
 ### 2026-04-23 — Ingestion flow simplified to upload-only in UI
 - Kept **Upload Export File** as the single visible ingestion path on the start screen.
 - Hid one-click refresh controls and refresh setup entry points from both start/inbox rendered designs to avoid exposing a flaky path.

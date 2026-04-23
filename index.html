@@ -561,6 +561,7 @@ body[data-theme="dark"] #app {
         <div class="source-panel-line" id="source-name-drop"></div>
         <div class="source-panel-actions">
           <button class="btn-primary" id="connect-export-btn-drop" onclick="connectExportFile()">Connect export file</button>
+          <button class="btn-primary" id="refresh-btn-drop" onclick="refresh()" style="display:none">Refresh</button>
           <button class="btn-secondary" id="change-source-btn-drop" onclick="changeSource()">Change source</button>
         </div>
         <div class="source-status" id="source-status-drop" style="display:none"></div>
@@ -593,6 +594,7 @@ body[data-theme="dark"] #app {
         <option value="">All time</option>
       </select>
       <span class="last-updated" id="last-updated" style="display:none"></span>
+      <button id="refresh-btn-app" class="source-btn-primary" style="display:none" onclick="refresh()">Refresh</button>
       <span class="source-status" id="source-status-app" style="display:none"></span>
       <span class="source-error" id="source-error-app" style="display:none"></span>
       <button onclick="resetData()">Home</button>
@@ -826,7 +828,7 @@ function wireStartDesignIframe(){
 
     const refreshBtn=allButtons.find(b=>text(b).includes('one-click refresh'));
     if(refreshBtn){
-      refreshBtn.style.display='none';
+      refreshBtn.onclick=(e)=>{e.preventDefault();openRefreshSetup();};
     }
 
     const uploadBtn=allButtons.find(b=>text(b).includes('upload export file'));
@@ -988,20 +990,24 @@ function renderSourceUi(){
       return;
     }
     if(!supported){
-      sourceTitle.textContent='Upload export file';
-      sourceName.textContent='Use Upload Export File to load your latest JSON export.';
+      sourceTitle.textContent='Connected export file';
+      sourceName.textContent=S.connectedSource.supportReason||'One-click refresh is unavailable in this browser or page context.';
     }else if(!connected){
-      sourceTitle.textContent='Upload export file';
-      sourceName.textContent='Choose your exported JSON file to load data.';
+      sourceTitle.textContent='Connected export file';
+      sourceName.textContent=S.connectedSource.canPersist
+        ? 'Connect once, then use Refresh.'
+        : 'Connect file for this session, then use Refresh.';
     }else{
       const nameText=`Connected file: ${S.connectedSource.fileName||'miranda2_messages.json'}`;
-      sourceTitle.textContent='Upload export file';
+      sourceTitle.textContent='Connected export file';
       sourceName.textContent=nameText;
     }
   }
   const connectIds=['connect-export-btn-drop'];
+  const refreshIds=['refresh-btn-drop','refresh-btn-app'];
   const changeIds=['change-source-btn-drop'];
   connectIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=(supported&&!connected)?'inline-block':'none';});
+  refreshIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=(supported&&connected)?'inline-block':'none';});
   changeIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=(supported&&connected)?'inline-block':'none';});
 }
 
@@ -1284,7 +1290,9 @@ function wireInboxDesignIframe(){
     }
 
     const refreshBtn=doc.getElementById('refreshBtn');
-    if(refreshBtn)refreshBtn.style.display='none';
+    if(refreshBtn){
+      refreshBtn.onclick=(e)=>{e.preventDefault();refresh();};
+    }
   };
   if(frame.dataset.wired!=='1'){
     frame.dataset.wired='1';
