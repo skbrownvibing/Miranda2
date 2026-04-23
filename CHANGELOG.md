@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-04-23 — Redesign CTA relink fix (upload + one-click refresh wiring)
+- Fixed redesign button relinking so start-screen CTA wiring always attaches in the embedded standalone design (including when the iframe document is already loaded).
+- Hardened one-click-refresh CTA detection to keep setup wiring attached across minor copy variations.
+- Fixed inbox redesign refresh wiring by simplifying iframe load wiring so the standalone Inbox refresh button reliably calls the existing app refresh flow.
+
 ### 2026-04-23 — Inbox redesign sync fix (loaded view now uses standalone Inbox)
 - Fixed inbox entry wiring so loaded data consistently enables `design-inbox-mode` and renders the standalone Inbox shell.
 - Updated `resetData()` to always clear `design-inbox-mode` when returning Home.
