@@ -1200,8 +1200,6 @@ function loadData(data,save){
   reconcileDismissedState();
   document.getElementById('drop-screen').style.display='none';
   document.getElementById('app').classList.add('loaded');
-  document.getElementById('app').classList.add('design-inbox-mode');
-  wireInboxDesignIframe();
   if(save){try{localStorage.setItem(DATA_KEY,JSON.stringify(data));
     localStorage.setItem(META_KEY,JSON.stringify({savedAt:new Date().toISOString(),count:S.conversations.length}));}catch(_){}}
   setLastUpdatedTimestamp(data);
@@ -1232,7 +1230,6 @@ function timeShiftBundledDemoData(data){
 function resetData(){
   S.conversations=[];S.selectedId=null;S.newIds.clear();
   clearLastUpdatedTimestamp();
-  document.getElementById('app').classList.remove('design-inbox-mode');
   document.getElementById('app').classList.remove('loaded');
   document.getElementById('drop-screen').style.display='flex';
   document.getElementById('drop-error').style.display='none';

@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-04-23 — Inbox functional mode restored to preserve AI Suggested Reply
+- Restored the loaded inbox to use the original functional app view (instead of the embedded standalone inbox) so existing thread actions and **AI Suggested Reply** behavior continue to work as before.
+- Kept the standalone Start screen rendering unchanged.
+- Kept inbox visual-parity scaffolding in code but inactive for now, so design iteration can continue without regressing core behavior.
+
 ### 2026-04-23 — Inbox now mirrors the provided standalone design (phase 2)
 - Updated the loaded inbox view to render the same provided standalone design so Start and Inbox now share exact visual parity with the reference.
 - Added a lightweight bridge for embedded inbox actions: Inbox screen is selected by default, landing/start returns to Home, and refresh triggers the existing app refresh flow.
