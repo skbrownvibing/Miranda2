@@ -2,6 +2,10 @@
 
 ## Current development cycle
 
+### 2026-04-23 — Start CTA now opens file picker directly
+- Updated the consolidated **Upload your text inbox** start CTA to open the system file picker immediately, instead of first showing the connected-source setup panel.
+- This removes the extra purple **Connect export file** click from the primary upload path.
+
 ### 2026-04-23 — Start CTA consolidation (single “Upload your text inbox” path)
 - Consolidated redesigned start CTAs to one primary path by relabeling the one-click-refresh CTA to **Upload your text inbox** while keeping the existing one-click setup behavior behind it.
 - Hid the separate **Upload export file** CTA in the embedded standalone start view to reduce duplicated entry points.

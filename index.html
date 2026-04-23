@@ -833,7 +833,7 @@ function wireStartDesignIframe(){
     if(refreshBtn){
       const label=refreshBtn.querySelector('span');
       if(label)label.textContent='Upload your text inbox';
-      refreshBtn.onclick=(e)=>{e.preventDefault();openRefreshSetup();};
+      refreshBtn.onclick=(e)=>{e.preventDefault();document.getElementById('file-input').click();};
     }
 
     const uploadBtn=allButtons.find(b=>text(b).includes('upload export file'));
