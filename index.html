@@ -594,6 +594,7 @@ body[data-theme="dark"] #app {
         <option value="">All time</option>
       </select>
       <span class="last-updated" id="last-updated" style="display:none"></span>
+      <span class="last-updated" id="data-status-debug" style="display:none;opacity:.75"></span>
       <button id="refresh-btn-app" class="source-btn-primary" style="display:none" onclick="refresh()">Refresh</button>
       <span class="source-status" id="source-status-app" style="display:none"></span>
       <span class="source-error" id="source-error-app" style="display:none"></span>
@@ -803,6 +804,8 @@ async function init() {
           count:(demoData.conversations||[]).length,
           sourceType:'demo'
         }));
+        S.dataSourceKind='demo';
+        debugDataStatus('demo preload',demoData);
         checkSavedData();
       }
     }catch(_){}
@@ -869,7 +872,10 @@ function timeSince(d){const ms=Date.now()-new Date(d).getTime(),m=Math.floor(ms/
   if(h<24)return h+'h ago';return Math.floor(h/24)+'d ago';}
 
 function loadSavedData(){try{const r=localStorage.getItem(DATA_KEY);if(!r)return;
-  S.newIds.clear();loadData(JSON.parse(r),false,getSavedSourceKind());}catch(ex){showDropError('Could not load: '+ex.message);}}
+  const parsed=JSON.parse(r);
+  S.dataSourceKind=getSavedSourceKind();
+  debugDataStatus('load saved data',parsed);
+  S.newIds.clear();loadData(parsed,false,getSavedSourceKind());}catch(ex){showDropError('Could not load: '+ex.message);}}
 
 async function enterDemoInbox(){
   try{
@@ -888,6 +894,8 @@ async function enterDemoInbox(){
       count:(demoData.conversations||[]).length,
       sourceType:'demo'
     }));
+    S.dataSourceKind='demo';
+    debugDataStatus('enter demo',demoData);
     checkSavedData();
     S.newIds.clear();
     loadData(demoData,false,'demo');
@@ -919,6 +927,8 @@ function loadFile(file){
       try{
         const data=JSON.parse(e.target.result);
         if(!data.conversations)throw new Error('Missing "conversations" key.');
+        S.dataSourceKind='local_file';
+        debugDataStatus('import local file',data);
         diffNew(data);
         loadData(data,true,'local_file');
         resolve(data);
@@ -1200,6 +1210,7 @@ async function changeSource(){
 function loadData(data,save,sourceKind){
   S.conversations=data.conversations||[];S.selectedId=null;
   S.dataSourceKind=sourceKind||getSavedSourceKind();
+  debugDataStatus('loadData()',data);
   recategorize();
   reconcileDismissedState();
   document.getElementById('drop-screen').style.display='none';
@@ -1387,6 +1398,36 @@ function getDataStatusLabel(){
   return 'Local file';
 }
 
+function getMetaSourceType(){
+  try{
+    const m=JSON.parse(localStorage.getItem(META_KEY));
+    return (m&&m.sourceType)||'n/a';
+  }catch(_){}
+  return 'n/a';
+}
+
+function debugDataStatus(pathLabel,data){
+  try{
+    console.log('[DATA STATUS DEBUG]',{
+      path:pathLabel,
+      dataSourceKind:S.dataSourceKind,
+      metaSourceType:getMetaSourceType(),
+      exportedAt:(data&&data.exported_at)||null,
+      label:getDataStatusLabel()
+    });
+  }catch(_){}
+}
+
+function renderDataStatusDebugLine(){
+  const text=`DEBUG source: ${S.dataSourceKind} / meta: ${getMetaSourceType()}`;
+  const appDebug=document.getElementById('data-status-debug');
+  if(appDebug){
+    appDebug.textContent=text;
+    appDebug.style.display='inline';
+  }
+  return text;
+}
+
 function renderDesignInboxStatus(){
   const frame=document.getElementById('inbox-design-frame');
   if(!frame)return;
@@ -1395,6 +1436,19 @@ function renderDesignInboxStatus(){
   if(!doc)return;
   const el=doc.getElementById('syncAgo');
   if(el)el.textContent=getDataStatusLabel();
+  const debugText=renderDataStatusDebugLine();
+  const host=el&&el.parentElement?el.parentElement:null;
+  if(host){
+    let debugEl=doc.getElementById('syncAgo-debug');
+    if(!debugEl){
+      debugEl=doc.createElement('span');
+      debugEl.id='syncAgo-debug';
+      debugEl.style.opacity='0.75';
+      host.appendChild(debugEl);
+    }
+    debugEl.textContent=` · ${debugText}`;
+  }
+  debugDataStatus('renderDesignInboxStatus');
 }
 
 // ── Recategorize ─────────────────────────────────────────────────────────────
