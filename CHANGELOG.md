@@ -2,6 +2,8 @@
 
 ## Current development cycle
 
+## Current development cycle
+
 ### 2026-04-23 — Start CTA now opens file picker directly
 - Updated the consolidated **Upload your text inbox** start CTA to open the system file picker immediately, instead of first showing the connected-source setup panel.
 - This removes the extra purple **Connect export file** click from the primary upload path.
@@ -11,9 +13,13 @@
 - Hid the separate **Upload export file** CTA in the embedded standalone start view to reduce duplicated entry points.
 
 ### 2026-04-23 — Redesign CTA relink fix (upload + one-click refresh wiring)
-- Fixed redesign button relinking so start-screen CTA wiring always attaches in the embedded standalone design (including when the iframe document is already loaded).
+- Fixed redesign button relinking so start-screen CTA wiring always attaches in the embedded standalone design, including when the iframe document is already loaded.
 - Hardened one-click-refresh CTA detection to keep setup wiring attached across minor copy variations.
 - Fixed inbox redesign refresh wiring by simplifying iframe load wiring so the standalone Inbox refresh button reliably calls the existing app refresh flow.
+
+### 2026-04-23 — Demo mode status label no longer implies live local sync
+- Updated the standalone top-right status copy to default to **Demo data** instead of **Local · synced …** when no real export is loaded.
+- Updated standalone refresh behavior to no-op in demo state so it no longer spins or claims a fresh sync timestamp for bundled demo content.
 
 ### 2026-04-23 — Inbox redesign sync fix (loaded view now uses standalone Inbox)
 - Fixed inbox entry wiring so loaded data consistently enables `design-inbox-mode` and renders the standalone Inbox shell.
