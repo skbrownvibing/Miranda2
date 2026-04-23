@@ -40,32 +40,41 @@ body[data-theme="dark"] {
 
 /* ── Drop screen ──────────────────────────────────────────── */
 #drop-screen {
-  display:flex;align-items:flex-start;justify-content:center;min-height:100vh;
-  padding:48px 20px 34px;
-  background:
-    radial-gradient(900px 520px at 50% -12%, rgba(70, 92, 255, 0.18), transparent 60%),
-    radial-gradient(840px 440px at 50% 115%, rgba(201, 236, 87, 0.11), transparent 60%),
-    #0b0a10;
-  position:relative;overflow-x:hidden;overflow-y:auto;
+  display:flex;
+  align-items:stretch;
+  justify-content:center;
+  min-height:100vh;
+  padding:0;
+  background:#0b0a10;
+  position:relative;
+  overflow:hidden;
 }
 #drop-screen::before {
-  content:'';
-  position:absolute;
-  left:50%;
-  top:36%;
-  width:min(1100px,92vw);
-  height:min(760px,76vh);
-  transform:translate(-50%,-50%);
-  background:
-    radial-gradient(circle at 50% 42%, rgba(227, 247, 112, 0.16) 0%, rgba(227, 247, 112, 0.06) 36%, transparent 65%),
-    radial-gradient(circle at 60% 24%, rgba(130, 114, 255, 0.12) 0%, transparent 58%);
-  filter:blur(20px);
-  pointer-events:none;
+  display:none;
 }
 #drop-screen.drag-over { filter:saturate(1.08); }
 .drop-card {
-  max-width:980px;width:100%;position:relative;z-index:1;text-align:center;
-  padding:8px;
+  width:100%;
+  min-height:100vh;
+  position:relative;
+}
+.start-design-frame {
+  width:100%;
+  height:100vh;
+  border:0;
+  display:block;
+  background:#0b0a10;
+}
+.start-design-support {
+  position:fixed;
+  left:12px;
+  right:12px;
+  bottom:12px;
+  z-index:50;
+  pointer-events:none;
+}
+.start-design-support > * {
+  pointer-events:auto;
 }
 .hero-title {
   font-family: 'Times New Roman', Georgia, serif;
@@ -528,28 +537,14 @@ body[data-theme="dark"] #app {
 
 <div id="drop-screen">
   <div class="drop-card">
-    <h1 class="hero-title">Reply <span class="hero-accent">or die.</span></h1>
-    <div class="hero-subhead">Local-first text accountability for people who keep saying<br>“I’ll reply in a minute.”</div>
-    <div class="hero-stats" aria-hidden="true">
-      <div class="hero-stat-card">
-        <div class="hero-stat-label">Current mode</div>
-        <div class="hero-stat-value">Start screen redesign</div>
-      </div>
-      <div class="hero-stat-card">
-        <div class="hero-stat-label">Next</div>
-        <div class="hero-stat-value">Inbox redesign</div>
-      </div>
-    </div>
-    <div class="hero-actions">
-      <button class="btn-primary hero-primary" onclick="enterDemoInbox()">See Inbox with Demo Data</button>
-      <div class="hero-secondary-row">
-        <button class="hero-secondary" onclick="document.getElementById('file-input').click()">💬 <span>Upload Export File</span></button>
-        <button class="hero-secondary" onclick="openRefreshSetup()">⚡ <span>Set up One-Click Refresh</span></button>
-      </div>
-      <div class="hero-footer">Your friends deserve better than left on read 💬</div>
-    </div>
+    <iframe
+      id="start-design-frame"
+      class="start-design-frame"
+      src="docs/Reply%20or%20Die%20_standalone_.html"
+      title="Reply or Die start design"
+    ></iframe>
     <input type="file" id="file-input" accept=".json" style="display:none">
-    <div class="hero-supporting">
+    <div class="hero-supporting start-design-support">
       <div id="drop-error"></div>
       <div class="source-panel" id="source-panel-drop" style="display:none">
         <div class="source-panel-title" id="source-title-drop">Connected export file</div>
@@ -770,6 +765,7 @@ async function init() {
     S.theme=savedTheme==='dark'?'dark':'light';
   } catch(_) { S.theme='light'; }
   applyTheme();
+  wireStartDesignIframe();
   checkSavedData();
   const ds=document.getElementById('drop-screen');
   ds.addEventListener('dragover',e=>{e.preventDefault();ds.classList.add('drag-over');});
@@ -793,6 +789,49 @@ async function init() {
   await initConnectedSource();
   renderSourceUi();
   setRefreshState('idle');
+}
+
+function wireStartDesignIframe(){
+  const frame=document.getElementById('start-design-frame');
+  if(!frame)return;
+  frame.addEventListener('load',()=>{
+    let doc=null;
+    try{doc=frame.contentDocument||frame.contentWindow.document;}catch(_){return;}
+    if(!doc)return;
+
+    const text=(el)=>(el&&el.textContent||'').trim().toLowerCase();
+    const allButtons=Array.from(doc.querySelectorAll('button'));
+
+    const demoBtn=allButtons.find(b=>text(b).includes('see the demo inbox'));
+    if(demoBtn){
+      demoBtn.onclick=(e)=>{e.preventDefault();enterDemoInbox();};
+    }
+
+    const refreshBtn=allButtons.find(b=>text(b).includes('one-click refresh'));
+    if(refreshBtn){
+      refreshBtn.onclick=(e)=>{e.preventDefault();openRefreshSetup();};
+    }
+
+    const uploadBtn=allButtons.find(b=>text(b).includes('upload export file'));
+    if(uploadBtn){
+      uploadBtn.onclick=(e)=>{e.preventDefault();document.getElementById('file-input').click();};
+    }
+
+    const navInbox=doc.querySelector('button[data-nav="inbox"]');
+    if(navInbox){
+      navInbox.onclick=(e)=>{e.preventDefault();enterDemoInbox();};
+    }
+
+    const navScore=doc.querySelector('button[data-nav="score"]');
+    if(navScore){
+      navScore.onclick=(e)=>{e.preventDefault();showDropError('Score redesign is coming next.');};
+    }
+
+    const navSettings=doc.querySelector('button[data-nav="settings"]');
+    if(navSettings){
+      navSettings.onclick=(e)=>{e.preventDefault();showDropError('Settings redesign is coming next.');};
+    }
+  });
 }
 
 function checkSavedData(){

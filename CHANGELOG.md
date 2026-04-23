@@ -2,10 +2,10 @@
 
 ## Current development cycle
 
-### 2026-04-23 — Start screen redesign pass (phase 1 of new Reply or Die design)
-- Fully redesigned the Home/start screen visual system to match the new editorial Reply or Die direction (darker canvas, serif headline treatment, lime primary accent, and cleaner hierarchy).
-- Replaced the previous score-card hero on the start screen with a simpler launch-focused composition while keeping core entry actions intact.
-- Preserved existing start-screen behavior and wiring: **See Inbox with Demo Data**, **Upload Export File**, and **Set up One-Click Refresh** continue using the same logic and handlers.
+### 2026-04-23 — Start screen now mirrors the provided standalone design exactly
+- Switched the Home/start screen rendering to the provided `docs/Reply or Die _standalone_.html` design so the visual output matches the supplied reference page.
+- Added a small bridge that maps the standalone design’s start-screen actions to existing app behavior: demo inbox entry, export-file upload, and refresh/setup entry path.
+- Kept the core product logic unchanged; this change is strictly about rendering the supplied start design and preserving existing action wiring.
 
 ### 2026-04-17 — Top hero compacted vertically to surface Action needed sooner
 - Reduced top hero vertical footprint by tightening score-section padding, internal gaps, and score-history spacing.
