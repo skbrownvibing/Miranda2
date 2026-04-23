@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-04-23 — Inbox redesign sync fix (loaded view now uses standalone Inbox)
+- Fixed inbox entry wiring so loaded data consistently enables `design-inbox-mode` and renders the standalone Inbox shell.
+- Updated `resetData()` to always clear `design-inbox-mode` when returning Home.
+- Hardened standalone Inbox activation by persisting `rod_screen='inbox'` and retrying Inbox-screen selection until the embedded design script is ready.
+
 ### 2026-04-23 — Inbox functional mode restored to preserve AI Suggested Reply
 - Restored the loaded inbox to use the original functional app view (instead of the embedded standalone inbox) so existing thread actions and **AI Suggested Reply** behavior continue to work as before.
 - Kept the standalone Start screen rendering unchanged.
