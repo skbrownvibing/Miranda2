@@ -813,7 +813,7 @@ async function init() {
 function wireStartDesignIframe(){
   const frame=document.getElementById('start-design-frame');
   if(!frame)return;
-  frame.addEventListener('load',()=>{
+  const wire=()=>{
     let doc=null;
     try{doc=frame.contentDocument||frame.contentWindow.document;}catch(_){return;}
     if(!doc)return;
@@ -826,14 +826,19 @@ function wireStartDesignIframe(){
       demoBtn.onclick=(e)=>{e.preventDefault();enterDemoInbox();};
     }
 
-    const refreshBtn=allButtons.find(b=>text(b).includes('one-click refresh'));
+    const refreshBtn=allButtons.find(b=>{
+      const t=text(b);
+      return t.includes('one-click refresh')||t.includes('set up refresh');
+    });
     if(refreshBtn){
-      refreshBtn.onclick=(e)=>{e.preventDefault();openRefreshSetup();};
+      const label=refreshBtn.querySelector('span');
+      if(label)label.textContent='Upload your text inbox';
+      refreshBtn.onclick=(e)=>{e.preventDefault();document.getElementById('file-input').click();};
     }
 
     const uploadBtn=allButtons.find(b=>text(b).includes('upload export file'));
     if(uploadBtn){
-      uploadBtn.onclick=(e)=>{e.preventDefault();document.getElementById('file-input').click();};
+      uploadBtn.style.display='none';
     }
 
     const navInbox=doc.querySelector('button[data-nav="inbox"]');
@@ -850,7 +855,9 @@ function wireStartDesignIframe(){
     if(navSettings){
       navSettings.onclick=(e)=>{e.preventDefault();showDropError('Settings redesign is coming next.');};
     }
-  });
+  };
+  frame.addEventListener('load',wire);
+  if(frame.contentDocument?.readyState==='complete')wire();
 }
 
 function checkSavedData(){
@@ -1245,10 +1252,7 @@ function resetData(){
 function wireInboxDesignIframe(){
   const frame=document.getElementById('inbox-design-frame');
   if(!frame)return;
-  const apply=()=>{
-  if(!frame||frame.dataset.wired==='1')return;
-  frame.dataset.wired='1';
-  frame.addEventListener('load',()=>{
+  const wire=()=>{
     let doc=null;
     let win=null;
     try{
@@ -1294,12 +1298,8 @@ function wireInboxDesignIframe(){
       refreshBtn.onclick=(e)=>{e.preventDefault();refresh();};
     }
   };
-  if(frame.dataset.wired!=='1'){
-    frame.dataset.wired='1';
-    frame.addEventListener('load',apply);
-  }
-  if(frame.contentDocument?.readyState==='complete')apply();
-  });
+  frame.addEventListener('load',wire);
+  if(frame.contentDocument?.readyState==='complete')wire();
 }
 
 function setLastUpdatedTimestamp(data){
