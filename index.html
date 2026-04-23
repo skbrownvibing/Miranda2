@@ -1246,6 +1246,9 @@ function wireInboxDesignIframe(){
   const frame=document.getElementById('inbox-design-frame');
   if(!frame)return;
   const apply=()=>{
+  if(!frame||frame.dataset.wired==='1')return;
+  frame.dataset.wired='1';
+  frame.addEventListener('load',()=>{
     let doc=null;
     let win=null;
     try{
@@ -1273,6 +1276,13 @@ function wireInboxDesignIframe(){
       }catch(_){}
       if(tries>40)clearInterval(timer);
     },50);
+    try{
+      if(win&&typeof win.go==='function')win.go('inbox');
+      else{
+        const inboxBtn=doc.querySelector('button[data-nav="inbox"]');
+        if(inboxBtn)inboxBtn.click();
+      }
+    }catch(_){ }
 
     const landingBtn=doc.querySelector('button[data-nav="landing"]');
     if(landingBtn){
@@ -1289,6 +1299,7 @@ function wireInboxDesignIframe(){
     frame.addEventListener('load',apply);
   }
   if(frame.contentDocument?.readyState==='complete')apply();
+  });
 }
 
 function setLastUpdatedTimestamp(data){
