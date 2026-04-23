@@ -2,6 +2,10 @@
 
 ## Current development cycle
 
+### 2026-04-23 — Demo/source status label fix
+- Fixed source-kind resolution for loaded datasets so seeded demo data reliably renders **Demo data** (never **Local file**) in the upper-right status label.
+- Added a small demo-data fallback signature check to correctly classify legacy saved demo payloads when metadata is missing or stale.
+
 ### 2026-04-23 — Data status label now reflects true local data state
 - Replaced freshness/sync-style header status copy with explicit local source labels only.
 - Demo/sample datasets now show **Demo data**.

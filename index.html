@@ -594,7 +594,6 @@ body[data-theme="dark"] #app {
         <option value="">All time</option>
       </select>
       <span class="last-updated" id="last-updated" style="display:none"></span>
-      <span class="last-updated" id="data-status-debug" style="display:none;opacity:.75"></span>
       <button id="refresh-btn-app" class="source-btn-primary" style="display:none" onclick="refresh()">Refresh</button>
       <span class="source-status" id="source-status-app" style="display:none"></span>
       <span class="source-error" id="source-error-app" style="display:none"></span>
@@ -804,8 +803,6 @@ async function init() {
           count:(demoData.conversations||[]).length,
           sourceType:'demo'
         }));
-        S.dataSourceKind='demo';
-        debugDataStatus('demo preload',demoData);
         checkSavedData();
       }
     }catch(_){}
@@ -873,8 +870,6 @@ function timeSince(d){const ms=Date.now()-new Date(d).getTime(),m=Math.floor(ms/
 
 function loadSavedData(){try{const r=localStorage.getItem(DATA_KEY);if(!r)return;
   const parsed=JSON.parse(r);
-  S.dataSourceKind=getSavedSourceKind();
-  debugDataStatus('load saved data',parsed);
   S.newIds.clear();loadData(parsed,false,getSavedSourceKind());}catch(ex){showDropError('Could not load: '+ex.message);}}
 
 async function enterDemoInbox(){
@@ -894,8 +889,6 @@ async function enterDemoInbox(){
       count:(demoData.conversations||[]).length,
       sourceType:'demo'
     }));
-    S.dataSourceKind='demo';
-    debugDataStatus('enter demo',demoData);
     checkSavedData();
     S.newIds.clear();
     loadData(demoData,false,'demo');
@@ -927,8 +920,6 @@ function loadFile(file){
       try{
         const data=JSON.parse(e.target.result);
         if(!data.conversations)throw new Error('Missing "conversations" key.');
-        S.dataSourceKind='local_file';
-        debugDataStatus('import local file',data);
         diffNew(data);
         loadData(data,true,'local_file');
         resolve(data);
@@ -1209,8 +1200,7 @@ async function changeSource(){
 
 function loadData(data,save,sourceKind){
   S.conversations=data.conversations||[];S.selectedId=null;
-  S.dataSourceKind=sourceKind||getSavedSourceKind();
-  debugDataStatus('loadData()',data);
+  S.dataSourceKind=resolveDataSourceKind(data,sourceKind);
   recategorize();
   reconcileDismissedState();
   document.getElementById('drop-screen').style.display='none';
@@ -1237,6 +1227,7 @@ function timeShiftBundledDemoData(data){
     return new Date(ms+deltaMs).toISOString();
   };
   cloned.exported_at=shiftIso(cloned.exported_at);
+  cloned.__miranda_source='demo';
   (cloned.conversations||[]).forEach(c=>{
     c.last_message_at=shiftIso(c.last_message_at);
     c.latest_inbound_at=shiftIso(c.latest_inbound_at);
@@ -1390,42 +1381,32 @@ function getSavedSourceKind(){
   return 'local_file';
 }
 
+function looksLikeBundledDemoData(data){
+  const ids=new Set((data&&data.conversations||[]).map(c=>String(c.id||'')));
+  const required=[
+    'iMessage;-;+12125550101',
+    'iMessage;-;+12125550102',
+    'iMessage;-;+12125550103',
+    'iMessage;-;+12125550104',
+    'iMessage;-;+12125550105'
+  ];
+  return required.every(id=>ids.has(id));
+}
+
+function resolveDataSourceKind(data,hintKind){
+  if(hintKind==='demo'||hintKind==='local_file')return hintKind;
+  if(data&&data.__miranda_source==='demo')return'demo';
+  if(getSavedSourceKind()==='demo')return'demo';
+  if(looksLikeBundledDemoData(data))return'demo';
+  return'local_file';
+}
+
 function getDataStatusLabel(){
   if(S.dataSourceKind==='demo')return'Demo data';
   if(S.exportTimestamp){
     return `Local file • updated ${relativeLastUpdated(S.exportTimestamp)}`;
   }
   return 'Local file';
-}
-
-function getMetaSourceType(){
-  try{
-    const m=JSON.parse(localStorage.getItem(META_KEY));
-    return (m&&m.sourceType)||'n/a';
-  }catch(_){}
-  return 'n/a';
-}
-
-function debugDataStatus(pathLabel,data){
-  try{
-    console.log('[DATA STATUS DEBUG]',{
-      path:pathLabel,
-      dataSourceKind:S.dataSourceKind,
-      metaSourceType:getMetaSourceType(),
-      exportedAt:(data&&data.exported_at)||null,
-      label:getDataStatusLabel()
-    });
-  }catch(_){}
-}
-
-function renderDataStatusDebugLine(){
-  const text=`DEBUG source: ${S.dataSourceKind} / meta: ${getMetaSourceType()}`;
-  const appDebug=document.getElementById('data-status-debug');
-  if(appDebug){
-    appDebug.textContent=text;
-    appDebug.style.display='inline';
-  }
-  return text;
 }
 
 function renderDesignInboxStatus(){
@@ -1436,19 +1417,6 @@ function renderDesignInboxStatus(){
   if(!doc)return;
   const el=doc.getElementById('syncAgo');
   if(el)el.textContent=getDataStatusLabel();
-  const debugText=renderDataStatusDebugLine();
-  const host=el&&el.parentElement?el.parentElement:null;
-  if(host){
-    let debugEl=doc.getElementById('syncAgo-debug');
-    if(!debugEl){
-      debugEl=doc.createElement('span');
-      debugEl.id='syncAgo-debug';
-      debugEl.style.opacity='0.75';
-      host.appendChild(debugEl);
-    }
-    debugEl.textContent=` · ${debugText}`;
-  }
-  debugDataStatus('renderDesignInboxStatus');
 }
 
 // ── Recategorize ─────────────────────────────────────────────────────────────
