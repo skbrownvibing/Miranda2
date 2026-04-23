@@ -222,6 +222,16 @@ body[data-theme="dark"] {
     linear-gradient(180deg, #f5f7ff 0%, #eef2ff 55%, #edf0ff 100%);
 }
 #app.loaded { display:flex; }
+#app.design-inbox-mode > :not(.design-inbox-shell) { display:none !important; }
+.design-inbox-shell { display:none; min-height:100vh; }
+#app.design-inbox-mode .design-inbox-shell { display:block; }
+.design-inbox-frame {
+  width:100%;
+  height:100vh;
+  border:0;
+  display:block;
+  background:#0b0a10;
+}
 #app::before {
   content:'';position:fixed;inset:0;pointer-events:none;
   background:radial-gradient(circle at 50% 20%, rgba(129,140,248,0.08), transparent 55%);
@@ -562,6 +572,15 @@ body[data-theme="dark"] #app {
 </div>
 
 <div id="app">
+  <div class="design-inbox-shell">
+    <iframe
+      id="inbox-design-frame"
+      class="design-inbox-frame"
+      src="docs/Reply%20or%20Die%20_standalone_.html"
+      title="Reply or Die inbox design"
+    ></iframe>
+  </div>
+
   <div class="top-bar">
     <span class="top-bar-brand">Reply or Die</span>
     <div class="top-bar-actions">
@@ -1181,6 +1200,8 @@ function loadData(data,save){
   reconcileDismissedState();
   document.getElementById('drop-screen').style.display='none';
   document.getElementById('app').classList.add('loaded');
+  document.getElementById('app').classList.add('design-inbox-mode');
+  wireInboxDesignIframe();
   if(save){try{localStorage.setItem(DATA_KEY,JSON.stringify(data));
     localStorage.setItem(META_KEY,JSON.stringify({savedAt:new Date().toISOString(),count:S.conversations.length}));}catch(_){}}
   setLastUpdatedTimestamp(data);
@@ -1211,11 +1232,46 @@ function timeShiftBundledDemoData(data){
 function resetData(){
   S.conversations=[];S.selectedId=null;S.newIds.clear();
   clearLastUpdatedTimestamp();
+  document.getElementById('app').classList.remove('design-inbox-mode');
   document.getElementById('app').classList.remove('loaded');
   document.getElementById('drop-screen').style.display='flex';
   document.getElementById('drop-error').style.display='none';
   document.getElementById('file-input').value='';checkSavedData();renderSourceUi();
   setRefreshState('idle');
+}
+
+
+function wireInboxDesignIframe(){
+  const frame=document.getElementById('inbox-design-frame');
+  if(!frame||frame.dataset.wired==='1')return;
+  frame.dataset.wired='1';
+  frame.addEventListener('load',()=>{
+    let doc=null;
+    let win=null;
+    try{
+      win=frame.contentWindow;
+      doc=frame.contentDocument||win.document;
+    }catch(_){return;}
+    if(!doc)return;
+
+    try{
+      if(win&&typeof win.go==='function')win.go('inbox');
+      else{
+        const inboxBtn=doc.querySelector('button[data-nav="inbox"]');
+        if(inboxBtn)inboxBtn.click();
+      }
+    }catch(_){ }
+
+    const landingBtn=doc.querySelector('button[data-nav="landing"]');
+    if(landingBtn){
+      landingBtn.onclick=(e)=>{e.preventDefault();resetData();};
+    }
+
+    const refreshBtn=doc.getElementById('refreshBtn');
+    if(refreshBtn){
+      refreshBtn.onclick=(e)=>{e.preventDefault();refresh();};
+    }
+  });
 }
 
 function setLastUpdatedTimestamp(data){

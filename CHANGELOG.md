@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-04-23 — Inbox now mirrors the provided standalone design (phase 2)
+- Updated the loaded inbox view to render the same provided standalone design so Start and Inbox now share exact visual parity with the reference.
+- Added a lightweight bridge for embedded inbox actions: Inbox screen is selected by default, landing/start returns to Home, and refresh triggers the existing app refresh flow.
+- Kept underlying local-first data, scoring, and filtering logic unchanged in this pass; this step focuses on visual design parity.
+
 ### 2026-04-23 — Start screen now mirrors the provided standalone design exactly
 - Switched the Home/start screen rendering to the provided `docs/Reply or Die _standalone_.html` design so the visual output matches the supplied reference page.
 - Added a small bridge that maps the standalone design’s start-screen actions to existing app behavior: demo inbox entry, export-file upload, and refresh/setup entry path.
