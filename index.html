@@ -1200,8 +1200,6 @@ function loadData(data,save){
   reconcileDismissedState();
   document.getElementById('drop-screen').style.display='none';
   document.getElementById('app').classList.add('loaded');
-  document.getElementById('app').classList.add('design-inbox-mode');
-  wireInboxDesignIframe();
   try{ localStorage.setItem('rod_screen','inbox'); }catch(_){}
   if(save){try{localStorage.setItem(DATA_KEY,JSON.stringify(data));
     localStorage.setItem(META_KEY,JSON.stringify({savedAt:new Date().toISOString(),count:S.conversations.length}));}catch(_){}}

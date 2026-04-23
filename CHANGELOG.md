@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-04-23 — Inbox redesign now uses native AI Suggested Reply pipeline
+- Kept the inbox redesign shell work in code, but switched loaded inbox behavior back to the native app render path so AI generation is no longer owned by the standalone inbox iframe.
+- Preserved the original AI Suggested Reply flow end-to-end in the main app logic: same `/api/ai-suggest-reply` call path, prompt/few-shot construction, validation/suppression rules, regenerate behavior, and per-thread suggested-reply state handling.
+- Standalone inbox mock AI behavior (canned suggestions/rotation logic) is no longer in the runtime generation path for loaded inbox threads.
+
 ### 2026-04-23 — Inbox redesign sync fix (loaded view now uses standalone Inbox)
 - Fixed inbox entry wiring so loaded data consistently enables `design-inbox-mode` and renders the standalone Inbox shell.
 - Updated `resetData()` to always clear `design-inbox-mode` when returning Home.
