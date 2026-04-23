@@ -4,6 +4,10 @@
 
 ## Current development cycle
 
+### 2026-04-23 — Temporarily hid top settings bar in inbox
+- Hid the loaded-inbox top settings/header bar for now (theme toggle, timeline filter, refresh status/actions, and Home button are no longer shown at the top).
+- This is a visual-only change to reduce top-of-screen UI clutter while keeping underlying inbox logic intact.
+
 ### 2026-04-23 — Start CTA now opens file picker directly
 - Updated the consolidated **Upload your text inbox** start CTA to open the system file picker immediately, instead of first showing the connected-source setup panel.
 - This removes the extra purple **Connect export file** click from the primary upload path.
