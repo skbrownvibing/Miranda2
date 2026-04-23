@@ -2,6 +2,10 @@
 
 ## Current development cycle
 
+### 2026-04-23 — Demo mode sync label no longer implies live local sync
+- Updated the standalone top-right status copy to default to **Demo data** instead of **Local · synced …** when no real export is loaded.
+- Updated standalone refresh behavior to no-op in demo state so it no longer spins or claims a fresh sync timestamp for bundled demo content.
+
 ### 2026-04-23 — Inbox redesign sync fix (loaded view now uses standalone Inbox)
 - Fixed inbox entry wiring so loaded data consistently enables `design-inbox-mode` and renders the standalone Inbox shell.
 - Updated `resetData()` to always clear `design-inbox-mode` when returning Home.
