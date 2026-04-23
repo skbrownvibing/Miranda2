@@ -2,6 +2,10 @@
 
 ## Current development cycle
 
+### 2026-04-23 — Start CTA consolidation (single “Upload your text inbox” path)
+- Consolidated redesigned start CTAs to one primary path by relabeling the one-click-refresh CTA to **Upload your text inbox** while keeping the existing one-click setup behavior behind it.
+- Hid the separate **Upload export file** CTA in the embedded standalone start view to reduce duplicated entry points.
+
 ### 2026-04-23 — Redesign CTA relink fix (upload + one-click refresh wiring)
 - Fixed redesign button relinking so start-screen CTA wiring always attaches in the embedded standalone design (including when the iframe document is already loaded).
 - Hardened one-click-refresh CTA detection to keep setup wiring attached across minor copy variations.

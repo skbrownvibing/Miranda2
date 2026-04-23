@@ -831,12 +831,14 @@ function wireStartDesignIframe(){
       return t.includes('one-click refresh')||t.includes('set up refresh');
     });
     if(refreshBtn){
+      const label=refreshBtn.querySelector('span');
+      if(label)label.textContent='Upload your text inbox';
       refreshBtn.onclick=(e)=>{e.preventDefault();openRefreshSetup();};
     }
 
     const uploadBtn=allButtons.find(b=>text(b).includes('upload export file'));
     if(uploadBtn){
-      uploadBtn.onclick=(e)=>{e.preventDefault();document.getElementById('file-input').click();};
+      uploadBtn.style.display='none';
     }
 
     const navInbox=doc.querySelector('button[data-nav="inbox"]');
