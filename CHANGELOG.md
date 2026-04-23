@@ -2,6 +2,12 @@
 
 ## Current development cycle
 
+### 2026-04-23 — Ingestion flow simplified to upload-only in UI
+- Kept **Upload Export File** as the single visible ingestion path on the start screen.
+- Hid one-click refresh controls and refresh setup entry points from both start/inbox rendered designs to avoid exposing a flaky path.
+- Updated source-panel labels/copy to focus on selecting and loading an exported JSON file.
+- Kept underlying local parsing/load/save behavior unchanged (`loadFile` → `loadData` → localStorage persistence).
+
 ### 2026-04-23 — Inbox redesign sync fix (loaded view now uses standalone Inbox)
 - Fixed inbox entry wiring so loaded data consistently enables `design-inbox-mode` and renders the standalone Inbox shell.
 - Updated `resetData()` to always clear `design-inbox-mode` when returning Home.
