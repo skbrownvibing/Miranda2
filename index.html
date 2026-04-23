@@ -741,6 +741,7 @@ const S = {
   homeSetupOpen: false,
   filter: { timelineAfter: null, timelineBefore: null },
   exportTimestamp: null, exportTimestampSource: null, lastUpdatedTimer: null,
+  dataSourceKind: 'local_file',
   replyAssistById: {}, // { [threadId]: { isGenerating, suggestedReply, generationAttempted, copied, regenerateCount } }
   connectedSource: {
     supported: false, canPersist: false, supportReason: '',
@@ -799,7 +800,8 @@ async function init() {
         localStorage.setItem(DATA_KEY,JSON.stringify(demoData));
         localStorage.setItem(META_KEY,JSON.stringify({
           savedAt:new Date().toISOString(),
-          count:(demoData.conversations||[]).length
+          count:(demoData.conversations||[]).length,
+          sourceType:'demo'
         }));
         checkSavedData();
       }
@@ -867,14 +869,14 @@ function timeSince(d){const ms=Date.now()-new Date(d).getTime(),m=Math.floor(ms/
   if(h<24)return h+'h ago';return Math.floor(h/24)+'d ago';}
 
 function loadSavedData(){try{const r=localStorage.getItem(DATA_KEY);if(!r)return;
-  S.newIds.clear();loadData(JSON.parse(r),false);}catch(ex){showDropError('Could not load: '+ex.message);}}
+  S.newIds.clear();loadData(JSON.parse(r),false,getSavedSourceKind());}catch(ex){showDropError('Could not load: '+ex.message);}}
 
 async function enterDemoInbox(){
   try{
     const existing=localStorage.getItem(DATA_KEY);
     if(existing){
       S.newIds.clear();
-      loadData(JSON.parse(existing),false);
+      loadData(JSON.parse(existing),false,getSavedSourceKind());
       return;
     }
     const response=await fetch('./data/miranda_demo.json');
@@ -883,11 +885,12 @@ async function enterDemoInbox(){
     localStorage.setItem(DATA_KEY,JSON.stringify(demoData));
     localStorage.setItem(META_KEY,JSON.stringify({
       savedAt:new Date().toISOString(),
-      count:(demoData.conversations||[]).length
+      count:(demoData.conversations||[]).length,
+      sourceType:'demo'
     }));
     checkSavedData();
     S.newIds.clear();
-    loadData(demoData,false);
+    loadData(demoData,false,'demo');
   }catch(ex){
     showDropError(ex.message||'Could not open demo inbox.');
   }
@@ -917,7 +920,7 @@ function loadFile(file){
         const data=JSON.parse(e.target.result);
         if(!data.conversations)throw new Error('Missing "conversations" key.');
         diffNew(data);
-        loadData(data,true);
+        loadData(data,true,'local_file');
         resolve(data);
       }catch(ex){
         const err=new Error('Could not parse: '+ex.message);
@@ -1194,8 +1197,9 @@ async function changeSource(){
   renderSourceUi();
 }
 
-function loadData(data,save){
+function loadData(data,save,sourceKind){
   S.conversations=data.conversations||[];S.selectedId=null;
+  S.dataSourceKind=sourceKind||getSavedSourceKind();
   recategorize();
   reconcileDismissedState();
   document.getElementById('drop-screen').style.display='none';
@@ -1204,7 +1208,7 @@ function loadData(data,save){
   wireInboxDesignIframe();
   try{ localStorage.setItem('rod_screen','inbox'); }catch(_){}
   if(save){try{localStorage.setItem(DATA_KEY,JSON.stringify(data));
-    localStorage.setItem(META_KEY,JSON.stringify({savedAt:new Date().toISOString(),count:S.conversations.length}));}catch(_){}}
+    localStorage.setItem(META_KEY,JSON.stringify({savedAt:new Date().toISOString(),count:S.conversations.length,sourceType:'local_file'}));}catch(_){}}
   setLastUpdatedTimestamp(data);
   handleTimeline(document.getElementById('timeline-filter').value);
 }
@@ -1293,6 +1297,7 @@ function wireInboxDesignIframe(){
     if(refreshBtn){
       refreshBtn.onclick=(e)=>{e.preventDefault();refresh();};
     }
+    renderDesignInboxStatus();
   };
   if(frame.dataset.wired!=='1'){
     frame.dataset.wired='1';
@@ -1304,12 +1309,6 @@ function wireInboxDesignIframe(){
 
 function setLastUpdatedTimestamp(data){
   let iso=(data&&data.exported_at)||null,source='exported_at';
-  if(!iso){
-    try{
-      const m=JSON.parse(localStorage.getItem(META_KEY));
-      if(m&&m.savedAt){iso=m.savedAt;source='savedAt';}
-    }catch(_){}
-  }
   if(!iso){clearLastUpdatedTimestamp();return;}
   const ts=new Date(iso);
   if(Number.isNaN(ts.getTime())){clearLastUpdatedTimestamp();return;}
@@ -1325,10 +1324,11 @@ function clearLastUpdatedTimestamp(){
   S.exportTimestamp=null;S.exportTimestampSource=null;
   const el=document.getElementById('last-updated');
   if(!el)return;
-  el.style.display='none';
-  el.textContent='';
+  el.style.display='inline';
+  el.textContent=(S.dataSourceKind==='demo')?'Demo data':'Local file';
   el.title='';
   el.classList.remove('stale');
+  renderDesignInboxStatus();
 }
 
 function relativeLastUpdated(d){
@@ -1342,17 +1342,59 @@ function relativeLastUpdated(d){
 }
 
 function renderLastUpdated(){
-  if(!S.exportTimestamp)return;
   const el=document.getElementById('last-updated');
   if(!el)return;
+  if(S.dataSourceKind==='demo'){
+    el.textContent='Demo data';
+    el.title='';
+    el.classList.remove('stale');
+    el.style.display='inline';
+    renderDesignInboxStatus();
+    return;
+  }
+  if(!S.exportTimestamp){
+    el.textContent='Local file';
+    el.title='';
+    el.classList.remove('stale');
+    el.style.display='inline';
+    renderDesignInboxStatus();
+    return;
+  }
   const ts=new Date(S.exportTimestamp);
   if(Number.isNaN(ts.getTime())){clearLastUpdatedTimestamp();return;}
   const rel=relativeLastUpdated(S.exportTimestamp);
-  el.textContent=`Last updated: ${rel}`;
+  el.textContent=`Local file • updated ${rel}`;
   el.title=ts.toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
   const ageHrs=(Date.now()-ts.getTime())/3600000;
   if(ageHrs>24)el.classList.add('stale');else el.classList.remove('stale');
   el.style.display='inline';
+  renderDesignInboxStatus();
+}
+
+function getSavedSourceKind(){
+  try{
+    const m=JSON.parse(localStorage.getItem(META_KEY));
+    return (m&&m.sourceType==='demo')?'demo':'local_file';
+  }catch(_){}
+  return 'local_file';
+}
+
+function getDataStatusLabel(){
+  if(S.dataSourceKind==='demo')return'Demo data';
+  if(S.exportTimestamp){
+    return `Local file • updated ${relativeLastUpdated(S.exportTimestamp)}`;
+  }
+  return 'Local file';
+}
+
+function renderDesignInboxStatus(){
+  const frame=document.getElementById('inbox-design-frame');
+  if(!frame)return;
+  let doc=null;
+  try{doc=frame.contentDocument||(frame.contentWindow&&frame.contentWindow.document);}catch(_){return;}
+  if(!doc)return;
+  const el=doc.getElementById('syncAgo');
+  if(el)el.textContent=getDataStatusLabel();
 }
 
 // ── Recategorize ─────────────────────────────────────────────────────────────

@@ -2,6 +2,12 @@
 
 ## Current development cycle
 
+### 2026-04-23 — Data status label now reflects true local data state
+- Replaced freshness/sync-style header status copy with explicit local source labels only.
+- Demo/sample datasets now show **Demo data**.
+- User-uploaded exports now show **Local file • updated X ago** when `exported_at` is valid, and **Local file** when no reliable export timestamp is available.
+- Removed fallback behavior that used `savedAt` to imply freshness for local files.
+
 ### 2026-04-23 — Inbox redesign sync fix (loaded view now uses standalone Inbox)
 - Fixed inbox entry wiring so loaded data consistently enables `design-inbox-mode` and renders the standalone Inbox shell.
 - Updated `resetData()` to always clear `design-inbox-mode` when returning Home.
