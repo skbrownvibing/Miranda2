@@ -4,6 +4,10 @@
 
 ## Current development cycle
 
+### 2026-04-24 — Standalone bundle unpack fix for JSON truncation
+- Fixed a bundled-template parsing edge case in `docs/Reply or Die _standalone_.html` where a literal `</script>` inside the JSON payload could prematurely terminate the `<script type="__bundler/template">` block.
+- Escaped the embedded closing tag sequence (`<\/script>`) so browser parsing no longer truncates the JSON string and trigger `Error unpacking: Unterminated string in JSON ...`.
+
 ### 2026-04-23 — Start CTA now opens file picker directly
 - Updated the consolidated **Upload your text inbox** start CTA to open the system file picker immediately, instead of first showing the connected-source setup panel.
 - This removes the extra purple **Connect export file** click from the primary upload path.
