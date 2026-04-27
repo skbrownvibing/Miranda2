@@ -4,6 +4,15 @@
 
 ## Current development cycle
 
+### 2026-04-26 — Standalone `(1)` design applied (About + Setup + Inbox variation wiring)
+- Updated both embedded design iframes in `index.html` to use `docs/Reply or Die _standalone_ (1).html` as the current visual source.
+- Home now renders the new **About**-first standalone flow, with wiring updated for the new CTA labels and nav structure (`About`, `Setup`, `Inbox`).
+- Wired new setup-path actions to existing local flows:
+  - **Connect your iMessage** now triggers the existing local connect/import behavior.
+  - Setup progression controls are enabled and bridged so users can continue through setup and reach inbox flow.
+  - **Open my inbox** now opens saved/connected data (with a guard message if no export is connected yet).
+- Kept local-first behavior and existing refresh pipeline; top refresh action in the new standalone shell remains connected to the existing refresh function.
+
 ### 2026-04-24 — Standalone bundle unpack fix for JSON truncation
 - Fixed a bundled-template parsing edge case in `docs/Reply or Die _standalone_.html` where a literal `</script>` inside the JSON payload could prematurely terminate the `<script type="__bundler/template">` block.
 - Escaped the embedded closing tag sequence (`<\/script>`) so browser parsing no longer truncates the JSON string and trigger `Error unpacking: Unterminated string in JSON ...`.

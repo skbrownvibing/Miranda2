@@ -550,7 +550,7 @@ body[data-theme="dark"] #app {
     <iframe
       id="start-design-frame"
       class="start-design-frame"
-      src="docs/Reply%20or%20Die%20_standalone_.html"
+      src="docs/Reply%20or%20Die%20_standalone_%20(1).html"
       title="Reply or Die start design"
     ></iframe>
     <input type="file" id="file-input" accept=".json" style="display:none">
@@ -576,7 +576,7 @@ body[data-theme="dark"] #app {
     <iframe
       id="inbox-design-frame"
       class="design-inbox-frame"
-      src="docs/Reply%20or%20Die%20_standalone_.html"
+      src="docs/Reply%20or%20Die%20_standalone_%20(1).html"
       title="Reply or Die inbox design"
     ></iframe>
   </div>
@@ -815,30 +815,28 @@ function wireStartDesignIframe(){
   if(!frame)return;
   const wire=()=>{
     let doc=null;
+    let win=null;
     try{doc=frame.contentDocument||frame.contentWindow.document;}catch(_){return;}
     if(!doc)return;
+    try{win=frame.contentWindow;}catch(_){}
 
     const text=(el)=>(el&&el.textContent||'').trim().toLowerCase();
     const allButtons=Array.from(doc.querySelectorAll('button'));
 
-    const demoBtn=allButtons.find(b=>text(b).includes('see the demo inbox'));
+    const demoBtn=allButtons.find(b=>text(b).includes('browse the demo inbox'));
     if(demoBtn){
       demoBtn.onclick=(e)=>{e.preventDefault();enterDemoInbox();};
     }
 
-    const refreshBtn=allButtons.find(b=>{
-      const t=text(b);
-      return t.includes('one-click refresh')||t.includes('set up refresh');
-    });
-    if(refreshBtn){
-      const label=refreshBtn.querySelector('span');
-      if(label)label.textContent='Upload your text inbox';
-      refreshBtn.onclick=(e)=>{e.preventDefault();document.getElementById('file-input').click();};
-    }
-
-    const uploadBtn=allButtons.find(b=>text(b).includes('upload export file'));
-    if(uploadBtn){
-      uploadBtn.style.display='none';
+    const connectBtn=allButtons.find(b=>text(b).includes('connect your imessage'));
+    if(connectBtn){
+      connectBtn.onclick=async (e)=>{
+        e.preventDefault();
+        try{
+          if(win&&typeof win.go==='function')win.go('setup');
+        }catch(_){}
+        await connectExportFile();
+      };
     }
 
     const navInbox=doc.querySelector('button[data-nav="inbox"]');
@@ -846,14 +844,38 @@ function wireStartDesignIframe(){
       navInbox.onclick=(e)=>{e.preventDefault();enterDemoInbox();};
     }
 
-    const navScore=doc.querySelector('button[data-nav="score"]');
-    if(navScore){
-      navScore.onclick=(e)=>{e.preventDefault();showDropError('Score redesign is coming next.');};
+    const refreshBtn=doc.getElementById('refreshBtn');
+    if(refreshBtn){
+      refreshBtn.onclick=(e)=>{e.preventDefault();refresh();};
     }
 
-    const navSettings=doc.querySelector('button[data-nav="settings"]');
-    if(navSettings){
-      navSettings.onclick=(e)=>{e.preventDefault();showDropError('Settings redesign is coming next.');};
+    const fdaContinue=doc.getElementById('fdaContinue');
+    if(fdaContinue){
+      fdaContinue.disabled=false;
+      fdaContinue.onclick=async (e)=>{
+        e.preventDefault();
+        await connectExportFile();
+        try{ if(win&&typeof win.setupGo==='function')win.setupGo(3); }catch(_){}
+      };
+    }
+
+    const scanContinue=doc.getElementById('scanContinue');
+    if(scanContinue){
+      scanContinue.disabled=false;
+      scanContinue.onclick=(e)=>{
+        e.preventDefault();
+        try{ if(win&&typeof win.setupGo==='function')win.setupGo(4); }catch(_){}
+      };
+    }
+
+    const openInboxBtn=allButtons.find(b=>text(b).includes('open my inbox'));
+    if(openInboxBtn){
+      openInboxBtn.onclick=(e)=>{
+        e.preventDefault();
+        const hasData=S.conversations.length>0||!!localStorage.getItem(DATA_KEY);
+        if(hasData)loadSavedData();
+        else showDropError('Connect an export first, then open inbox.');
+      };
     }
   };
   frame.addEventListener('load',wire);
@@ -1291,6 +1313,14 @@ function wireInboxDesignIframe(){
     const landingBtn=doc.querySelector('button[data-nav="landing"]');
     if(landingBtn){
       landingBtn.onclick=(e)=>{e.preventDefault();resetData();};
+    }
+
+    const setupBtn=doc.querySelector('button[data-nav="setup"]');
+    if(setupBtn){
+      setupBtn.onclick=async (e)=>{
+        e.preventDefault();
+        await connectExportFile();
+      };
     }
 
     const refreshBtn=doc.getElementById('refreshBtn');
