@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Minimal local runner for Miranda2 refresh.
+"""Minimal local runner for Reply or Die refresh.
 
 Runs export.command on localhost only.
 """
@@ -105,5 +105,5 @@ class Handler(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     server = ThreadingHTTPServer((HOST, PORT), Handler)
-    print(f"Miranda2 local export runner listening on http://{HOST}:{PORT}")
+    print(f"Reply or Die local export runner listening on http://{HOST}:{PORT}")
     server.serve_forever()

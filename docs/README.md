@@ -1,4 +1,4 @@
-# Message Inbox
+# Reply or Die
 
 A local-first Mac tool for measuring and improving text responsiveness from iMessage exports.
 

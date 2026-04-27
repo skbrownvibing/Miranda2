@@ -1,9 +1,9 @@
 #!/bin/bash
-# Miranda2 – Message Inbox Exporter
+# Reply or Die – Message Inbox Exporter
 # Double-click to run. Requires Full Disk Access for Terminal.
 
 echo ""
-echo "  Miranda2 – Message Inbox Export"
+echo "  Reply or Die – Message Inbox Export"
 echo "  ================================"
 echo ""
 
@@ -448,7 +448,7 @@ def main():
             unreplied_personal += 1
 
     output = {
-        'app':           'Miranda2',
+        'app':           'Reply or Die',
         'version':       '2.0',
         'exported_at':   now.isoformat(),
         'conversations': conversations,

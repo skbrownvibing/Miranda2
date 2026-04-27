@@ -2,7 +2,9 @@
 
 ## Current development cycle
 
-## Current development cycle
+### 2026-04-27 — Product naming unified to “Reply or Die”
+- Updated remaining user-facing product name references from **Miranda2**/**Message Inbox** to **Reply or Die** in app metadata/title, docs heading, exporter text output, local runner startup log text, and demo JSON app field.
+- Kept internal storage keys and export filename (`miranda2_*`, `miranda2_messages.json`) unchanged to avoid breaking existing local data and refresh flows.
 
 ### 2026-04-26 — Standalone `(1)` design applied (About + Setup + Inbox variation wiring)
 - Updated both embedded design iframes in `index.html` to use `docs/Reply or Die _standalone_ (1).html` as the current visual source.
