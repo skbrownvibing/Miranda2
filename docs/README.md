@@ -1,22 +1,11 @@
-# Message Inbox
+# Docs
 
-A local-first Mac tool for measuring and improving text responsiveness from iMessage exports.
+Documentation for [Reply or Die](../README.md).
 
-## What it does
-- identifies 1:1 personal conversations waiting on you
-- filters spam, group chats, and automated logistics texts
-- computes a responsiveness score and history
-- helps users stay on top of replies
+- [`prd.md`](prd.md) — product spec, decision rules, scoring model
+- [`screenshots/`](screenshots/) — images used in the top-level README
+- `Reply or Die *_standalone_*.html` — design references (work-in-progress, will be consolidated)
 
-## How it works
-1. Run the local Mac export script to generate JSON from iMessage data
-2. Open the local web app and load the exported JSON
-3. Review the action list, score, and trends
-
-## Docs
-- Product spec: `docs/prd.md`
-- Change history: `CHANGELOG.md`
-- Agent instructions: `AGENTS.md`
-
-## Current status
-Early-stage learning project. Product logic and UX are evolving quickly.
+For setup and usage, see the top-level [README](../README.md).
+For working-style instructions for AI agents, see [`AGENTS.md`](../AGENTS.md).
+For change history, see [`CHANGELOG.md`](../CHANGELOG.md).
