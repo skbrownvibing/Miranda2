@@ -4,6 +4,10 @@
 
 ## Current development cycle
 
+### 2026-04-28 — Standalone v2 `(1)` file adopted for embedded shells
+- Added `docs/Reply or Die v2 _standalone_ (1).html` to the repo and switched both embedded design iframes in `index.html` to this newest standalone file.
+- Kept existing iframe action wiring and local-first behavior unchanged.
+
 ### 2026-04-27 — Standalone v2 design wired into app shell
 - Updated both embedded design iframes in `index.html` to use `docs/Reply or Die v2 _standalone_.html` as the active standalone source for Home and Inbox shells.
 - Expanded start-screen CTA relinking to tolerate copy changes in the new design (demo inbox/open inbox/connect/upload wording variants) while preserving existing local actions.
