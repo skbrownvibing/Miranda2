@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Minimal local runner for Miranda2 refresh.
 
-Runs export.command on localhost only.
+Runs export.command and serves HTTP on 127.0.0.1 only (localhost loopback).
 """
 from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -14,7 +15,7 @@ from pathlib import Path
 
 HOST = "127.0.0.1"
 PORT = 8765
-OUTPUT_PATH = Path.home() / "Desktop" / "miranda2_messages.json"
+OUTPUT_PATH = Path(os.path.expanduser(os.environ.get("MIRANDA2_OUTPUT_PATH", "~/Desktop/miranda2_messages.json")))
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EXPORT_CMD = REPO_ROOT / "export.command"
 
@@ -106,4 +107,10 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     server = ThreadingHTTPServer((HOST, PORT), Handler)
     print(f"Miranda2 local export runner listening on http://{HOST}:{PORT}")
-    server.serve_forever()
+    print("Binding is loopback-only (127.0.0.1), so this is not reachable from other devices.")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("\nShutting down local export runner...")
+    finally:
+        server.server_close()

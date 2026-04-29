@@ -560,7 +560,7 @@ body[data-theme="dark"] #app {
     <iframe
       id="start-design-frame"
       class="start-design-frame"
-      src="docs/Reply%20or%20Die%20_standalone_%20(1).html"
+      src="docs/Reply%20or%20Die%20v2%20_standalone_%20(1).html"
       title="Reply or Die start design"
     ></iframe>
     <input type="file" id="file-input" accept=".json" style="display:none">
@@ -586,7 +586,7 @@ body[data-theme="dark"] #app {
     <iframe
       id="inbox-design-frame"
       class="design-inbox-frame"
-      src="docs/Reply%20or%20Die%20_standalone_%20(1).html"
+      src="docs/Reply%20or%20Die%20v2%20_standalone_%20(1).html"
       title="Reply or Die inbox design"
     ></iframe>
   </div>
@@ -764,7 +764,7 @@ const OVERRIDE_KEY='miranda2_overrides_v1', DISMISS_KEY='miranda2_dismissed_v2',
       CONNECTED_SOURCE_DB='miranda2_connected_source_v1', CONNECTED_SOURCE_STORE='sources', CONNECTED_SOURCE_KEY='primary';
 const LEGACY_DISMISS_KEY='miranda2_dismissed_v1';
 const PREVIEW_INCLUDE_ATTACHMENT=true; // set false to hide "📎 Attachment" rows in collapsed previews
-const DEFAULT_AI_MODEL='gpt-4.1-mini';
+const DEFAULT_AI_MODEL='';
 const AI_SUGGEST_ROUTE='/api/ai-suggest-reply';
 const AI_ALLOWED_DEMO_THREAD_IDS=new Set([
   'iMessage;-;+12125550101', // bird accusation
@@ -833,12 +833,18 @@ function wireStartDesignIframe(){
     const text=(el)=>(el&&el.textContent||'').trim().toLowerCase();
     const allButtons=Array.from(doc.querySelectorAll('button'));
 
-    const demoBtn=allButtons.find(b=>text(b).includes('browse the demo inbox'));
+    const demoBtn=allButtons.find(b=>{
+      const t=text(b);
+      return t.includes('browse the demo inbox')||t.includes('see inbox with demo')||t.includes('demo inbox');
+    });
     if(demoBtn){
       demoBtn.onclick=(e)=>{e.preventDefault();enterDemoInbox();};
     }
 
-    const connectBtn=allButtons.find(b=>text(b).includes('connect your imessage'));
+    const connectBtn=allButtons.find(b=>{
+      const t=text(b);
+      return t.includes('connect your imessage')||t.includes('connect imessage')||t.includes('upload your text inbox');
+    });
     if(connectBtn){
       connectBtn.onclick=async (e)=>{
         e.preventDefault();
@@ -878,7 +884,10 @@ function wireStartDesignIframe(){
       };
     }
 
-    const openInboxBtn=allButtons.find(b=>text(b).includes('open my inbox'));
+    const openInboxBtn=allButtons.find(b=>{
+      const t=text(b);
+      return t.includes('open my inbox')||t.includes('open inbox');
+    });
     if(openInboxBtn){
       openInboxBtn.onclick=(e)=>{
         e.preventDefault();
@@ -1320,7 +1329,7 @@ function wireInboxDesignIframe(){
       }
     }catch(_){ }
 
-    const landingBtn=doc.querySelector('button[data-nav="landing"]');
+    const landingBtn=doc.querySelector('button[data-nav="landing"],button[data-nav="about"]');
     if(landingBtn){
       landingBtn.onclick=(e)=>{e.preventDefault();resetData();};
     }
@@ -1793,7 +1802,7 @@ async function requestSuggestedReplyFromModel(thread, context){
     method:'POST',
     headers:{ 'Content-Type':'application/json' },
     body:JSON.stringify({
-      model:DEFAULT_AI_MODEL,
+      ...(DEFAULT_AI_MODEL?{ model:DEFAULT_AI_MODEL }:{}),
       prompt:buildAiPrompt(context,latest.text),
       latestInbound:latest.text,
       context
