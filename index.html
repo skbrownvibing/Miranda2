@@ -1335,6 +1335,24 @@ function wireInboxDesignIframe(){
     if(refreshBtn){
       refreshBtn.onclick=(e)=>{e.preventDefault();refresh();};
     }
+
+    // Replace the iframe's hardcoded fake regenAi() with one that calls the
+    // real backend using the iframe's currently-selected contact.
+    if(win){
+      win.regenAi=async ()=>{
+        const body=doc.getElementById('aiBody');
+        if(!body)return;
+        const sc=win.selectedContact||{};
+        body.innerHTML='<span class="cursor"></span>';
+        try{
+          const reply=await generateAiReplyForIframeContact(sc);
+          body.textContent=reply;
+        }catch(err){
+          console.warn('Iframe AI suggestion failed',err);
+          body.textContent=String(sc.ai||'').trim()||'Could not generate a reply right now.';
+        }
+      };
+    }
   };
   frame.addEventListener('load',wire);
   if(frame.contentDocument?.readyState==='complete')wire();
@@ -1876,6 +1894,28 @@ async function generateAiReply(thread){
   const check=validateAiReply(candidate,thread);
   if(!check.valid)return { ok:false, reason:check.reason };
   return { ok:true, reply:candidate };
+}
+
+// Used by the embedded standalone design iframe (Inbox view). The iframe ships
+// with a fake regenAi() that picks from a hardcoded array; we replace it from
+// the parent so clicking Regenerate inside the iframe hits the real backend.
+async function generateAiReplyForIframeContact(contact){
+  const msgs=Array.isArray(contact?.msgs)?contact.msgs:[];
+  const context=msgs
+    .filter(m=>m&&typeof m.t==='string'&&m.t.trim())
+    .slice(-6)
+    .map(m=>({ speaker:m.me?'Me':'Them', text:String(m.t).trim() }));
+  if(!context.length)throw new Error('no-context');
+  const latest=context[context.length-1];
+  if(latest.speaker!=='Them')throw new Error('latest-not-inbound');
+  const synthThread={
+    id:contact?.phone||contact?.id||'',
+    messages:context.map(c=>({ from_me:c.speaker==='Me', text:c.text }))
+  };
+  const candidate=await requestSuggestedReplyFromModel(synthThread,context);
+  const check=validateAiReply(candidate,synthThread);
+  if(!check.valid)throw new Error('validation:'+check.reason);
+  return candidate;
 }
 
 function renderSuggestedReplyUI(thread){
