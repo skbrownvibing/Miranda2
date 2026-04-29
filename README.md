@@ -2,7 +2,7 @@
 
 A local-first Mac tool for measuring and improving your text responsiveness from iMessage exports.
 
-**[Try the demo →](https://miranda2.vercel.app/)** (no Mac required, uses synthetic data)
+**[Try the demo →](https://replyordie.vercel.app/)** (no Mac required, uses synthetic data)
 
 ![Hero screenshot](docs/screenshots/hero.png)
 
@@ -38,7 +38,7 @@ Optional add-ons:
 
 ### Try the demo
 
-Open https://miranda2.vercel.app/ and click **Try demo**. Or clone the repo and open `index.html` directly in a browser.
+Open https://replyordie.vercel.app/ and click **Try demo**. Or clone the repo and open `index.html` directly in a browser.
 
 ### Run on your real iMessage data
 
