@@ -1,3 +1,4 @@
+# Reply or Die
 # Docs
 
 Documentation for [Reply or Die](../README.md).

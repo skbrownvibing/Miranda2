@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Minimal local runner for Miranda2 refresh.
+"""Minimal local runner for Reply or Die refresh.
 
 Runs export.command and serves HTTP on 127.0.0.1 only (localhost loopback).
 """
@@ -106,6 +106,8 @@ class Handler(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     server = ThreadingHTTPServer((HOST, PORT), Handler)
+    print(f"Reply or Die local export runner listening on http://{HOST}:{PORT}")
+    server.serve_forever()
     print(f"Miranda2 local export runner listening on http://{HOST}:{PORT}")
     print("Binding is loopback-only (127.0.0.1), so this is not reachable from other devices.")
     try:
