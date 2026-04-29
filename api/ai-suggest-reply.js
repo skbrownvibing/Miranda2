@@ -4,7 +4,8 @@ const MAX_PROMPT_CHARS = Number(process.env.MIRANDA2_MAX_PROMPT_CHARS || 2500);
 const MAX_BODY_BYTES = Number(process.env.MIRANDA2_MAX_BODY_BYTES || 12_000);
 const RATE_LIMIT_WINDOW_SECONDS = Number(process.env.MIRANDA2_RATE_LIMIT_WINDOW_SECONDS || 60);
 const RATE_LIMIT_MAX_REQUESTS = Number(process.env.MIRANDA2_RATE_LIMIT_MAX_REQUESTS || 20);
-const DEFAULT_MODEL = String(process.env.MIRANDA2_AI_MODEL || '').trim();
+const FALLBACK_MODEL = 'gpt-4.1-mini';
+const DEFAULT_MODEL = String(process.env.MIRANDA2_AI_MODEL || FALLBACK_MODEL).trim();
 const ALLOWED_MODELS = String(process.env.MIRANDA2_ALLOWED_MODELS || DEFAULT_MODEL)
   .split(',')
   .map((m) => m.trim())
@@ -22,11 +23,24 @@ function getClientIp(req) {
   return xff || xri || req.socket?.remoteAddress || 'unknown';
 }
 
+function isSameOrigin(req, origin) {
+  try {
+    const host = String(req.headers.host || '').trim().toLowerCase();
+    if (!host) return false;
+    const originHost = new URL(origin).host.toLowerCase();
+    return originHost === host;
+  } catch (_err) {
+    return false;
+  }
+}
+
 function getCorsOrigin(req) {
   const origin = String(req.headers.origin || '').trim();
   if (!origin) return '';
   if (!ALLOWED_ORIGINS.length) return '';
-  return ALLOWED_ORIGINS.includes(origin) ? origin : null;
+  if (ALLOWED_ORIGINS.includes(origin)) return origin;
+  if (isSameOrigin(req, origin)) return origin;
+  return null;
 }
 
 function applyCors(req, res) {
