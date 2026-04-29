@@ -1336,13 +1336,25 @@ function wireInboxDesignIframe(){
       refreshBtn.onclick=(e)=>{e.preventDefault();refresh();};
     }
 
-    // Replace the iframe's hardcoded fake regenAi() with one that calls the
-    // real backend using the iframe's currently-selected contact.
-    if(win){
-      win.regenAi=async ()=>{
+    // The iframe is bundler-unpacked: its document gets replaced after our
+    // wire() runs and inner scripts (including a fake regenAi() that picks
+    // from a hardcoded array) get re-injected. A direct win.regenAi=... gets
+    // clobbered by the bundle's later definition. Instead, install a
+    // capture-phase click listener on the iframe's document — which survives
+    // documentElement.replaceWith — and intercept clicks on the Regenerate
+    // button before the inline onclick="regenAi()" on the bubble phase fires.
+    if(doc&&!doc.__miranda2RegenWired){
+      doc.__miranda2RegenWired=true;
+      doc.addEventListener('click',async (e)=>{
+        const t=e.target;
+        const btn=t&&t.closest?t.closest('button.regen, button[onclick*="regenAi"]'):null;
+        if(!btn)return;
+        e.preventDefault();
+        e.stopPropagation();
+        if(typeof e.stopImmediatePropagation==='function')e.stopImmediatePropagation();
         const body=doc.getElementById('aiBody');
         if(!body)return;
-        const sc=win.selectedContact||{};
+        const sc=(win&&win.selectedContact)||{};
         body.innerHTML='<span class="cursor"></span>';
         try{
           const reply=await generateAiReplyForIframeContact(sc);
@@ -1351,7 +1363,7 @@ function wireInboxDesignIframe(){
           console.warn('Iframe AI suggestion failed',err);
           body.textContent=String(sc.ai||'').trim()||'Could not generate a reply right now.';
         }
-      };
+      },true);
     }
   };
   frame.addEventListener('load',wire);
