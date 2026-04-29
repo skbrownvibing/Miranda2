@@ -754,7 +754,7 @@ const OVERRIDE_KEY='miranda2_overrides_v1', DISMISS_KEY='miranda2_dismissed_v2',
       CONNECTED_SOURCE_DB='miranda2_connected_source_v1', CONNECTED_SOURCE_STORE='sources', CONNECTED_SOURCE_KEY='primary';
 const LEGACY_DISMISS_KEY='miranda2_dismissed_v1';
 const PREVIEW_INCLUDE_ATTACHMENT=true; // set false to hide "📎 Attachment" rows in collapsed previews
-const DEFAULT_AI_MODEL='gpt-4.1-mini';
+const DEFAULT_AI_MODEL='';
 const AI_SUGGEST_ROUTE='/api/ai-suggest-reply';
 const AI_ALLOWED_DEMO_THREAD_IDS=new Set([
   'iMessage;-;+12125550101', // bird accusation
@@ -1792,7 +1792,7 @@ async function requestSuggestedReplyFromModel(thread, context){
     method:'POST',
     headers:{ 'Content-Type':'application/json' },
     body:JSON.stringify({
-      model:DEFAULT_AI_MODEL,
+      ...(DEFAULT_AI_MODEL?{ model:DEFAULT_AI_MODEL }:{}),
       prompt:buildAiPrompt(context,latest.text),
       latestInbound:latest.text,
       context

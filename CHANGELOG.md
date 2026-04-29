@@ -4,6 +4,12 @@
 
 ## Current development cycle
 
+### 2026-04-27 — API hardening + export tooling quality-of-life updates
+- Hardened `POST /api/ai-suggest-reply` with prompt/body size caps, CORS origin allowlist support, IP-based rate limiting, model allowlisting, and sanitized upstream error responses.
+- Added deployment config via `vercel.json` and documented frontend↔API wiring plus security env vars in `docs/README.md`.
+- Updated `tools/runner/local_export_runner.py` to handle `KeyboardInterrupt` cleanly and clarified loopback-only (`127.0.0.1`) binding behavior in code/docs.
+- Improved `export.command` ergonomics with `--help`, `--version`, output path override (`MIRANDA2_OUTPUT_PATH`), DB override (`MIRANDA2_CHAT_DB_PATH`), and explicit exit-code docs.
+- Added a fixture-backed smoke test script at `tools/tests/export_smoke_test.sh` to catch export regressions.
 ### 2026-04-28 — Standalone v2 `(1)` file adopted for embedded shells
 - Added `docs/Reply or Die v2 _standalone_ (1).html` to the repo and switched both embedded design iframes in `index.html` to this newest standalone file.
 - Kept existing iframe action wiring and local-first behavior unchanged.
