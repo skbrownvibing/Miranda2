@@ -1794,6 +1794,20 @@ Recent text context:
 ${conversation}`;
 }
 
+function stripWrappingQuotes(text){
+  let t=String(text||'').trim();
+  const pairs=[['"','"'],['“','”'],['‘','’'],["'","'"]];
+  for(let i=0;i<2;i++){
+    for(const [open,close] of pairs){
+      if(t.length>=2&&t.startsWith(open)&&t.endsWith(close)){
+        t=t.slice(open.length,t.length-close.length).trim();
+        break;
+      }
+    }
+  }
+  return t;
+}
+
 async function requestSuggestedReplyFromModel(thread, context){
   const latest=context[context.length-1];
   if(!latest||latest.speaker!=='Them') throw new Error('Latest message is not inbound text');
@@ -1809,12 +1823,22 @@ async function requestSuggestedReplyFromModel(thread, context){
   });
 
   if(!response.ok){
-    const raw=await response.text().catch(()=> '');
-    throw new Error(`AI request failed (${response.status}): ${raw.slice(0,200)}`);
+    let serverError='';
+    try{
+      const errJson=await response.clone().json();
+      serverError=String(errJson?.error||'').trim();
+    }catch(_){
+      const raw=await response.text().catch(()=> '');
+      serverError=raw.slice(0,200);
+    }
+    const err=new Error(`AI request failed (${response.status})${serverError?': '+serverError:''}`);
+    err.status=response.status;
+    err.serverError=serverError;
+    throw err;
   }
 
   const data=await response.json();
-  const reply=String(data?.reply||'').trim();
+  const reply=stripWrappingQuotes(data?.reply||'');
   if(!reply)throw new Error('AI returned empty reply');
   return reply;
 }
@@ -2267,7 +2291,8 @@ async function generateReplyForThread(id,isRegenerate){
   }catch(err){
     st.suggestedReply='';
     st.generationAttempted=true;
-    st.blockedReason='';
+    const detail=String(err?.serverError||err?.message||'').trim();
+    st.blockedReason=detail?`AI service error: ${detail}`:'AI service unavailable';
     console.warn('AI suggestion failed',err);
   }finally{
     st.isGenerating=false;
