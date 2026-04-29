@@ -2,6 +2,43 @@
 # Reply or Die – Message Inbox Exporter
 # Double-click to run. Requires Full Disk Access for Terminal.
 
+SCRIPT_VERSION="2.1.0"
+
+show_help() {
+  cat <<'HELP'
+Miranda2 message export
+
+Usage:
+  ./export.command [--help] [--version]
+
+Environment overrides:
+  MIRANDA2_OUTPUT_PATH   Output JSON path (default: ~/Desktop/miranda2_messages.json)
+  MIRANDA2_CHAT_DB_PATH  Chat DB path for export (default: ~/Library/Messages/chat.db)
+
+Exit codes:
+  0  Export completed successfully
+  1  Export failed (missing dependencies, permissions, or DB/read errors)
+HELP
+}
+
+for arg in "$@"; do
+  case "$arg" in
+    --help|-h)
+      show_help
+      exit 0
+      ;;
+    --version|-v)
+      echo "Miranda2 export.command ${SCRIPT_VERSION}"
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $arg"
+      echo "Run ./export.command --help for usage."
+      exit 1
+      ;;
+  esac
+done
+
 echo ""
 echo "  Reply or Die – Message Inbox Export"
 echo "  ================================"
@@ -23,7 +60,7 @@ from datetime import datetime, timezone, timedelta
 
 LOOKBACK_DAYS   = 90    # How far back to pull messages
 PERSONAL_THRESH = 3     # Min messages in window to classify as personal (no contact)
-OUTPUT_PATH     = os.path.join(os.path.expanduser("~/Desktop"), "miranda2_messages.json")
+OUTPUT_PATH     = os.path.expanduser(os.environ.get('MIRANDA2_OUTPUT_PATH', '~/Desktop/miranda2_messages.json'))
 APPLE_EPOCH     = datetime(2001, 1, 1, tzinfo=timezone.utc)
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -325,7 +362,7 @@ def is_substantive(row):
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
-    db_path = os.path.expanduser("~/Library/Messages/chat.db")
+    db_path = os.path.expanduser(os.environ.get('MIRANDA2_CHAT_DB_PATH', '~/Library/Messages/chat.db'))
     if not os.path.exists(db_path):
         print("  ERROR: iMessage database not found.")
         print(f"  Expected: {db_path}")

@@ -6,6 +6,21 @@
 - Updated remaining user-facing product name references from **Miranda2**/**Message Inbox** to **Reply or Die** in app metadata/title, docs heading, exporter text output, local runner startup log text, and demo JSON app field.
 - Kept internal storage keys and export filename (`miranda2_*`, `miranda2_messages.json`) unchanged to avoid breaking existing local data and refresh flows.
 
+### 2026-04-27 — API hardening + export tooling quality-of-life updates
+- Hardened `POST /api/ai-suggest-reply` with prompt/body size caps, CORS origin allowlist support, IP-based rate limiting, model allowlisting, and sanitized upstream error responses.
+- Added deployment config via `vercel.json` and documented frontend↔API wiring plus security env vars in `docs/README.md`.
+- Updated `tools/runner/local_export_runner.py` to handle `KeyboardInterrupt` cleanly and clarified loopback-only (`127.0.0.1`) binding behavior in code/docs.
+- Improved `export.command` ergonomics with `--help`, `--version`, output path override (`MIRANDA2_OUTPUT_PATH`), DB override (`MIRANDA2_CHAT_DB_PATH`), and explicit exit-code docs.
+- Added a fixture-backed smoke test script at `tools/tests/export_smoke_test.sh` to catch export regressions.
+### 2026-04-28 — Standalone v2 `(1)` file adopted for embedded shells
+- Added `docs/Reply or Die v2 _standalone_ (1).html` to the repo and switched both embedded design iframes in `index.html` to this newest standalone file.
+- Kept existing iframe action wiring and local-first behavior unchanged.
+
+### 2026-04-27 — Standalone v2 design wired into app shell
+- Updated both embedded design iframes in `index.html` to use `docs/Reply or Die v2 _standalone_.html` as the active standalone source for Home and Inbox shells.
+- Expanded start-screen CTA relinking to tolerate copy changes in the new design (demo inbox/open inbox/connect/upload wording variants) while preserving existing local actions.
+- Updated inbox-shell nav wiring so the new `About` nav (when present) routes back to Home behavior, matching previous landing navigation behavior.
+
 ### 2026-04-26 — Standalone `(1)` design applied (About + Setup + Inbox variation wiring)
 - Updated both embedded design iframes in `index.html` to use `docs/Reply or Die _standalone_ (1).html` as the current visual source.
 - Home now renders the new **About**-first standalone flow, with wiring updated for the new CTA labels and nav structure (`About`, `Setup`, `Inbox`).

@@ -3,6 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A local-first Mac tool for measuring and improving your text responsiveness from iMessage exports. Try the demo — no Mac required.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Reply or Die – Text Responsiveness">
+<meta property="og:description" content="A local-first Mac tool for measuring and improving your text responsiveness from iMessage exports. Try the demo — no Mac required.">
+<meta property="og:url" content="https://replyordie.vercel.app/">
+<meta property="og:site_name" content="Reply or Die">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Reply or Die – Text Responsiveness">
+<meta name="twitter:description" content="A local-first Mac tool for measuring and improving your text responsiveness from iMessage exports.">
 <title>Reply or Die – Text Responsiveness</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -550,7 +560,7 @@ body[data-theme="dark"] #app {
     <iframe
       id="start-design-frame"
       class="start-design-frame"
-      src="docs/Reply%20or%20Die%20_standalone_%20(1).html"
+      src="docs/Reply%20or%20Die%20v2%20_standalone_%20(1).html"
       title="Reply or Die start design"
     ></iframe>
     <input type="file" id="file-input" accept=".json" style="display:none">
@@ -576,7 +586,7 @@ body[data-theme="dark"] #app {
     <iframe
       id="inbox-design-frame"
       class="design-inbox-frame"
-      src="docs/Reply%20or%20Die%20_standalone_%20(1).html"
+      src="docs/Reply%20or%20Die%20v2%20_standalone_%20(1).html"
       title="Reply or Die inbox design"
     ></iframe>
   </div>
@@ -754,7 +764,7 @@ const OVERRIDE_KEY='miranda2_overrides_v1', DISMISS_KEY='miranda2_dismissed_v2',
       CONNECTED_SOURCE_DB='miranda2_connected_source_v1', CONNECTED_SOURCE_STORE='sources', CONNECTED_SOURCE_KEY='primary';
 const LEGACY_DISMISS_KEY='miranda2_dismissed_v1';
 const PREVIEW_INCLUDE_ATTACHMENT=true; // set false to hide "📎 Attachment" rows in collapsed previews
-const DEFAULT_AI_MODEL='gpt-4.1-mini';
+const DEFAULT_AI_MODEL='';
 const AI_SUGGEST_ROUTE='/api/ai-suggest-reply';
 const AI_ALLOWED_DEMO_THREAD_IDS=new Set([
   'iMessage;-;+12125550101', // bird accusation
@@ -823,19 +833,24 @@ function wireStartDesignIframe(){
     const text=(el)=>(el&&el.textContent||'').trim().toLowerCase();
     const allButtons=Array.from(doc.querySelectorAll('button'));
 
-    const demoBtn=allButtons.find(b=>text(b).includes('browse the demo inbox'));
+    const demoBtn=allButtons.find(b=>{
+      const t=text(b);
+      return t.includes('browse the demo inbox')||t.includes('see inbox with demo')||t.includes('demo inbox');
+    });
     if(demoBtn){
       demoBtn.onclick=(e)=>{e.preventDefault();enterDemoInbox();};
     }
 
-    const connectBtn=allButtons.find(b=>text(b).includes('connect your imessage'));
+    const connectBtn=allButtons.find(b=>{
+      const t=text(b);
+      return t.includes('connect your imessage')||t.includes('connect imessage')||t.includes('upload your text inbox');
+    });
     if(connectBtn){
-      connectBtn.onclick=async (e)=>{
+      connectBtn.onclick=(e)=>{
         e.preventDefault();
         try{
           if(win&&typeof win.go==='function')win.go('setup');
         }catch(_){}
-        await connectExportFile();
       };
     }
 
@@ -868,7 +883,10 @@ function wireStartDesignIframe(){
       };
     }
 
-    const openInboxBtn=allButtons.find(b=>text(b).includes('open my inbox'));
+    const openInboxBtn=allButtons.find(b=>{
+      const t=text(b);
+      return t.includes('open my inbox')||t.includes('open inbox');
+    });
     if(openInboxBtn){
       openInboxBtn.onclick=(e)=>{
         e.preventDefault();
@@ -1310,7 +1328,7 @@ function wireInboxDesignIframe(){
       }
     }catch(_){ }
 
-    const landingBtn=doc.querySelector('button[data-nav="landing"]');
+    const landingBtn=doc.querySelector('button[data-nav="landing"],button[data-nav="about"]');
     if(landingBtn){
       landingBtn.onclick=(e)=>{e.preventDefault();resetData();};
     }
@@ -1776,6 +1794,20 @@ Recent text context:
 ${conversation}`;
 }
 
+function stripWrappingQuotes(text){
+  let t=String(text||'').trim();
+  const pairs=[['"','"'],['“','”'],['‘','’'],["'","'"]];
+  for(let i=0;i<2;i++){
+    for(const [open,close] of pairs){
+      if(t.length>=2&&t.startsWith(open)&&t.endsWith(close)){
+        t=t.slice(open.length,t.length-close.length).trim();
+        break;
+      }
+    }
+  }
+  return t;
+}
+
 async function requestSuggestedReplyFromModel(thread, context){
   const latest=context[context.length-1];
   if(!latest||latest.speaker!=='Them') throw new Error('Latest message is not inbound text');
@@ -1783,7 +1815,7 @@ async function requestSuggestedReplyFromModel(thread, context){
     method:'POST',
     headers:{ 'Content-Type':'application/json' },
     body:JSON.stringify({
-      model:DEFAULT_AI_MODEL,
+      ...(DEFAULT_AI_MODEL?{ model:DEFAULT_AI_MODEL }:{}),
       prompt:buildAiPrompt(context,latest.text),
       latestInbound:latest.text,
       context
@@ -1791,12 +1823,22 @@ async function requestSuggestedReplyFromModel(thread, context){
   });
 
   if(!response.ok){
-    const raw=await response.text().catch(()=> '');
-    throw new Error(`AI request failed (${response.status}): ${raw.slice(0,200)}`);
+    let serverError='';
+    try{
+      const errJson=await response.clone().json();
+      serverError=String(errJson?.error||'').trim();
+    }catch(_){
+      const raw=await response.text().catch(()=> '');
+      serverError=raw.slice(0,200);
+    }
+    const err=new Error(`AI request failed (${response.status})${serverError?': '+serverError:''}`);
+    err.status=response.status;
+    err.serverError=serverError;
+    throw err;
   }
 
   const data=await response.json();
-  const reply=String(data?.reply||'').trim();
+  const reply=stripWrappingQuotes(data?.reply||'');
   if(!reply)throw new Error('AI returned empty reply');
   return reply;
 }
@@ -2249,7 +2291,8 @@ async function generateReplyForThread(id,isRegenerate){
   }catch(err){
     st.suggestedReply='';
     st.generationAttempted=true;
-    st.blockedReason='';
+    const detail=String(err?.serverError||err?.message||'').trim();
+    st.blockedReason=detail?`AI service error: ${detail}`:'AI service unavailable';
     console.warn('AI suggestion failed',err);
   }finally{
     st.isGenerating=false;

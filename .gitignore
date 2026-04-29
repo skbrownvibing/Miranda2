@@ -1,0 +1,38 @@
+# macOS
+.DS_Store
+._*
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node (if tooling is added later)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python (local export runner)
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Generated exports — these contain real iMessage data, never commit
+miranda2_messages.json
+*.miranda2.json
+
+# Vercel
+.vercel/
+
+# Build output
+dist/
+build/
