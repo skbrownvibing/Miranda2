@@ -836,12 +836,11 @@ function wireStartDesignIframe(){
       return t.includes('connect your imessage')||t.includes('connect imessage')||t.includes('upload your text inbox');
     });
     if(connectBtn){
-      connectBtn.onclick=async (e)=>{
+      connectBtn.onclick=(e)=>{
         e.preventDefault();
         try{
           if(win&&typeof win.go==='function')win.go('setup');
         }catch(_){}
-        await connectExportFile();
       };
     }
 
