@@ -1361,7 +1361,8 @@ function wireInboxDesignIframe(){
           body.textContent=reply;
         }catch(err){
           console.warn('Iframe AI suggestion failed',err);
-          body.textContent=String(sc.ai||'').trim()||'Could not generate a reply right now.';
+          const detail=String(err&&(err.serverError||err.message)||'').trim();
+          body.textContent=detail?`AI error: ${detail}`:'AI service unavailable';
         }
       },true);
     }
@@ -1924,10 +1925,13 @@ async function generateAiReplyForIframeContact(contact){
     id:contact?.phone||contact?.id||'',
     messages:context.map(c=>({ from_me:c.speaker==='Me', text:c.text }))
   };
+  // Skip the strict legacy validator — the AI body is contenteditable so the
+  // user can edit before sending, and over-aggressive validation was silently
+  // dropping every model response and falling through to the curated baseline.
   const candidate=await requestSuggestedReplyFromModel(synthThread,context);
-  const check=validateAiReply(candidate,synthThread);
-  if(!check.valid)throw new Error('validation:'+check.reason);
-  return candidate;
+  const text=String(candidate||'').trim();
+  if(!text)throw new Error('empty-reply');
+  return text;
 }
 
 function renderSuggestedReplyUI(thread){
