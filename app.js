@@ -600,37 +600,8 @@ function wireInboxDesignIframe(){
     if(refreshBtn){
       refreshBtn.onclick=(e)=>{e.preventDefault();refresh();};
     }
-
-    // The iframe is bundler-unpacked: its document gets replaced after our
-    // wire() runs and inner scripts (including a fake regenAi() that picks
-    // from a hardcoded array) get re-injected. A direct win.regenAi=... gets
-    // clobbered by the bundle's later definition. Instead, install a
-    // capture-phase click listener on the iframe's document — which survives
-    // documentElement.replaceWith — and intercept clicks on the Regenerate
-    // button before the inline onclick="regenAi()" on the bubble phase fires.
-    if(doc&&!doc.__miranda2RegenWired){
-      doc.__miranda2RegenWired=true;
-      doc.addEventListener('click',async (e)=>{
-        const t=e.target;
-        const btn=t&&t.closest?t.closest('button.regen, button[onclick*="regenAi"]'):null;
-        if(!btn)return;
-        e.preventDefault();
-        e.stopPropagation();
-        if(typeof e.stopImmediatePropagation==='function')e.stopImmediatePropagation();
-        const body=doc.getElementById('aiBody');
-        if(!body)return;
-        const sc=(win&&win.selectedContact)||{};
-        body.innerHTML='<span class="cursor"></span>';
-        try{
-          const reply=await generateAiReplyForIframeContact(sc);
-          body.textContent=reply;
-        }catch(err){
-          console.warn('Iframe AI suggestion failed',err);
-          const detail=String(err&&(err.serverError||err.message)||'').trim();
-          body.textContent=detail?`AI error: ${detail}`:'AI service unavailable';
-        }
-      },true);
-    }
+    // Note: iframe Regenerate is wired by the patched standalone calling
+    // window.parent.miranda2RegenAi() directly, not by overrides here.
   };
   frame.addEventListener('load',wire);
   if(frame.contentDocument?.readyState==='complete')wire();
@@ -1174,9 +1145,9 @@ async function generateAiReply(thread){
   return { ok:true, reply:candidate };
 }
 
-// Used by the embedded standalone design iframe (Inbox view). The iframe ships
-// with a fake regenAi() that picks from a hardcoded array; we replace it from
-// the parent so clicking Regenerate inside the iframe hits the real backend.
+// Used by the embedded standalone design iframe (Inbox view). The patched
+// standalone calls window.parent.miranda2RegenAi(selectedContact, aiBodyEl)
+// instead of its design-tool default of picking from a hardcoded alts array.
 async function generateAiReplyForIframeContact(contact){
   const msgs=Array.isArray(contact?.msgs)?contact.msgs:[];
   const context=msgs
@@ -1198,6 +1169,23 @@ async function generateAiReplyForIframeContact(contact){
   if(!text)throw new Error('empty-reply');
   return text;
 }
+
+// Bridge function called directly by the patched standalone iframe.
+// docs/standalone.html has its regenAi() rewritten to call
+// window.parent.miranda2RegenAi(selectedContact, aiBodyEl). One well-known
+// entry point means we don't depend on patching DOM listeners after the
+// bundler swap.
+window.miranda2RegenAi=async function(contact, bodyEl){
+  if(!bodyEl)return;
+  try{
+    const reply=await generateAiReplyForIframeContact(contact||{});
+    bodyEl.textContent=reply;
+  }catch(err){
+    console.warn('miranda2RegenAi failed',err);
+    const detail=String(err&&(err.serverError||err.message)||'').trim();
+    bodyEl.textContent=detail?`AI error: ${detail}`:'AI service unavailable';
+  }
+};
 
 function renderSuggestedReplyUI(thread){
   if(!isAiThreadAllowlisted(thread))return '';

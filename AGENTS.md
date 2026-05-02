@@ -39,6 +39,17 @@ Prefer minimal, understandable changes over large refactors.
 Avoid unnecessary dependencies.
 When possible, keep the code easy for a non-expert to read and modify.
 
+### Standalone design file
+`docs/standalone.html` is the bundled design used by the Inbox iframe. Treat
+it as **canonical source code**, not a generated artifact. It carries a
+hand-applied patch that wires the AI Regenerate button to
+`window.parent.miranda2RegenAi(...)` so it calls the real backend instead of
+the design tool's hardcoded random replies.
+
+If a fresh export is uploaded, run `python3 tools/patch_standalone.py` to
+re-apply the patch. The script is idempotent and exits non-zero if the design
+shape changed enough that the patch needs to be re-derived by hand.
+
 ## Documentation
 After making a meaningful change:
 - update `CHANGELOG.md` for shipped behavior changes

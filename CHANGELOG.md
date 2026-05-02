@@ -2,6 +2,12 @@
 
 ## Current development cycle
 
+### 2026-04-30 — Stabilize Inbox AI Regenerate by patching the standalone bundle
+- Patched `docs/standalone.html` to remove the hardcoded `regenAi()` alts array (`'cannot commit. ask me again tomorrow'`, `'noted. counter-proposal: tacos, 7pm, no drama'`, etc.) and call `window.parent.miranda2RegenAi(selectedContact, aiBodyEl)` instead.
+- Added `window.miranda2RegenAi` in `app.js` as the single bridge entry point. It calls the real `/api/ai-suggest-reply` backend through the existing context-builder, writes the model reply into the iframe's `#aiBody`, and surfaces real errors instead of falling back to a misleading baseline.
+- Removed the parent-side capture-phase click listener and brittle override logic in `wireInboxDesignIframe`. The iframe now drives the bridge directly, so there's no race against the bundler swap.
+- Added `tools/patch_standalone.py` (idempotent) and an AGENTS.md note: the standalone HTML is now treated as canonical source. If a fresh export is uploaded, run the patcher to re-apply.
+
 ### 2026-04-27 — Product naming unified to “Reply or Die”
 - Updated remaining user-facing product name references from **Miranda2**/**Message Inbox** to **Reply or Die** in app metadata/title, docs heading, exporter text output, local runner startup log text, and demo JSON app field.
 - Kept internal storage keys and export filename (`miranda2_*`, `miranda2_messages.json`) unchanged to avoid breaking existing local data and refresh flows.
