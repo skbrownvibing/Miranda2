@@ -2,6 +2,10 @@
 
 ## Current development cycle
 
+### 2026-05-04 — Standalone `(3)` design file wired into embedded shells
+- Switched both embedded design iframes in `index.html` from `docs/standalone.html` to `docs/Reply or Die _standalone_ (3).html`.
+- Kept existing local-first behavior and app wiring unchanged; this is a design source swap only.
+
 ### 2026-04-30 — Stabilize Inbox AI Regenerate by patching the standalone bundle
 - Patched `docs/standalone.html` to remove the hardcoded `regenAi()` alts array (`'cannot commit. ask me again tomorrow'`, `'noted. counter-proposal: tacos, 7pm, no drama'`, etc.) and call `window.parent.miranda2RegenAi(selectedContact, aiBodyEl)` instead.
 - Added `window.miranda2RegenAi` in `app.js` as the single bridge entry point. It calls the real `/api/ai-suggest-reply` backend through the existing context-builder, writes the model reply into the iframe's `#aiBody`, and surfaces real errors instead of falling back to a misleading baseline.
