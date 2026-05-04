@@ -6,6 +6,7 @@
 - Added a "Dismissed" collapsible section below "Other texts" so users can see threads they've dismissed and undismiss them. Holds both 1:1 and group dismissals.
 - New functions `renderDismissed`, `toggleDismissed`, `undismissConvo` in `app.js`; wired into `renderAll`.
 - Updated `docs/prd.md` to match implementation: dismissed conversations stay in the eligible set and count as replied (so dismissing a hanging thread raises the score), rather than being excluded entirely.
+- Fixed the "No reply needed" dismiss button getting pushed out of view on AI-allowlisted threads (e.g., Larry David). The AI Suggested Reply block was rendering inside `.detail-actions` and squeezing the buttons; moved it to its own block below, and added `flex-wrap:wrap` to the action row.
 
 ### 2026-05-04 — Adopt new standalone (3) design as the canonical bundle
 - Replaced `docs/standalone.html` contents with the newly uploaded `Reply or Die _standalone_ (3).html` design so the canonical filename keeps pointing at the latest design source.

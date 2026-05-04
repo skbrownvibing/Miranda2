@@ -346,7 +346,7 @@ body[data-theme="dark"] #app {
 .detail-messages { display:flex;flex-direction:column;gap:6px;margin-bottom:12px;max-height:240px;overflow-y:auto; }
 .detail-messages > div { background:none;border:0;border-radius:0;padding:0;margin:0;text-align:left; }
 .msg-time { font-size:10px;color:var(--text3);margin-top:2px;padding:0 4px; }
-.detail-actions { display:flex;gap:8px;align-items:center; }
+.detail-actions { display:flex;gap:8px;align-items:center;flex-wrap:wrap; }
 .btn-reply {
   font-family:inherit;font-size:12px;font-weight:600;padding:7px 16px;border:none;border-radius:10px;
   background:var(--green);color:#0d0d12;cursor:pointer;text-decoration:none;display:inline-block;transition:opacity .12s;

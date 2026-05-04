@@ -1460,8 +1460,8 @@ function renderActions(){
           ${phone?`<a class="btn-reply" href="${smsHref}">Reply in Messages ↗</a>`:''}
           <button class="btn-dismiss" onclick="dismissConvo('${esc(c.id)}')">No reply needed</button>
           ${renderFilterOutMenu(c.id)}
-          ${renderSuggestedReplyUI(c)}
         </div>
+        ${renderSuggestedReplyUI(c)}
       </div>
     </div>`;
   }).join('');
@@ -1505,8 +1505,8 @@ function renderOtherTexts(){
           ${phone?`<a class="btn-reply" href="${smsHref}">Reply in Messages ↗</a>`:''}
           <button class="btn-dismiss" onclick="dismissConvo('${esc(c.id)}')">No reply needed</button>
           ${renderFilterOutMenu(c.id)}
-          ${renderSuggestedReplyUI(c)}
         </div>
+        ${renderSuggestedReplyUI(c)}
       </div>
     </div>`;
   }).join('');
