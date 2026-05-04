@@ -499,6 +499,7 @@ async function changeSource(){
 function loadData(data,save){
   S.conversations=data.conversations||[];S.selectedId=null;
   recategorize();
+  seedDismissedFromData();
   reconcileDismissedState();
   document.getElementById('drop-screen').style.display='none';
   document.getElementById('app').classList.add('loaded');
@@ -789,6 +790,19 @@ function makeDismissRecord(c){
 
 function saveDismissed(){
   try{localStorage.setItem(DISMISS_KEY,JSON.stringify(S.dismissed));}catch(_){}
+}
+
+function seedDismissedFromData(){
+  let changed=false;
+  S.conversations.forEach(c=>{
+    if(!c||!c.dismissed)return;
+    const key=participantDismissKey(c);
+    if(!key)return;
+    if(S.dismissed[key]&&typeof S.dismissed[key]==='object')return;
+    S.dismissed[key]=makeDismissRecord(c);
+    changed=true;
+  });
+  if(changed)saveDismissed();
 }
 
 function hasNewInboundSinceCheckpoint(c,rec){
