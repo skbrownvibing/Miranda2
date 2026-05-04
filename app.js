@@ -588,14 +588,6 @@ function wireInboxDesignIframe(){
       landingBtn.onclick=(e)=>{e.preventDefault();resetData();};
     }
 
-    const setupBtn=doc.querySelector('button[data-nav="setup"]');
-    if(setupBtn){
-      setupBtn.onclick=async (e)=>{
-        e.preventDefault();
-        await connectExportFile();
-      };
-    }
-
     const refreshBtn=doc.getElementById('refreshBtn');
     if(refreshBtn){
       refreshBtn.onclick=(e)=>{e.preventDefault();refresh();};
