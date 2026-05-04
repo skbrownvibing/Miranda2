@@ -2,6 +2,10 @@
 
 ## Current development cycle
 
+### 2026-05-04 — Revert embedded source to canonical standalone + keep tour CTA polish
+- Switched embedded iframes in `index.html` back to `docs/standalone.html` (canonical, patched bundle).
+- Kept the tour CTA polish in the canonical standalone: final step now says `Go to inbox`, and intermediate steps use `Got it` with a non-breaking space to prevent wrapping.
+
 ### 2026-05-04 — Tour CTA copy + one-line "Got it" button polish
 - Updated the tour final-step CTA from `Take me to my inbox` to `Go to inbox`.
 - Updated intermediate-step CTA text to `Got it` with a non-breaking space so it stays on one line in the tour button.
