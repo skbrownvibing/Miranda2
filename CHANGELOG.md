@@ -2,6 +2,9 @@
 
 ## Current development cycle
 
+### 2026-05-04 — Pull thread-foot buttons up so they're visible without scrolling
+- Re-applied the `.thread-body` flex fix to the new standalone design: switched from `flex: 1` to `flex: 0 1 auto` with `min-height: 0` so the body sizes to its content. This pulls the Dismiss / Copy & open iMessage buttons back above the fold for short conversations while still letting the body shrink and scroll for long threads.
+
 ### 2026-05-04 — Adopt new standalone (3) design as the canonical bundle
 - Replaced `docs/standalone.html` contents with the newly uploaded `Reply or Die _standalone_ (3).html` design so the canonical filename keeps pointing at the latest design source.
 - Re-applied the `regenAi()` patch via `tools/patch_standalone.py` so the Inbox AI Regenerate button keeps calling `window.parent.miranda2RegenAi(...)` and the real `/api/ai-suggest-reply` backend instead of the design tool's hardcoded random alts.
