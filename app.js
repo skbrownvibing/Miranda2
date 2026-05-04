@@ -85,6 +85,31 @@ function wireStartDesignIframe(){
     if(!doc)return;
     try{win=frame.contentWindow;}catch(_){}
 
+    // The standalone persists its last screen in iframe-local storage and
+    // auto-launches a tour into Inbox on first visit. Force the start frame
+    // to the About/landing screen so users see the new entrance design.
+    try{
+      if(win){
+        try{ win.localStorage.setItem('rod_screen','landing'); }catch(_){}
+        try{ win.localStorage.setItem('rod_tour_seen','1'); }catch(_){}
+      }
+    }catch(_){}
+    const goLanding=()=>{
+      try{
+        if(win&&typeof win.go==='function'){ win.go('landing'); return true; }
+      }catch(_){}
+      const landingBtn=doc.querySelector('button[data-nav="landing"]');
+      if(landingBtn){ landingBtn.click(); return true; }
+      return false;
+    };
+    if(!goLanding()){
+      let tries=0;
+      const t=setInterval(()=>{
+        tries+=1;
+        if(goLanding()||tries>40)clearInterval(t);
+      },50);
+    }
+
     const text=(el)=>(el&&el.textContent||'').trim().toLowerCase();
     const allButtons=Array.from(doc.querySelectorAll('button'));
 
