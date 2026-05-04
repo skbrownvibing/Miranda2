@@ -2,6 +2,12 @@
 
 ## Current development cycle
 
+### 2026-05-04 — Make iframe Dismiss actually update the score and the Archive bucket
+- Previous patch only removed the dismissed contact from the iframe's `CONTACTS` list — the design's score widget (`24`), Hanging count, Waiting-on-you chip, and Archive Dismissed chip count were all hardcoded and never recomputed, so dismissing felt like a no-op.
+- Replaced `dismissThread()` in `docs/standalone.html` with v2 that, after dismissal: tracks the contact in `window.DISMISSED_CONTACTS`, computes a host-style score boost via a local `_rodScoreFor()` helper, bumps `.sbr-num` by the positive delta (so the score visibly rises but never drops below the design baseline), decrements Hanging + `#ct-all` + the "N humans are watching" headline, and increments the Archive Dismissed chip count.
+- Added `data-filter="dismissed"` to the Archive Dismissed chip and extended `filteredContacts()` so clicking it shows the dismissed threads. Extended `openContact()` to also resolve dismissed contacts so clicking a row in the Dismissed view still opens its thread.
+- Updated `tools/patch_standalone.py` to apply all five patches (regenAi, dismiss-btn onclick, dismissThread + helper, chip data-filter, filteredContacts branch, openContact lookup) idempotently. Older v1 dismissThread blocks get cleanly upgraded.
+
 ### 2026-05-04 — Wire the Dismiss button in the standalone iframe
 - The user-visible Dismiss button lives in `docs/standalone.html` (the design iframe shown in the inbox view), and was shipping with no `onclick` handler — clicking it did nothing.
 - Patched `docs/standalone.html` to add `onclick="dismissThread()"` and inject a `dismissThread()` function that (a) notifies the host via `window.parent.miranda2DismissThread(selectedContact)`, (b) removes the contact from the iframe's `CONTACTS` array, and (c) re-renders the message list / thread panel so the dismissed thread disappears immediately.
