@@ -11,12 +11,14 @@ const S = {
     supported: false, canPersist: false, supportReason: '',
     handle: null, fileName: '', lastRefreshedAt: null,
     refreshState: 'idle', runnerUrl: 'http://127.0.0.1:8765'
-  }
+  },
+  voiceEcho: { enabled: false, setupSeen: false, profile: null }
 };
 const OVERRIDE_KEY='miranda2_overrides_v1', DISMISS_KEY='miranda2_dismissed_v2',
       DATA_KEY='miranda2_data_v1', META_KEY='miranda2_meta_v1', HISTORY_KEY='miranda2_history_v1',
       NAME_SIGNAL_KEY='miranda2_name_signal_v1', THEME_KEY='miranda2_theme_v1',
-      CONNECTED_SOURCE_DB='miranda2_connected_source_v1', CONNECTED_SOURCE_STORE='sources', CONNECTED_SOURCE_KEY='primary';
+      CONNECTED_SOURCE_DB='miranda2_connected_source_v1', CONNECTED_SOURCE_STORE='sources', CONNECTED_SOURCE_KEY='primary',
+      VOICE_ECHO_KEY='miranda2_voice_echo_v1';
 const LEGACY_DISMISS_KEY='miranda2_dismissed_v1';
 const PREVIEW_INCLUDE_ATTACHMENT=true; // set false to hide "📎 Attachment" rows in collapsed previews
 const DEFAULT_AI_MODEL='';
@@ -44,6 +46,7 @@ async function init() {
     }
   } catch(_){}
   try { const r=localStorage.getItem(NAME_SIGNAL_KEY); if(r) S.nameSignalFirst=JSON.parse(r).firstName||''; } catch(_){}
+  try { const r=localStorage.getItem(VOICE_ECHO_KEY); if(r) Object.assign(S.voiceEcho, JSON.parse(r)); } catch(_){}
   try {
     const savedTheme=localStorage.getItem(THEME_KEY);
     S.theme=savedTheme==='dark'?'dark':'light';
@@ -135,6 +138,7 @@ function wireStartDesignIframe(){
       scanContinue.onclick=(e)=>{
         e.preventDefault();
         try{ if(win&&typeof win.setupGo==='function')win.setupGo(4); }catch(_){}
+        if(!S.voiceEcho.setupSeen) openVoiceEchoSetup();
       };
     }
 
@@ -1190,10 +1194,11 @@ function renderSuggestedReplyUI(thread){
   }
 
   if(st.suggestedReply){
+    const vePill=S.voiceEcho.enabled?`<span class="ai-voice-pill" title="Voice Echo is on">Voice Echo: on</span>`:'';
     return `
       ${triggerHtml}
       <div class="ai-suggest-card">
-        <div class="ai-suggest-label">AI Suggested Reply</div>
+        <div class="ai-suggest-label">AI Suggested Reply ${vePill}</div>
         <div class="ai-suggest-text">${esc(st.suggestedReply)}</div>
         <div class="ai-suggest-actions">
           <button class="btn-dismiss" onclick="useSuggestedReply(${esc(JSON.stringify(thread.id))});event.stopPropagation()">Use</button>
@@ -1837,4 +1842,120 @@ function reclassify(id,newCat){
 }
 
 function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+// === Voice Echo (UX scaffold; analysis is stubbed) =========================
+// TODO: replace stubbed analyzer + placeholder profile data with real
+// computation over thread.messages where m.from_me === true. See proposal.
+
+function persistVoiceEcho(){
+  try{ localStorage.setItem(VOICE_ECHO_KEY, JSON.stringify(S.voiceEcho)); }catch(_){}
+}
+
+function showVeView(name){
+  ['intro','analyzing','profile'].forEach(v=>{
+    const el=document.getElementById('ve-view-'+v);
+    if(el) el.style.display = (v===name) ? 'block' : 'none';
+  });
+}
+
+function openVoiceEchoSetup(){
+  const m=document.getElementById('ve-setup-modal');
+  if(!m) return;
+  m.style.display='flex';
+  showVeView(S.voiceEcho.profile ? 'profile' : 'intro');
+}
+
+function closeVoiceEchoSetup(){
+  const m=document.getElementById('ve-setup-modal');
+  if(m) m.style.display='none';
+  S.voiceEcho.setupSeen=true;
+  persistVoiceEcho();
+}
+
+function skipVoiceEchoSetup(){
+  S.voiceEcho.enabled=false;
+  S.voiceEcho.setupSeen=true;
+  persistVoiceEcho();
+  closeVoiceEchoSetup();
+  refreshAboutModalStatus();
+  renderAll();
+}
+
+function startVoiceEchoAnalyze(){
+  showVeView('analyzing');
+  const ring=document.getElementById('ve-ring-fill');
+  const pct=document.getElementById('ve-ring-pct');
+  const line=document.getElementById('ve-progress-line');
+  const steps=[
+    {p:18, t:'Reading your outgoing messages…'},
+    {p:42, t:'Measuring length and punctuation…'},
+    {p:68, t:'Finding your top emojis and phrases…'},
+    {p:90, t:'Building your style profile…'},
+    {p:100,t:'Done.'}
+  ];
+  let i=0;
+  const tick=()=>{
+    const s=steps[i++];
+    if(!s){
+      // TODO: replace with real computed profile.
+      S.voiceEcho.profile={ stub:true, builtAt:new Date().toISOString() };
+      showVeView('profile');
+      return;
+    }
+    if(ring) ring.style.strokeDashoffset = String(314 - (314 * s.p / 100));
+    if(pct) pct.textContent = s.p+'%';
+    if(line) line.textContent = s.t;
+    setTimeout(tick, 520);
+  };
+  tick();
+}
+
+function acceptVoiceEcho(){
+  S.voiceEcho.enabled=true;
+  S.voiceEcho.setupSeen=true;
+  persistVoiceEcho();
+  closeVoiceEchoSetup();
+  refreshAboutModalStatus();
+  renderAll();
+}
+
+function openVoiceEchoAbout(){
+  const m=document.getElementById('ve-about-modal');
+  if(!m) return;
+  refreshAboutModalStatus();
+  m.style.display='flex';
+}
+
+function closeVoiceEchoAbout(){
+  const m=document.getElementById('ve-about-modal');
+  if(m) m.style.display='none';
+}
+
+function refreshAboutModalStatus(){
+  const status=document.getElementById('ve-about-status');
+  const btn=document.getElementById('ve-about-toggle-btn');
+  if(status){
+    status.textContent = S.voiceEcho.enabled ? 'on' : 'off';
+    status.classList.toggle('is-on', S.voiceEcho.enabled);
+  }
+  if(btn) btn.textContent = S.voiceEcho.enabled ? 'Turn off' : 'Turn on';
+}
+
+function toggleVoiceEchoFromAbout(){
+  if(S.voiceEcho.enabled){
+    S.voiceEcho.enabled=false;
+    persistVoiceEcho();
+    refreshAboutModalStatus();
+    renderAll();
+  }else{
+    closeVoiceEchoAbout();
+    openVoiceEchoSetup();
+  }
+}
+
+function reopenVoiceEchoSetup(){
+  closeVoiceEchoAbout();
+  openVoiceEchoSetup();
+}
+
 init();

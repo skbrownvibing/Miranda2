@@ -58,6 +58,7 @@
   <div class="top-bar">
     <span class="top-bar-brand">Reply or Die</span>
     <div class="top-bar-actions">
+      <button class="about-btn" id="about-btn" onclick="openVoiceEchoAbout()">About Voice Echo</button>
       <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">dark mode</button>
       <select id="timeline-filter" onchange="handleTimeline(this.value)">
         <option value="1">Last 24 hours</option>
@@ -202,6 +203,159 @@
         <button class="review-tab active" data-cat="filtered" onclick="setReviewCat('filtered')">Filtered out <span id="review-count-filtered" class="review-tab-count"></span></button>
       </div>
       <div class="review-list" id="review-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Voice Echo: setup-step modal (shown once, after setup step 4) -->
+<div class="ve-modal" id="ve-setup-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="ve-setup-title">
+  <div class="ve-backdrop" onclick="closeVoiceEchoSetup()"></div>
+  <div class="ve-card" role="document">
+    <button class="ve-close" aria-label="Close" onclick="closeVoiceEchoSetup()">×</button>
+
+    <div class="ve-step-tag">Setup · Step 5 of 5 · Optional</div>
+    <h2 class="ve-title" id="ve-setup-title">Match your voice</h2>
+    <p class="ve-sub">Want AI Suggested Reply to sound like you? We can analyze your outgoing texts to learn your style — length, punctuation, signature phrases — and use it when drafting replies.</p>
+
+    <!-- View 1: intro -->
+    <div class="ve-view" id="ve-view-intro">
+      <div class="ve-pipeline" aria-hidden="true">
+        <div class="ve-pipe-step">
+          <div class="ve-pipe-icon">💬</div>
+          <div class="ve-pipe-label">Your texts</div>
+          <div class="ve-pipe-note">stays on device</div>
+        </div>
+        <div class="ve-pipe-arrow">→</div>
+        <div class="ve-pipe-step">
+          <div class="ve-pipe-icon">🎚️</div>
+          <div class="ve-pipe-label">Style profile</div>
+          <div class="ve-pipe-note">computed locally</div>
+        </div>
+        <div class="ve-pipe-arrow">→</div>
+        <div class="ve-pipe-step">
+          <div class="ve-pipe-icon">✨</div>
+          <div class="ve-pipe-label">Replies in your voice</div>
+          <div class="ve-pipe-note">profile only is sent</div>
+        </div>
+      </div>
+
+      <div class="ve-privacy">
+        <strong>Private by default.</strong> The full message history never leaves your Mac. Only a small style summary (a few hundred bytes) is sent alongside the current thread when you click Suggest Reply.
+      </div>
+
+      <div class="ve-actions">
+        <button class="ve-btn-primary" onclick="startVoiceEchoAnalyze()">Analyze my texts</button>
+        <button class="ve-btn-ghost" onclick="skipVoiceEchoSetup()">Skip for now</button>
+      </div>
+    </div>
+
+    <!-- View 2: analyzing -->
+    <div class="ve-view" id="ve-view-analyzing" style="display:none">
+      <div class="ve-progress-wrap">
+        <div class="ve-progress-ring">
+          <svg viewBox="0 0 120 120">
+            <circle class="ve-ring-bg" cx="60" cy="60" r="50"/>
+            <circle class="ve-ring-fill" id="ve-ring-fill" cx="60" cy="60" r="50" stroke-dasharray="314" stroke-dashoffset="314"/>
+          </svg>
+          <div class="ve-ring-pct" id="ve-ring-pct">0%</div>
+        </div>
+        <div class="ve-progress-line" id="ve-progress-line">Reading your outgoing messages…</div>
+      </div>
+    </div>
+
+    <!-- View 3: profile reveal -->
+    <div class="ve-view" id="ve-view-profile" style="display:none">
+      <div class="ve-profile-headline">Read 312 of your messages. Here's your voice.</div>
+      <div class="ve-profile-grid">
+        <div class="ve-profile-stat">
+          <div class="ve-stat-value">~7</div>
+          <div class="ve-stat-label">words per text</div>
+        </div>
+        <div class="ve-profile-stat">
+          <div class="ve-stat-value">lowercase</div>
+          <div class="ve-stat-label">most of the time</div>
+        </div>
+        <div class="ve-profile-stat">
+          <div class="ve-stat-value">😂 🙃 💀</div>
+          <div class="ve-stat-label">your top emojis</div>
+        </div>
+        <div class="ve-profile-stat">
+          <div class="ve-stat-value">"lol", "tbh", "lmk"</div>
+          <div class="ve-stat-label">signature phrases</div>
+        </div>
+      </div>
+      <div class="ve-samples">
+        <div class="ve-samples-label">Sample replies in your voice</div>
+        <div class="ve-sample">"lol idk we'll figure it out"</div>
+        <div class="ve-sample">"tbh same, lmk what u decide"</div>
+        <div class="ve-sample">"omg yes pls"</div>
+      </div>
+      <div class="ve-actions">
+        <button class="ve-btn-primary" onclick="acceptVoiceEcho()">Use this voice</button>
+        <button class="ve-btn-ghost" onclick="startVoiceEchoAnalyze()">Re-analyze</button>
+        <button class="ve-btn-text" onclick="skipVoiceEchoSetup()">Turn off</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Voice Echo: About modal (always available from top bar) -->
+<div class="ve-modal" id="ve-about-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="ve-about-title">
+  <div class="ve-backdrop" onclick="closeVoiceEchoAbout()"></div>
+  <div class="ve-card ve-card-wide" role="document">
+    <button class="ve-close" aria-label="Close" onclick="closeVoiceEchoAbout()">×</button>
+
+    <div class="ve-eyebrow">Feature</div>
+    <h2 class="ve-title" id="ve-about-title">Voice Echo</h2>
+    <p class="ve-sub">Make AI Suggested Reply sound like you, not like a generic chatbot. Voice Echo learns from how you actually text and uses that style when drafting replies.</p>
+
+    <div class="ve-pipeline ve-pipeline-large" aria-hidden="true">
+      <div class="ve-pipe-step">
+        <div class="ve-pipe-icon">💬</div>
+        <div class="ve-pipe-label">Your texts</div>
+        <div class="ve-pipe-note">Read from the iMessage export already loaded in your browser. Never uploaded.</div>
+      </div>
+      <div class="ve-pipe-arrow">→</div>
+      <div class="ve-pipe-step">
+        <div class="ve-pipe-icon">🎚️</div>
+        <div class="ve-pipe-label">Local style profile</div>
+        <div class="ve-pipe-note">Average length, punctuation habits, top emojis, signature phrases — computed in this browser tab.</div>
+      </div>
+      <div class="ve-pipe-arrow">→</div>
+      <div class="ve-pipe-step">
+        <div class="ve-pipe-icon">✨</div>
+        <div class="ve-pipe-label">Replies in your voice</div>
+        <div class="ve-pipe-note">When you click Suggest Reply, the small profile is sent to the AI alongside the current thread.</div>
+      </div>
+    </div>
+
+    <div class="ve-about-grid">
+      <div class="ve-about-block">
+        <div class="ve-about-h">What gets sent off device</div>
+        <ul class="ve-about-ul">
+          <li>The small style profile (a few hundred bytes)</li>
+          <li>The current thread you're drafting a reply to</li>
+        </ul>
+      </div>
+      <div class="ve-about-block">
+        <div class="ve-about-h">What never leaves your Mac</div>
+        <ul class="ve-about-ul">
+          <li>Your full message history</li>
+          <li>Conversations you aren't actively replying to</li>
+          <li>Contact names, numbers, attachments</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="ve-status-row">
+      <div class="ve-status-line">
+        <span class="ve-status-label">Voice Echo is</span>
+        <span class="ve-status-value" id="ve-about-status">off</span>
+      </div>
+      <div class="ve-status-actions">
+        <button class="ve-btn-ghost" id="ve-about-toggle-btn" onclick="toggleVoiceEchoFromAbout()">Turn on</button>
+        <button class="ve-btn-text" onclick="reopenVoiceEchoSetup()">View my voice profile</button>
+      </div>
     </div>
   </div>
 </div>
