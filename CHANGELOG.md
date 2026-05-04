@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-05-04 — Adopt new standalone (3) design as the canonical bundle
+- Replaced `docs/standalone.html` contents with the newly uploaded `Reply or Die _standalone_ (3).html` design so the canonical filename keeps pointing at the latest design source.
+- Re-applied the `regenAi()` patch via `tools/patch_standalone.py` so the Inbox AI Regenerate button keeps calling `window.parent.miranda2RegenAi(...)` and the real `/api/ai-suggest-reply` backend instead of the design tool's hardcoded random alts.
+- Removed the duplicate `docs/Reply or Die _standalone_ (3).html` upload now that its contents live in the canonical `docs/standalone.html`.
+
 ### 2026-05-04 — Revert embedded source to canonical standalone + keep tour CTA polish
 - Switched embedded iframes in `index.html` back to `docs/standalone.html` (canonical, patched bundle).
 - Kept the tour CTA polish in the canonical standalone: final step now says `Go to inbox`, and intermediate steps use `Got it` with a non-breaking space to prevent wrapping.
