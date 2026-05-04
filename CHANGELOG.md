@@ -2,6 +2,10 @@
 
 ## Current development cycle
 
+### 2026-05-04 — Tour CTA copy + one-line "Got it" button polish
+- Updated the tour final-step CTA from `Take me to my inbox` to `Go to inbox`.
+- Updated intermediate-step CTA text to `Got it` with a non-breaking space so it stays on one line in the tour button.
+
 ### 2026-05-04 — Standalone `(3)` design file wired into embedded shells
 - Switched both embedded design iframes in `index.html` from `docs/standalone.html` to `docs/Reply or Die _standalone_ (3).html`.
 - Kept existing local-first behavior and app wiring unchanged; this is a design source swap only.
