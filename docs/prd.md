@@ -43,7 +43,7 @@ Automated includes delivery updates, rideshare notifications, appointment flows,
 Conversations with unsaved participants are included. By default, eligible unsaved 1:1 conversations appear in **Other**; if waiting on the user they move to the action list; if spam/Automated they are excluded; manual overrides take precedence. Unsaved numbers can count toward scoring if eligible.
 
 ### Dismissed conversations  
-Dismissed conversations are removed from the action list, do not count as unresolved, and reappear if a new incoming normalized event occurs.
+Dismissed conversations are removed from the action list, do not count as unresolved, and reappear if a new incoming normalized event occurs. They remain visible in the Dismissed folder, where the user can undismiss them. For scoring, dismissed conversations are treated as replied: they stay in the eligible set, so dismissing a hanging thread raises the score in most scenarios. Dismissing a thread you had already replied to has no effect on the score.
 
 ### Manual overrides  
 User overrides take precedence until a new normalized event changes state.
@@ -64,7 +64,7 @@ It combines three components:
 - **Reply speed (30%)**: how quickly you reply on average  
 - **Open conversations penalty (30%)**: penalty for conversations currently waiting on you, with older ones weighted more heavily  
 
-The final score is the weighted combination of these components scaled to 0–100. It excludes spam, Automated, group chats, and dismissed conversations, and must not depend on preview or display logic.
+The final score is the weighted combination of these components scaled to 0–100. It excludes spam, Automated, and group chats, and must not depend on preview or display logic. Dismissed conversations remain in the eligible set and are counted as replied (see Dismissed conversations above).
 
 ## Score history  
 One score snapshot is stored per day.

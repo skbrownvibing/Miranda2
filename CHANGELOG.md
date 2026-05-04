@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-05-04 — Dismissed folder UI + clarify scoring impact of dismissal
+- Added a "Dismissed" collapsible section below "Other texts" so users can see threads they've dismissed and undismiss them. Holds both 1:1 and group dismissals.
+- New functions `renderDismissed`, `toggleDismissed`, `undismissConvo` in `app.js`; wired into `renderAll`.
+- Updated `docs/prd.md` to match implementation: dismissed conversations stay in the eligible set and count as replied (so dismissing a hanging thread raises the score), rather than being excluded entirely.
+
 ### 2026-05-04 — Adopt new standalone (3) design as the canonical bundle
 - Replaced `docs/standalone.html` contents with the newly uploaded `Reply or Die _standalone_ (3).html` design so the canonical filename keeps pointing at the latest design source.
 - Re-applied the `regenAi()` patch via `tools/patch_standalone.py` so the Inbox AI Regenerate button keeps calling `window.parent.miranda2RegenAi(...)` and the real `/api/ai-suggest-reply` backend instead of the design tool's hardcoded random alts.

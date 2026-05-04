@@ -1,7 +1,7 @@
 const S = {
   conversations: [], overrides: {}, dismissed: {}, newIds: new Set(),
   selectedId: null, actionFilter: 'all', reviewCat: 'filtered', reviewOpen: false,
-  trendOpen: false, theme: 'light',
+  trendOpen: false, dismissedOpen: false, theme: 'light',
   nameSignalFirst: '', nameSignalEditing: false,
   homeSetupOpen: false,
   filter: { timelineAfter: null, timelineBefore: null },
@@ -1227,7 +1227,7 @@ function renderSuggestedReplyUI(thread){
 }
 
 // ── Render ───────────────────────────────────────────────────────────────────
-function renderAll(){renderScore();saveScoreHistory();renderTrend();renderActions();renderOtherTexts();renderReview();}
+function renderAll(){renderScore();saveScoreHistory();renderTrend();renderActions();renderOtherTexts();renderDismissed();renderReview();}
 
 // ── Score history ────────────────────────────────────────────────────────────
 function getHistory(){
@@ -1548,6 +1548,60 @@ function dismissConvo(id){
   delete S.dismissed[id];
   saveDismissed();
   renderAll();
+}
+
+function undismissConvo(id){
+  const thread=S.conversations.find(c=>c.id===id);
+  if(!thread)return;
+  const key=participantDismissKey(thread);
+  if(key)delete S.dismissed[key];
+  delete S.dismissed[id];
+  saveDismissed();
+  renderAll();
+}
+
+function toggleDismissed(){
+  S.dismissedOpen=!S.dismissedOpen;
+  document.getElementById('dismissed-body').style.display=S.dismissedOpen?'block':'none';
+  document.getElementById('dismissed-arrow').classList.toggle('open',S.dismissedOpen);
+  if(S.dismissedOpen)renderDismissed();
+}
+
+function dismissedConvos(){
+  return S.conversations
+    .filter(c=>isDismissed(c))
+    .map(c=>{
+      const rec=getDismissRecord(c);
+      const ts=rec?.dismissedAt?new Date(rec.dismissedAt).getTime():0;
+      return {c,ts};
+    })
+    .sort((a,b)=>b.ts-a.ts)
+    .map(x=>x.c);
+}
+
+function renderDismissed(){
+  const list=dismissedConvos();
+  const label=document.getElementById('dismissed-toggle-label');
+  if(label)label.textContent=`Dismissed (${list.length})`;
+  if(!S.dismissedOpen)return;
+  const el=document.getElementById('dismissed-list');
+  if(!el)return;
+  if(!list.length){
+    el.innerHTML='<div class="review-empty">Nothing dismissed yet</div>';
+    return;
+  }
+  el.innerHTML=list.slice(0,100).map(c=>{
+    const name=displayName(c);
+    const preview=(latestEventText(c)||'').slice(0,60);
+    const rec=getDismissRecord(c);
+    const when=rec?.dismissedAt?relTime(rec.dismissedAt):'';
+    return `<div class="review-item">
+      <span class="review-name">${esc(name)}</span>
+      <span class="review-preview">${esc(preview)}</span>
+      ${when?`<span class="review-reason">Dismissed ${esc(when)}</span>`:''}
+      <button class="review-btn" onclick="undismissConvo('${esc(c.id)}')">↺ Undismiss</button>
+    </div>`;
+  }).join('');
 }
 
 
