@@ -2,11 +2,17 @@
 
 ## Current development cycle
 
+### 2026-05-04 — Wire the Dismiss button in the standalone iframe
+- The user-visible Dismiss button lives in `docs/standalone.html` (the design iframe shown in the inbox view), and was shipping with no `onclick` handler — clicking it did nothing.
+- Patched `docs/standalone.html` to add `onclick="dismissThread()"` and inject a `dismissThread()` function that (a) notifies the host via `window.parent.miranda2DismissThread(selectedContact)`, (b) removes the contact from the iframe's `CONTACTS` array, and (c) re-renders the message list / thread panel so the dismissed thread disappears immediately.
+- Added `window.miranda2DismissThread` in `app.js` as the host-side bridge: matches the iframe contact to a thread in `S.conversations` by phone (falling back to id), then persists the dismissal and triggers `renderAll()` so the host's score and Dismissed folder stay in sync.
+- Updated `tools/patch_standalone.py` to apply both the existing `regenAi` patch and the new dismiss patch idempotently, with clearer per-patch error messages if a re-uploaded design changes the surrounding shape.
+
 ### 2026-05-04 — Dismissed folder UI + clarify scoring impact of dismissal
 - Added a "Dismissed" collapsible section below "Other texts" so users can see threads they've dismissed and undismiss them. Holds both 1:1 and group dismissals.
 - New functions `renderDismissed`, `toggleDismissed`, `undismissConvo` in `app.js`; wired into `renderAll`.
 - Updated `docs/prd.md` to match implementation: dismissed conversations stay in the eligible set and count as replied (so dismissing a hanging thread raises the score), rather than being excluded entirely.
-- Fixed the "No reply needed" dismiss button getting pushed out of view on AI-allowlisted threads (e.g., Larry David). The AI Suggested Reply block was rendering inside `.detail-actions` and squeezing the buttons; moved it to its own block below, and added `flex-wrap:wrap` to the action row.
+- Earlier attempt: moved AI Suggested Reply out of `.detail-actions` and added `flex-wrap:wrap` for the legacy action list. That code path is hidden by `design-inbox-mode`, so it didn't address the user-visible bug — see the standalone iframe wiring entry above for the actual fix.
 
 ### 2026-05-04 — Pull thread-foot buttons up so they're visible without scrolling
 - Re-applied the `.thread-body` flex fix to the new standalone design: switched from `flex: 1` to `flex: 0 1 auto` with `min-height: 0` so the body sizes to its content. This pulls the Dismiss / Copy & open iMessage buttons back above the fold for short conversations while still letting the body shrink and scroll for long threads.

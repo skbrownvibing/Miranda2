@@ -1179,6 +1179,43 @@ window.miranda2RegenAi=async function(contact, bodyEl){
   }
 };
 
+// Bridge from the standalone iframe's Dismiss button. The patched
+// docs/standalone.html calls window.parent.miranda2DismissThread(selectedContact)
+// where contact has shape { id, name, phone, ... }. Match it to a thread in
+// S.conversations by phone (most reliable across the iframe demo and real data).
+window.miranda2DismissThread=function(contact){
+  if(!contact)return;
+  const targetPhone=normalizeHandleValue(contact.phone||'');
+  let thread=null;
+  if(targetPhone){
+    thread=S.conversations.find(c=>normalizeHandleValue(c.phone||'')===targetPhone);
+  }
+  if(!thread&&contact.id){
+    thread=S.conversations.find(c=>c.id===contact.id);
+  }
+  if(!thread){
+    // The iframe runs on its own demo CONTACTS that may not match the host's
+    // S.conversations. Persist a synthetic dismissal under a phone-keyed entry
+    // so re-renders see the dismissal too.
+    if(targetPhone){
+      S.dismissed[`p:${targetPhone}`]={
+        key:`p:${targetPhone}`,
+        dismissedAt:new Date().toISOString(),
+        inboundCheckpointAt:null,
+        threadId:contact.id||''
+      };
+      saveDismissed();
+    }
+    return;
+  }
+  const key=participantDismissKey(thread);
+  if(!key)return;
+  S.dismissed[key]=makeDismissRecord(thread);
+  delete S.dismissed[thread.id];
+  saveDismissed();
+  renderAll();
+};
+
 function renderSuggestedReplyUI(thread){
   if(!isAiThreadAllowlisted(thread))return '';
 
