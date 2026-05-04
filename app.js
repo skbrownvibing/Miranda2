@@ -3,7 +3,7 @@ const S = {
   selectedId: null, actionFilter: 'all', reviewCat: 'filtered', reviewOpen: false,
   trendOpen: false, theme: 'light',
   nameSignalFirst: '', nameSignalEditing: false,
-  homeSetupOpen: false,
+  homeSetupOpen: false, dismissedOpen: false,
   filter: { timelineAfter: null, timelineBefore: null },
   exportTimestamp: null, exportTimestampSource: null, lastUpdatedTimer: null,
   replyAssistById: {}, // { [threadId]: { isGenerating, suggestedReply, generationAttempted, copied, regenerateCount } }
@@ -1227,7 +1227,7 @@ function renderSuggestedReplyUI(thread){
 }
 
 // ── Render ───────────────────────────────────────────────────────────────────
-function renderAll(){renderScore();saveScoreHistory();renderTrend();renderActions();renderOtherTexts();renderReview();}
+function renderAll(){renderScore();saveScoreHistory();renderTrend();renderActions();renderOtherTexts();renderDismissed();renderReview();}
 
 // ── Score history ────────────────────────────────────────────────────────────
 function getHistory(){
@@ -1548,6 +1548,59 @@ function dismissConvo(id){
   delete S.dismissed[id];
   saveDismissed();
   renderAll();
+}
+
+function restoreConvo(id){
+  const thread=S.conversations.find(c=>c.id===id);
+  if(!thread)return;
+  const key=participantDismissKey(thread);
+  if(key)delete S.dismissed[key];
+  delete S.dismissed[id];
+  saveDismissed();
+  renderAll();
+}
+
+function toggleDismissed(){
+  S.dismissedOpen=!S.dismissedOpen;
+  document.getElementById('dismissed-body').style.display=S.dismissedOpen?'block':'none';
+  document.getElementById('dismissed-arrow').classList.toggle('open',S.dismissedOpen);
+  if(S.dismissedOpen)renderDismissed();
+}
+
+function dismissedConvos(){
+  return S.conversations.filter(c=>{
+    const cat=getCategory(c);
+    if(cat==='spam'||cat==='delivery')return false;
+    return isDismissed(c);
+  });
+}
+
+function renderDismissed(){
+  const list=dismissedConvos();
+  const count=list.length;
+  document.getElementById('dismissed-toggle-label').textContent=
+    count?`Dismissed (${count})`:'Dismissed';
+  if(!S.dismissedOpen)return;
+  const el=document.getElementById('dismissed-list');
+  if(!count){el.innerHTML='<div class="review-empty">Nothing dismissed</div>';return;}
+  list.sort((a,b)=>{
+    const ar=getDismissRecord(a),br=getDismissRecord(b);
+    const at=ar?.dismissedAt?new Date(ar.dismissedAt).getTime():0;
+    const bt=br?.dismissedAt?new Date(br.dismissedAt).getTime():0;
+    return bt-at;
+  });
+  el.innerHTML=list.map(c=>{
+    const name=displayName(c);
+    const preview=(latestEventText(c)||'').slice(0,60);
+    const rec=getDismissRecord(c);
+    const when=rec?.dismissedAt?relTime(rec.dismissedAt):'';
+    return`<div class="review-item">
+      <span class="review-name">${esc(name)}</span>
+      <span class="review-preview">${esc(preview)}</span>
+      ${when?`<span class="review-reason">Dismissed ${esc(when)}</span>`:''}
+      <button class="review-btn" onclick="restoreConvo('${esc(c.id)}')">↺ Restore</button>
+    </div>`;
+  }).join('');
 }
 
 
