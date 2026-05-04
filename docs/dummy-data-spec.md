@@ -227,27 +227,29 @@ JSON but had no canonical text). R9–R14 are net new contacts.
 | 3 | no  | Touché. | 4h |
 | 4 | yes | Honestly proud of you. | 4h |
 
-#### R10 · Hannah Horvath · +12125550120
+#### R10 · Martha Stewart · +12125550120
 
-- **Last text (from me):** "I see you."
-- **waitH:** 24
-
-| # | From me? | Text | Ago |
-|---|---|---|---|
-| 1 | no  | I think I'm having a Feeling about a cheese plate. | 1d |
-| 2 | yes | Validating. | 1d |
-| 3 | no  | Thank you for seeing me. | 1d |
-| 4 | yes | I see you. | 1d |
-
-#### R11 · Olivia Pope · +12125550121
-
-- **Last text (from me):** "It always is."
-- **waitH:** 80
+- **Last text (from me):** "Reporting back in May."
+- **waitH:** 28
 
 | # | From me? | Text | Ago |
 |---|---|---|---|
-| 1 | no  | It's handled. | 3d |
-| 2 | yes | It always is. | 3d |
+| 1 | no  | I am sending you my dahlia tubers. Plant them properly or do not plant them at all. | 1d |
+| 2 | yes | Properly, then. | 1d |
+| 3 | no  | Good answer. | 1d |
+| 4 | yes | Reporting back in May. | 1d |
+
+#### R11 · Guy Fieri · +12125550121
+
+- **Last text (from me):** "Save me a stool."
+- **waitH:** 50
+
+| # | From me? | Text | Ago |
+|---|---|---|---|
+| 1 | no  | Just rolled into Flavortown and they're holding a seat for ya. The donkey sauce is on. | 2d |
+| 2 | yes | On my way. | 2d |
+| 3 | no  | Outta bounds, brother. | 2d |
+| 4 | yes | Save me a stool. | 2d |
 
 #### R12 · Ron Swanson · +12125550122
 
@@ -355,33 +357,37 @@ phone field — these arrive from short codes or random long numbers.
 
 ### Spam (25) — fake-politician fundraising + sundries
 
+Politicians are kept to 4 — a recognizable taste of the bit, not the whole bit.
+The rest is realistic sundry spam (recruiters, dental, warranties, crypto,
+home-services, retail loyalty).
+
 | # | Sender | waitH | Text |
 |---|---|---:|---|
 | F36 | Spencer Pratt for Senate     | 4   | URGENT: Spencer Pratt for Senate needs $3 by midnight. The crystals are telling him it's close. Reply YES to donate. |
 | F37 | Bryan Johnson 2028           | 12  | Bryan Johnson 2028: vote for the man who has not aged since 2019. Reply YES to donate $7 and 12 minutes of your circadian rhythm. |
 | F38 | MR BEAST 2028                | 28  | MR BEAST FOR GOVERNOR: help us give away one (1) state to a deserving subscriber. Reply YES to enter. |
 | F39 | Logan Paul 2028              | 36  | Logan Paul 2028 — A Vote For Logan Is A Vote For Maverick. Reply STOP to end texts (you can't). |
-| F40 | Jake Paul 2028               | 42  | Jake Paul 2028: Maverick is a movement. Reply STOP, doesn't work. |
-| F41 | Gary Vee for Comptroller     | 50  | Gary Vee for Comptroller. Hustle. Vote. Hustle. Vote. Reply YES to hustle. |
-| F42 | Joe Rogan Independent        | 70  | Joe Rogan Independent 2028: it's gonna be a thing, man. Reply YES to support open dialogue. |
-| F43 | Pete Davidson 2028           | 76  | Pete Davidson 2028 endorses naps. Reply YES to nap with Pete. Platform is forthcoming. |
-| F44 | Martha Stewart for Mayor     | 84  | Martha Stewart for Mayor: I will personally regrout your sidewalk. Reply YES to donate $25. |
-| F45 | Chrissy Teigen for Council   | 92  | Chrissy Teigen for City Council: bringing pasta water to the people. Reply YES to chip in $15. |
-| F46 | Snoop Dogg for Lt. Gov.      | 100 | Snoop Dogg for Lt. Governor: reply YES if u know what I'm sayin. |
-| F47 | Guy Fieri 2028               | 108 | Guy Fieri 2028: taking us all to Flavortown via the legislative branch. Reply YES for $5. |
-| F48 | RuPaul for Governor          | 116 | RuPaul for Governor: sashay to the polls. Reply YES, condragulations on civic duty. |
-| F49 | Dwayne Johnson 2028          | 124 | Dwayne Johnson 2028: finally a candidate who can carry the bill. Reply YES to donate. |
-| F50 | Kim K for AG                 | 132 | Kim K for Attorney General: justice reform but make it iconic. Reply YES for $10. |
-| F51 | Jen at Randstad              | 80  | Hi Sarah, this is Jen from Randstad. I'd love to chat about your career goals over a quick 15-min call. |
-| F52 | Family Smiles Dental         | 100 | Family Smiles Dental: it's time for your check-up & cleaning. Reply YES to book. |
-| F53 | CarShield                    | 110 | CarShield: extended warranty available on the vehicle you do not own. Final notice. |
-| F54 | Indeed Recruiter             | 115 | Hi Sarah, found a perfect role for someone with your background. 5 min call? |
-| F55 | Marriott Vacations           | 125 | Marriott Vacations: you are pre-approved for a tropical getaway. Reply YES to learn more. |
-| F56 | IRS Final Notice             | 135 | IRS FINAL NOTICE: settlement required. Call 1-800-NOT-REAL today to avoid action. |
-| F57 | Property Bros LLC            | 145 | We will buy your house, sight unseen, for cash. Reply YES, no obligation. (There is obligation.) |
-| F58 | Kars4Kids                    | 155 | Donate your vehicle to Kars4Kids. The jingle is included free of charge. |
-| F59 | Free Cruise Co.              | 165 | Congratulations! You've won a complimentary 4-night cruise. Conga line included. Claim by Friday. |
-| F60 | AT&T Loyalty                 | 175 | AT&T: as a loyal customer you've been pre-selected for a device upgrade. Reply YES to redeem. |
+| F40 | Jen at Randstad              | 80  | Hi Sarah, this is Jen from Randstad. I'd love to chat about your career goals over a quick 15-min call. |
+| F41 | Family Smiles Dental         | 90  | Family Smiles Dental: it's time for your check-up & cleaning. Reply YES to book. |
+| F42 | CarShield                    | 96  | CarShield: extended warranty available on the vehicle you do not own. Final notice. |
+| F43 | Indeed Recruiter             | 102 | Hi Sarah, found a perfect role for someone with your background. 5 min call? |
+| F44 | Marriott Vacations           | 108 | Marriott Vacations: you are pre-approved for a tropical getaway. Reply YES to learn more. |
+| F45 | IRS Final Notice             | 114 | IRS FINAL NOTICE: settlement required. Call 1-800-NOT-REAL today to avoid action. |
+| F46 | Property Bros LLC            | 120 | We will buy your house, sight unseen, for cash. Reply YES, no obligation. (There is obligation.) |
+| F47 | Kars4Kids                    | 126 | Donate your vehicle to Kars4Kids. The jingle is included free of charge. |
+| F48 | Free Cruise Co.              | 132 | Congratulations! You've won a complimentary 4-night cruise. Conga line included. Claim by Friday. |
+| F49 | AT&T Loyalty                 | 138 | AT&T: as a loyal customer you've been pre-selected for a device upgrade. Reply YES to redeem. |
+| F50 | CryptoVault                  | 144 | CryptoVault: your wallet has been flagged. $42,000 USDT pending verification. Click here. (Do not.) |
+| F51 | Verizon Loyalty              | 150 | Verizon: you've been selected for a complimentary iPhone upgrade. Reply YES to claim. |
+| F52 | Geico                        | 156 | Geico: 15 minutes could save you 15%. Click here for a quote. |
+| F53 | Bath Fitter NYC              | 162 | Bath Fitter: free in-home consultation. Transform your bathroom in one day. Reply YES. |
+| F54 | SunRun Solar                 | 168 | SunRun: cut your electric bill in half. Free quote. Reply YES to schedule. |
+| F55 | NYC Roof Inspection          | 174 | Free roof inspection this week only. Hidden damage costs thousands. Reply YES. |
+| F56 | Costco Renewal               | 180 | Costco: your membership expires in 7 days. Renew now to keep saving on hot dogs. |
+| F57 | HelloFresh                   | 186 | HelloFresh: $80 off your first 3 boxes. Reply YES to redeem. Cooking optional. |
+| F58 | DraftKings                   | 192 | DraftKings: $200 in bonus bets waiting. Reply YES to claim. Must be 21+. Probably not advisable. |
+| F59 | Stitch Fix                   | 198 | Stitch Fix: reactivate today, styling fee waived. Your closet misses you. Reply YES. |
+| F60 | Best Buy Rewards             | 204 | Best Buy: final reminder — $50 reward expires Friday. Visit any store to redeem. |
 
 ### Verification codes / 2FA (10)
 
