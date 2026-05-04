@@ -18,6 +18,7 @@ const OVERRIDE_KEY='miranda2_overrides_v1', DISMISS_KEY='miranda2_dismissed_v2',
       NAME_SIGNAL_KEY='miranda2_name_signal_v1', THEME_KEY='miranda2_theme_v1',
       CONNECTED_SOURCE_DB='miranda2_connected_source_v1', CONNECTED_SOURCE_STORE='sources', CONNECTED_SOURCE_KEY='primary';
 const LEGACY_DISMISS_KEY='miranda2_dismissed_v1';
+const DEMO_BUNDLE_ID='miranda-demo-2026-05-04-rev1';
 const PREVIEW_INCLUDE_ATTACHMENT=true; // set false to hide "📎 Attachment" rows in collapsed previews
 const DEFAULT_AI_MODEL='';
 const AI_SUGGEST_ROUTE='/api/ai-suggest-reply';
@@ -34,6 +35,7 @@ const AI_ALLOWED_DEMO_THREAD_IDS=new Set([
 ]);
 
 async function init() {
+  invalidateStaleDemoCache();
   try { const r=localStorage.getItem(OVERRIDE_KEY); if(r) S.overrides=JSON.parse(r); } catch(_){}
   try {
     const r=localStorage.getItem(DISMISS_KEY);
@@ -61,6 +63,7 @@ async function init() {
       const response=await fetch('./data/miranda_demo.json');
       if(response.ok){
         const demoData=timeShiftBundledDemoData(await response.json());
+        demoData._demo_bundle_id=DEMO_BUNDLE_ID;
         localStorage.setItem(DATA_KEY,JSON.stringify(demoData));
         localStorage.setItem(META_KEY,JSON.stringify({
           savedAt:new Date().toISOString(),
@@ -155,6 +158,23 @@ function wireStartDesignIframe(){
   if(frame.contentDocument?.readyState==='complete')wire();
 }
 
+function invalidateStaleDemoCache(){
+  try{
+    const raw=localStorage.getItem(DATA_KEY);
+    if(!raw)return;
+    let parsed=null;
+    try{parsed=JSON.parse(raw);}catch(_){return;}
+    if(!parsed)return;
+    if(parsed._demo_bundle_id===DEMO_BUNDLE_ID)return;
+    const looksLikeDemo=Array.isArray(parsed.conversations)&&parsed.conversations.some(c=>
+      c&&(c.id==='iMessage;-;+12125550101'||c.id==='iMessage;-;+12125550116')
+    );
+    if(!looksLikeDemo)return;
+    localStorage.removeItem(DATA_KEY);
+    localStorage.removeItem(META_KEY);
+  }catch(_){}
+}
+
 function checkSavedData(){
   try{const m=JSON.parse(localStorage.getItem(META_KEY)),d=localStorage.getItem(DATA_KEY);
   if(m&&d){
@@ -182,6 +202,7 @@ async function enterDemoInbox(){
     const response=await fetch('./data/miranda_demo.json');
     if(!response.ok)throw new Error('Could not load bundled demo data.');
     const demoData=timeShiftBundledDemoData(await response.json());
+    demoData._demo_bundle_id=DEMO_BUNDLE_ID;
     localStorage.setItem(DATA_KEY,JSON.stringify(demoData));
     localStorage.setItem(META_KEY,JSON.stringify({
       savedAt:new Date().toISOString(),
