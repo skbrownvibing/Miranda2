@@ -21,6 +21,11 @@ design tool and ships with hardcoded demo behavior that we override:
      templates dict + rotation IIFE. Replace with the 70 entries spelled
      out in docs/dummy-data-spec.md §4 (delivery / spam-with-fake-pols /
      2FA), each with explicit waitH.
+  5. Compact archive UI for replied threads — the design tool renders a
+     full dashed AI-card ("✓ you handled this one — no draft needed…")
+     plus a left-hand "Mark unread" button. Replace the AI-card with a
+     small "already replied" pill and drop the Mark-unread button (the
+     existing right-hand "Open in iMessage →" button stays).
 
 Whenever the standalone file is re-uploaded, run:
 
@@ -232,9 +237,12 @@ def _embed_in_template(js_source: str) -> str:
 
     The whole HTML lives inside a JSON string in <script type="__bundler/template">,
     so we need real newlines as `\\n`, double quotes as `\\"`, backslashes as `\\\\`.
+    Also rewrite `</` → `<\\u002F` so the embedded source doesn't terminate the
+    surrounding <script> element prematurely (matches the design tool's output).
     """
     # json.dumps produces e.g. `"foo\\nbar"`; strip the wrapping quotes.
-    return json.dumps(js_source, ensure_ascii=False)[1:-1]
+    encoded = json.dumps(js_source, ensure_ascii=False)[1:-1]
+    return encoded.replace("</", "<\\u002F")
 
 
 def _patch_replied_tv(text: str) -> tuple[str, str]:
@@ -376,6 +384,102 @@ def _patch_auto_spec(text: str) -> tuple[str, str]:
     return new_text, "patched: AUTO → spec (70 entries)"
 
 
+# ---- Patch 5: Compact archive UI for replied threads ----
+# 5a — replace the dashed AI-card with a small "already replied" pill.
+# 5b — drop the left-hand "Mark unread" button (the right-hand
+#       "Open in iMessage →" button stays).
+# Together these strip extra chrome from threads we've already handled.
+
+REPLIED_UI_MARKER = "REPLIED_UI (Reply or Die)"
+
+# 5a — original archive AI-card branch (JS source, plain form). Embedding
+# rewrites `</` → `</` and JSON-escapes everything to match the file.
+_AICARD_5A_OLD_JS = (
+    "${archive ? `\n"
+    "        <div class=\"ai-card\" style=\"opacity:.55;border-style:dashed\">\n"
+    "          <div class=\"ai-head\">\n"
+    "            <span style=\"opacity:.7\">"
+    "${isReplied?'✓ you handled this one'"
+    ":isDismissed?'✕ you let this one go'"
+    ":'∅ filtered automatically'}</span>\n"
+    "          </div>\n"
+    "          <div class=\"ai-body\" "
+    "style=\"font-style:italic;color:var(--text-2)\">${\n"
+    "            isReplied ? 'no draft needed — you already replied. nice.'\n"
+    "            : isDismissed ? 'no reply expected. won\\'t affect your score.'\n"
+    "            : 'no human attention required. you\\'re welcome.'\n"
+    "          }</div>\n"
+    "        </div>\n"
+    "      `"
+)
+
+_AICARD_5A_NEW_JS = (
+    "${archive ? (isReplied ? `\n"
+    "        <!-- REPLIED_UI (Reply or Die): compact pill in place of the "
+    "ai-card for replied threads -->\n"
+    "        <div class=\"archive-pill\" "
+    "style=\"opacity:.5;font-style:italic;color:var(--text-2);"
+    "font-size:12px;text-align:center;padding:8px 0;letter-spacing:.04em\">"
+    "already replied</div>\n"
+    "      ` : `\n"
+    "        <div class=\"ai-card\" style=\"opacity:.55;border-style:dashed\">\n"
+    "          <div class=\"ai-head\">\n"
+    "            <span style=\"opacity:.7\">"
+    "${isDismissed?'✕ you let this one go':'∅ filtered automatically'}"
+    "</span>\n"
+    "          </div>\n"
+    "          <div class=\"ai-body\" "
+    "style=\"font-style:italic;color:var(--text-2)\">${\n"
+    "            isDismissed ? 'no reply expected. won\\'t affect your score.'\n"
+    "            : 'no human attention required. you\\'re welcome.'\n"
+    "          }</div>\n"
+    "        </div>\n"
+    "      `)"
+)
+
+# 5b — the "Mark unread" button. Drop it entirely for isReplied; keep the
+# original handler/text for the dismissed and auto cases.
+_DISMISSBTN_5B_OLD_JS = (
+    "<button class=\"dismiss-btn\" onclick=\"restoreThread()\">"
+    "${isReplied?'Mark unread'"
+    ":isDismissed?'Restore to inbox'"
+    ":'Mark as not spam'}</button>"
+)
+
+_DISMISSBTN_5B_NEW_JS = (
+    "${isReplied ? '' : `"
+    "<button class=\"dismiss-btn\" onclick=\"restoreThread()\">"
+    "${isDismissed?'Restore to inbox':'Mark as not spam'}</button>"
+    "`}"
+)
+
+
+def _patch_replied_ui(text: str) -> tuple[str, str]:
+    """Returns (new_text, status_message). Raises ValueError if unpatchable."""
+    if REPLIED_UI_MARKER in text:
+        return text, "replied-thread UI already compact"
+    aicard_old = _embed_in_template(_AICARD_5A_OLD_JS)
+    aicard_new = _embed_in_template(_AICARD_5A_NEW_JS)
+    btn_old = _embed_in_template(_DISMISSBTN_5B_OLD_JS)
+    btn_new = _embed_in_template(_DISMISSBTN_5B_NEW_JS)
+
+    if text.count(aicard_old) != 1:
+        raise ValueError(
+            "archive AI-card block not found exactly once. The design upload "
+            "changed its shape; re-derive _AICARD_5A_OLD_JS in "
+            "tools/patch_standalone.py."
+        )
+    if text.count(btn_old) != 1:
+        raise ValueError(
+            "Mark-unread button not found exactly once. The design upload "
+            "changed its shape; re-derive _DISMISSBTN_5B_OLD_JS in "
+            "tools/patch_standalone.py."
+        )
+    text = text.replace(aicard_old, aicard_new, 1)
+    text = text.replace(btn_old, btn_new, 1)
+    return text, "patched: replied-thread UI compacted"
+
+
 def _patch_cut_groups(text: str) -> tuple[str, str]:
     """Returns (new_text, status_message). Raises ValueError if unpatchable."""
     if GROUPS_CUT_MARKER in text:
@@ -419,6 +523,7 @@ def main() -> int:
         _patch_cut_groups,
         _patch_replied_tv,
         _patch_auto_spec,
+        _patch_replied_ui,
     ):
         try:
             text, msg = patcher(text)
