@@ -131,6 +131,7 @@ REPLIED_LITERAL_REPLACEMENT = (
     "  { id:'iMessage;+;chat1003',     name:'Lorelai Gilmore',  phone:'+13125550103', lastText:'On my way.',                               whenLabel:'Replied 2d ago' },\\n"
     "  { id:'iMessage;-;+12125550115', name:'Elaine Benes',     phone:'+12125550115', lastText:'Also I support the anti-dancing stance.',  whenLabel:'Replied 3d ago' },\\n"
     "  { id:'iMessage;-;+12125550116', name:'Miranda Priestly', phone:'+12125550116', lastText:'Understood.',                              whenLabel:'Replied 5d ago' },\\n"
+    "];\\n"
     "\\n// ───── DISMISSED"
 )
 
