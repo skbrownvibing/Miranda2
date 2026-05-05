@@ -2,6 +2,12 @@
 
 ## Current development cycle
 
+### 2026-05-05 — Setup hero: animated lock + security-led copy (re-applied to standalone (5))
+- Re-applied the Setup-page security treatment after MAIN's standalone (5) re-export reverted it. Setup hero is now a two-column grid: title + lede on the left, a big SVG padlock on the right that loops open → click-shut (shackle drops with a slight overshoot, body flashes a chartreuse glow on the click). No tag below the lock; "Setup · about 30 seconds" eyebrow is gone above the title. Honors `prefers-reduced-motion`. Collapses to a single column under 880px.
+- Lede: "Security first. No servers, no accounts, no uploads — your messages never leave your Mac." (concrete negatives instead of vague "everything is local").
+- Step-1 welcome card: "We'll learn how you text / We analyze your conversations to pick up your tone and rhythm, so AI-generated replies sound like you — not a chatbot." Sells the AI-reply value prop earlier instead of spam filtering.
+- Re-applied PR #133's About-hero tagline edit ("writes the reply when you're stuck" → "drafts the reply in your voice"); the (5) re-export had reverted it.
+
 ### 2026-05-05 — Cut group chats from the inbox entirely
 - Removed the **Group chats** rail chip from the inbox iframe and zeroed out the hardcoded GROUPS dataset. Reasoning: every chip on the rail is an implicit promise that clicking it leads to something the product does, and we don't generate AI drafts for groups — so the chip was a dead end. We can re-add it once there's an actual group-chat feature behind it (catch-me-up summary, mute timer, etc.).
 - Reverted the GROUPS-loader and GROUP_UI_FIX patches that built up around the now-cut feature; `tools/patch_standalone.py` is back down to two patches (regenAi backend bridge + a single "cut group chats" step that strips the rail chip and replaces `const GROUPS = [...]` with `const GROUPS = []`).
