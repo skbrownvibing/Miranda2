@@ -124,8 +124,7 @@ VOICE_LABEL_OLD = (
     "${isGroup?'Suggested reply to the group':'Suggested reply'} · editable"
 )
 VOICE_LABEL_NEW = (
-    "${isGroup?'Drafted as you (group)':'Drafted as you'} "
-    "· modeled on your texts · editable"
+    "${isGroup?'Drafted as you (group)':'Drafted as you'}"
 )
 
 REGEN_BTN_OLD = " Regenerate<\\u002Fbutton>"
