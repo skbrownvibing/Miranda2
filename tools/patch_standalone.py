@@ -237,13 +237,18 @@ def _patch_fda_terminal(text: str) -> tuple[str, str]:
 
 import json as _json
 
-SCAN_PANEL_DONE_MARKER = "Run the exporter."
+SCAN_PANEL_DONE_MARKER = "Apple could not verify"
 
 SCAN_PANEL_START_ANCHOR = (
     '<section class=\\"step-panel\\" data-panel=\\"3\\">'
 )
-SCAN_PANEL_END_ANCHOR = (
-    '<\\u002Fsection>\\n\\n      <!-- STEP 4: DONE / FIRST SCORE -->'
+# Try both forms of the closing tag — the design ships `/`, but
+# json.dumps in this script writes a literal `/`, so the file may end
+# up with either after a previous patch run.
+SCAN_PANEL_END_ANCHORS = (
+    '<\\u002Fsection>\\n\\n      <!-- STEP 4: DONE / FIRST SCORE -->',
+    '<\\/section>\\n\\n      <!-- STEP 4: DONE / FIRST SCORE -->',
+    '</section>\\n\\n      <!-- STEP 4: DONE / FIRST SCORE -->',
 )
 
 
@@ -277,14 +282,21 @@ def _build_scan_panel_body() -> str:
         '              <span class="fda-num">2</span>\n'
         '              <div>\n'
         '                <div class="fda-head">Double-click it in Finder</div>\n'
-        '                <div class="fda-sub">Terminal opens and reads your Messages database. Takes a few seconds. If macOS blocks it, right-click → Open.</div>\n'
+        '                <div class="fda-sub">Terminal opens and reads your Messages database. Takes a few seconds.</div>\n'
+        '                <div class="fda-sub" style="margin-top:8px"><strong>If macOS blocks it</strong> with <em>"Apple could not verify export.command is free of malware"</em>:</div>\n'
+        '                <ol style="margin:6px 0 0 22px;padding:0;font:13px/1.5 -apple-system,BlinkMacSystemFont,sans-serif;color:var(--ink-soft,#666)">\n'
+        '                  <li>Click <strong>Done</strong> on the alert.</li>\n'
+        '                  <li>Open <strong>System Settings → Privacy &amp; Security</strong>.</li>\n'
+        '                  <li>Scroll to the bottom and click <strong>Open Anyway</strong> next to <em>export.command</em>.</li>\n'
+        '                  <li>Click <strong>Open</strong> in the confirmation. Terminal will run it.</li>\n'
+        '                </ol>\n'
         '              </div>\n'
         '            </li>\n'
         '            <li>\n'
         '              <span class="fda-num">3</span>\n'
         '              <div>\n'
         '                <div class="fda-head">Come back when it\'s done</div>\n'
-        '                <div class="fda-sub">It writes <span class="chip">~/Desktop/miranda2_messages.json</span>. Click below and pick that file.</div>\n'
+        '                <div class="fda-sub">It writes <span class="chip">~/Desktop/replyordie_messages.json</span>. Click below and pick that file.</div>\n'
         '              </div>\n'
         '            </li>\n'
         '          </ol>\n'
@@ -308,11 +320,19 @@ def _patch_scan_to_export(text: str) -> tuple[str, str]:
     start = text.find(SCAN_PANEL_START_ANCHOR)
     if start == -1:
         raise ValueError("scan-to-export: step-3 section anchor not found")
-    end = text.find(SCAN_PANEL_END_ANCHOR, start)
+    end = -1
+    end_len = 0
+    for anchor in SCAN_PANEL_END_ANCHORS:
+        # Pull just the closing-tag portion before `\n\n      <!-- STEP 4:`.
+        idx = text.find(anchor, start)
+        if idx != -1:
+            end = idx
+            end_len = anchor.index('\\n')  # length of just the </section> part
+            break
     if end == -1:
         raise ValueError("scan-to-export: end-of-step-3 anchor not found")
     # Replace from `<section data-panel="3">` through `</section>` (inclusive).
-    section_end = end + len("<\\u002Fsection>")
+    section_end = end + end_len
     replacement = _build_scan_panel_body()
     new_text = text[:start] + replacement + text[section_end:]
     return new_text, "patched scan step into download-the-exporter"

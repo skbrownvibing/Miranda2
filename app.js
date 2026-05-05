@@ -300,7 +300,7 @@ function renderSourceUi(){
         ? 'Connect once, then use Refresh.'
         : 'Connect file for this session, then use Refresh.';
     }else{
-      const nameText=`Connected file: ${S.connectedSource.fileName||'miranda2_messages.json'}`;
+      const nameText=`Connected file: ${S.connectedSource.fileName||'replyordie_messages.json'}`;
       sourceTitle.textContent='Connected export file';
       sourceName.textContent=nameText;
     }
@@ -376,7 +376,7 @@ async function initConnectedSource(){
     const saved=await loadConnectedSourceRecord();
     if(!saved||!saved.handle)return;
     S.connectedSource.handle=saved.handle;
-    S.connectedSource.fileName=saved.fileName||'miranda2_messages.json';
+    S.connectedSource.fileName=saved.fileName||'replyordie_messages.json';
     S.connectedSource.lastRefreshedAt=saved.lastRefreshedAt||null;
   }catch(_){
     S.connectedSource.canPersist=false;

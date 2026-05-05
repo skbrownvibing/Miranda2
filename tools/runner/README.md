@@ -24,4 +24,4 @@ It listens on `http://127.0.0.1:8765` and exposes one endpoint:
 
 ## Optional environment overrides
 
-- `MIRANDA2_OUTPUT_PATH` — path the runner checks for exported JSON metadata (default: `~/Desktop/miranda2_messages.json`).
+- `REPLYORDIE_OUTPUT_PATH` — path the runner checks for exported JSON metadata (default: `~/Desktop/replyordie_messages.json`).
