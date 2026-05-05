@@ -2,19 +2,35 @@
 
 ## Current development cycle
 
-### 2026-05-05 — Setup copy: tighter security lede + reframe scan card as voice-learning
-- Lede now reads "Security first. No servers, no accounts, no uploads — your messages never leave your Mac." Three concrete negatives instead of vague "everything is local."
-- Reframed the Step-1 welcome card from "We'll do an initial scan / Takes about 15 seconds. We filter out spam…" to "We'll learn how you text / We analyze your conversations to pick up your tone and rhythm, so AI-generated replies sound like you — not a chatbot." This sets the AI-reply value prop earlier in the flow rather than selling spam filtering.
+### 2026-05-05 — Setup hero: animated lock + security-led copy (re-applied to standalone (5))
+- Re-applied the Setup-page security treatment after MAIN's standalone (5) re-export reverted it. Setup hero is now a two-column grid: title + lede on the left, a big SVG padlock on the right that loops open → click-shut (shackle drops with a slight overshoot, body flashes a chartreuse glow on the click). No tag below the lock; "Setup · about 30 seconds" eyebrow is gone above the title. Honors `prefers-reduced-motion`. Collapses to a single column under 880px.
+- Lede: "Security first. No servers, no accounts, no uploads — your messages never leave your Mac." (concrete negatives instead of vague "everything is local").
+- Step-1 welcome card: "We'll learn how you text / We analyze your conversations to pick up your tone and rhythm, so AI-generated replies sound like you — not a chatbot." Sells the AI-reply value prop earlier instead of spam filtering.
+- Re-applied PR #133's About-hero tagline edit ("writes the reply when you're stuck" → "drafts the reply in your voice"); the (5) re-export had reverted it.
 
-### 2026-05-05 — Setup hero: drop remaining text labels, leave just the visual
-- Removed the "Local-first · nothing leaves your Mac" tag under the lock and the "Setup · about 30 seconds" eyebrow above the title. Right column is now a pure animated lock visual; left column starts straight at the "Let's get you set up." title.
-- Tweaked the lede from "Four small steps. Nothing leaves your Mac — not now, not ever." to "Security first. Everything is local — nothing leaves your Mac." so the security frame leads.
+### 2026-05-05 — Cut group chats from the inbox entirely
+- Removed the **Group chats** rail chip from the inbox iframe and zeroed out the hardcoded GROUPS dataset. Reasoning: every chip on the rail is an implicit promise that clicking it leads to something the product does, and we don't generate AI drafts for groups — so the chip was a dead end. We can re-add it once there's an actual group-chat feature behind it (catch-me-up summary, mute timer, etc.).
+- Reverted the GROUPS-loader and GROUP_UI_FIX patches that built up around the now-cut feature; `tools/patch_standalone.py` is back down to two patches (regenAi backend bridge + a single "cut group chats" step that strips the rail chip and replaces `const GROUPS = [...]` with `const GROUPS = []`).
+- Deleted `data/group_chats_demo.json` since nothing reads it anymore.
 
-### 2026-05-05 — Setup hero: visual-first animated lock instead of trust copy
-- Stripped the wordy "Your texts stay yours" headline, paragraph, and three-bullet list from the Setup hero's right column. Replaced with a big SVG padlock that loops through an open → click-shut animation (shackle drops with a slight overshoot, body flashes a chartreuse glow on the click) plus a single uppercase mono tag underneath: "Local-first · nothing leaves your Mac". Honors `prefers-reduced-motion`.
+### 2026-05-05 — Drop AI draft + "Copy" wording on group threads
+- Group chats no longer show the suggested-reply card. Since we don't generate AI drafts for groups, the right panel now shows a dashed "group chat — no AI draft" placeholder where the editable card used to be.
+- Send button text changes per mode: 1:1 threads still say "Copy & open iMessage →"; group threads now say just "Open iMessage →" (no copy step) and call a new `openImessage()` that opens the Messages app without a deep-link.
+- Hardened `copyAndOpenImessage()` so it only follows an `sms:` URL when the contact's phone field starts with `+` or a digit. Group threads carry a synthetic "Group · N people" label that would otherwise have produced an invalid `sms:` URL.
+- Mute group still has no behavior — it's a visual placeholder. Wiring deferred until you say what it should do (drop from list, persistent mute, etc.).
+- All three changes live behind a new `GROUP_UI_FIX` patch step in `tools/patch_standalone.py`.
 
-### 2026-05-05 — Emphasize privacy on the Setup hero with a lock + trust panel
-- Restructured the Setup screen header in `docs/standalone.html` into a two-column grid: existing eyebrow / title / lede on the left, a new `setup-trust` aside on the right with a lock icon, a "Your texts stay yours." headline, plain-English copy about how sensitive message history is, and a three-bullet guarantee list (local reads, no server/account/analytics, read-only access). The progress rail stays full-width below. The right side of the setup hero used to be blank; now security is communicated above the fold without pushing the existing flow down. Collapses to a single column under 880px.
+### 2026-05-05 — Move group-chat demo data into a real, editable JSON file
+- Added `data/group_chats_demo.json` as the source of truth for the four group chats shown when the **Group chats** rail chip is clicked in the Inbox iframe: Pawnee Planning Committee, Burn Book Editorial Board, Coffee Emergency, The Crows Have Texted. Each group now has 6–8 messages from 3+ members so the right panel actually shows multiple people texting (with sender names and the existing per-name color palette), not just a 2-bubble stub.
+- Patched `docs/standalone.html` so its hardcoded `const GROUPS = [...]` literal is replaced with `let GROUPS = []` plus an async loader that fetches the JSON at runtime and re-renders the inbox if the user is already on the Group chats filter. Edits to `data/group_chats_demo.json` no longer require any rebuild — refresh the iframe and they're live.
+- Extended `tools/patch_standalone.py` to apply both patches (regenAi + GROUPS loader) idempotently. Re-run after every standalone re-upload.
+
+### 2026-05-05 — Adopt new standalone (5) design as the canonical bundle
+- Replaced `docs/standalone.html` contents with the newly uploaded `Reply or Die _standalone_ (5).html` design and removed the duplicate upload now that its contents live in the canonical filename.
+- New design adds real archive + group datasets behind the rail chips: 4 group chats (with per-sender labels and stable color palette), 14 "Replied this week" rows, 2 "Dismissed" threads, and 70 generated "Auto-filtered" entries (2FA / delivery / spam buckets). Filter chips are wired up via `data-filter`, with adaptive header sublines, dynamic chip counts, dimmed archive rows, and a thread panel that swaps its head / CTA / AI-card mode per filter (dashed disabled AI card for archive items; "Mark unread" / "Restore to inbox" / "Mark as not spam" footers; group sender labels above first-of-streak bubbles).
+- Re-applied the `regenAi()` patch via `tools/patch_standalone.py` so the Inbox AI Regenerate button keeps calling `window.parent.miranda2RegenAi(...)` and the real `/api/ai-suggest-reply` backend instead of the design tool's hardcoded random alts.
+- Re-applied the `.thread-body` flex polish (`flex: 0 1 auto` + `min-height: 0`) so the Dismiss / Copy & open iMessage buttons stay above the fold for short threads — the new design had reverted it to `flex: 1`.
+- Re-applied the tour CTA polish: final-step button reads `Go to inbox` (not `Take me to my inbox`), and `Got it` uses a non-breaking space so it stays on one line in the tour button.
 
 ### 2026-05-04 — Pull thread-foot buttons up so they're visible without scrolling
 - Re-applied the `.thread-body` flex fix to the new standalone design: switched from `flex: 1` to `flex: 0 1 auto` with `min-height: 0` so the body sizes to its content. This pulls the Dismiss / Copy & open iMessage buttons back above the fold for short conversations while still letting the body shrink and scroll for long threads.
