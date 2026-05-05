@@ -2,6 +2,9 @@
 
 ## Current development cycle
 
+### 2026-05-05 — Setup hero: visual-first animated lock instead of trust copy
+- Stripped the wordy "Your texts stay yours" headline, paragraph, and three-bullet list from the Setup hero's right column. Replaced with a big SVG padlock that loops through an open → click-shut animation (shackle drops with a slight overshoot, body flashes a chartreuse glow on the click) plus a single uppercase mono tag underneath: "Local-first · nothing leaves your Mac". Honors `prefers-reduced-motion`.
+
 ### 2026-05-05 — Emphasize privacy on the Setup hero with a lock + trust panel
 - Restructured the Setup screen header in `docs/standalone.html` into a two-column grid: existing eyebrow / title / lede on the left, a new `setup-trust` aside on the right with a lock icon, a "Your texts stay yours." headline, plain-English copy about how sensitive message history is, and a three-bullet guarantee list (local reads, no server/account/analytics, read-only access). The progress rail stays full-width below. The right side of the setup hero used to be blank; now security is communicated above the fold without pushing the existing flow down. Collapses to a single column under 880px.
 
