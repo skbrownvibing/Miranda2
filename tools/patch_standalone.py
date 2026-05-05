@@ -11,6 +11,10 @@ design tool and ships with hardcoded demo behavior that we override:
      hardcoded GROUPS dataset. We don't generate AI drafts for groups, so
      a Group-chats filter on the inbox rail is a dead end. Patch removes
      the rail chip and zeroes out the GROUPS array.
+  3. Archive REPLIED list — the design tool ships placeholder names like
+     Mom / Wesley / Bea. We repopulate it with the TV-character threads
+     from data/miranda_demo.json (the i_replied_last:true conversations)
+     so the archive matches the inbox voice.
 
 Whenever the standalone file is re-uploaded, run:
 
@@ -116,6 +120,61 @@ def _patch_regen_ai(text: str) -> tuple[str, str]:
     return text.replace(ORIGINAL, PATCHED, 1), "patched regenAi"
 
 
+# ---- Patch 3: Repopulate REPLIED with TV characters ----
+# The design tool ships REPLIED with placeholder names. Replace it with
+# the TV-character threads from data/miranda_demo.json that have
+# i_replied_last:true (whenLabel hours computed against that file's
+# exported_at = 2026-04-14T22:18:46Z).
+
+REPLIED_TV_MARKER = "REPLIED_TV (Reply or Die)"
+
+REPLIED_LITERAL_START = "const REPLIED = [\\n"
+REPLIED_LITERAL_END = "\\n];\\n\\n// ───── DISMISSED"
+
+REPLIED_LITERAL_REPLACEMENT = (
+    "const REPLIED = [\\n"
+    "  /* REPLIED_TV (Reply or Die): repopulated from data/miranda_demo.json"
+    " (i_replied_last:true) — see tools/patch_standalone.py. */\\n"
+    "  { id:'r1', name:'Blair Waldorf',    phone:'+12125550112',"
+    " lastText:\\\"Do we need to dress up?\\\","
+    " whenLabel:'Replied 3h ago' },\\n"
+    "  { id:'r2', name:'Rachel Green',     phone:'+12125550111',"
+    " lastText:\\\"Always.\\\","
+    " whenLabel:'Replied 5h ago' },\\n"
+    "  { id:'r3', name:'Jess Day',         phone:'+12125550113',"
+    " lastText:\\\"Honestly yes.\\\","
+    " whenLabel:'Replied 10h ago' },\\n"
+    "  { id:'r4', name:'Elaine Benes',     phone:'+12125550115',"
+    " lastText:\\\"Also I support the anti-dancing stance.\\\","
+    " whenLabel:'Replied 12h ago' },\\n"
+    "  { id:'r5', name:'Joey Tribbiani',   phone:'+12125550114',"
+    " lastText:\\\"How many sandwiches are we talking?\\\","
+    " whenLabel:'Replied 13h ago' },\\n"
+    "  { id:'r6', name:'Miranda Priestly', phone:'+12125550116',"
+    " lastText:\\\"Understood.\\\","
+    " whenLabel:'Replied 17h ago' },\\n"
+    "];"
+    "\\n\\n// ───── DISMISSED"
+)
+
+
+def _patch_replied_tv(text: str) -> tuple[str, str]:
+    """Returns (new_text, status_message). Raises ValueError if unpatchable."""
+    if REPLIED_TV_MARKER in text:
+        return text, "REPLIED already TV-populated"
+    start = text.find(REPLIED_LITERAL_START)
+    end = text.find(REPLIED_LITERAL_END)
+    if start == -1 or end == -1 or end <= start:
+        raise ValueError(
+            "REPLIED literal anchors not found. The design upload changed the "
+            "surrounding code shape; re-derive REPLIED_LITERAL_START / "
+            "REPLIED_LITERAL_END in tools/patch_standalone.py."
+        )
+    span_end = end + len(REPLIED_LITERAL_END)
+    new_text = text[:start] + REPLIED_LITERAL_REPLACEMENT + text[span_end:]
+    return new_text, "patched: REPLIED → TV characters"
+
+
 def _patch_cut_groups(text: str) -> tuple[str, str]:
     """Returns (new_text, status_message). Raises ValueError if unpatchable."""
     if GROUPS_CUT_MARKER in text:
@@ -154,7 +213,7 @@ def main() -> int:
     text = TARGET.read_text(encoding="utf-8")
     original_text = text
 
-    for patcher in (_patch_regen_ai, _patch_cut_groups):
+    for patcher in (_patch_regen_ai, _patch_cut_groups, _patch_replied_tv):
         try:
             text, msg = patcher(text)
             print(msg)
