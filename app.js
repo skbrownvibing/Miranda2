@@ -134,10 +134,10 @@ function wireStartDesignIframe(){
     const scanContinue=doc.getElementById('scanContinue');
     if(scanContinue){
       scanContinue.disabled=false;
+      scanContinue.textContent='Upload exporter file';
       scanContinue.onclick=async (e)=>{
         e.preventDefault();
         await connectExportFile();
-        try{ if(win&&typeof win.setupGo==='function')win.setupGo(4); }catch(_){}
       };
     }
 
