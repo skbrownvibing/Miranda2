@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
-"""Re-apply the Reply or Die standalone patch after a fresh design upload.
+"""Re-apply the Reply or Die standalone patches after a fresh design upload.
 
 The Inbox iframe loads docs/standalone.html. That file is exported from a
-design tool and ships with a hardcoded regenAi() that picks at random from a
-3-element alts array. We patch it to call window.parent.miranda2RegenAi()
-instead, so the AI Regenerate button uses the real /api/ai-suggest-reply
-backend.
+design tool and ships with hardcoded demo behavior that we override:
+
+  1. regenAi() — picks at random from a 3-element alts array; we patch it to
+     call window.parent.miranda2RegenAi() so the AI Regenerate button uses
+     the real /api/ai-suggest-reply backend.
+  2. const GROUPS = [...] — hardcoded group-chat demo data; we patch it to
+     fetch data/group_chats_demo.json at runtime so the "Group chats" rail
+     chip in the inbox iframe shows the canonical demo and the data lives
+     in a real, editable file in the repo.
 
 Whenever the standalone file is re-uploaded, run:
 
@@ -63,40 +68,133 @@ CANNED_MARKERS = (
     "noted. counter-proposal: tacos, 7pm, no drama",
 )
 
+# ---- Patch 2: GROUPS loader ----
+# Replace the hardcoded `const GROUPS = [ ... ];` literal with a `let GROUPS = [];`
+# stub plus an async loader that fetches data/group_chats_demo.json. Anchors:
+#   start: literal `const GROUPS = [\n` inside the bundler/template JSON string
+#   end:   literal `\n];\n\n// ───── REPLIED THIS WEEK` immediately after
+# Both anchors are unique; the script errors loudly if they shift on re-upload.
+
+GROUPS_MARKER = "GROUP_CHATS_LOADER (Reply or Die)"
+GROUPS_START_ANCHOR = "const GROUPS = [\\n"
+GROUPS_END_ANCHOR = "\\n];\\n\\n// ───── REPLIED THIS WEEK"
+
+# Replacement JS, using single quotes only (no escaping needed for the JSON-encoded
+# template string) and `\\n` for newlines so it lives correctly inside the bundle's
+# template literal. Keep this code self-contained — it runs inside the iframe.
+GROUPS_REPLACEMENT = (
+    "let GROUPS = [];\\n"
+    "/* GROUP_CHATS_LOADER (Reply or Die): hardcoded GROUPS replaced with data\\n"
+    "   fetched from data/group_chats_demo.json. Re-applied by\\n"
+    "   tools/patch_standalone.py whenever the standalone is re-uploaded. */\\n"
+    "(async () => {\\n"
+    "  try {\\n"
+    "    const r = await fetch('../data/group_chats_demo.json', {cache:'no-cache'});\\n"
+    "    if (!r.ok) return;\\n"
+    "    const raw = await r.json();\\n"
+    "    const arr = (raw && raw.groups) || [];\\n"
+    "    GROUPS = arr.map(g => {\\n"
+    "      const members = g.members || [];\\n"
+    "      const messages = g.messages || [];\\n"
+    "      const last = messages[messages.length - 1];\\n"
+    "      const lastText = last\\n"
+    "        ? (last.from_me ? 'You: ' + last.text : (last.from ? last.from + ': ' + last.text : last.text))\\n"
+    "        : '';\\n"
+    "      return {\\n"
+    "        id: g.id,\\n"
+    "        group: true,\\n"
+    "        name: g.group_name + (members.length ? ' (' + members.length + ')' : ''),\\n"
+    "        members: members,\\n"
+    "        phone: 'Group · ' + members.length + ' people',\\n"
+    "        waitH: typeof g.wait_hours === 'number' ? g.wait_hours : 12,\\n"
+    "        lastText: lastText,\\n"
+    "        msgs: messages.map(m => ({\\n"
+    "          from: m.from,\\n"
+    "          me: !!m.from_me,\\n"
+    "          t: m.text,\\n"
+    "          ago: m.ago || ''\\n"
+    "        })),\\n"
+    "        ai: g.suggested_reply || ''\\n"
+    "      };\\n"
+    "    });\\n"
+    "    if (typeof renderMsgList === 'function') renderMsgList();\\n"
+    "    if (typeof currentFilter !== 'undefined' && currentFilter === 'group' && typeof renderThread === 'function') {\\n"
+    "      const list = (typeof filteredContacts === 'function') ? filteredContacts() : [];\\n"
+    "      if (list.length) {\\n"
+    "        if (!selectedContact || !GROUPS.includes(selectedContact)) selectedContact = list[0];\\n"
+    "        renderThread();\\n"
+    "      }\\n"
+    "    }\\n"
+    "  } catch (e) { console.warn('group_chats_demo load failed', e); }\\n"
+    "})();\\n\\n// ───── REPLIED THIS WEEK"
+)
+
+
+def _patch_regen_ai(text: str) -> tuple[str, str]:
+    """Returns (new_text, status_message). Raises ValueError if unpatchable."""
+    if PATCHED in text and not any(m in text for m in CANNED_MARKERS):
+        return text, "regenAi already patched"
+    matches = text.count(ORIGINAL)
+    if matches == 0:
+        canned = [m for m in CANNED_MARKERS if m in text]
+        if canned:
+            raise ValueError(
+                "canned alts present but original regenAi() block not found.\n"
+                "  The design upload changed the surrounding code; re-derive "
+                "the patch by hand and update tools/patch_standalone.py.\n"
+                f"  Canned strings still in file: {canned}"
+            )
+        raise ValueError("nothing to patch (no regenAi original block, no canned alts).")
+    if matches > 1:
+        raise ValueError(f"original regenAi() block found {matches} times; expected 1")
+    return text.replace(ORIGINAL, PATCHED, 1), "patched regenAi"
+
+
+def _patch_groups(text: str) -> tuple[str, str]:
+    """Returns (new_text, status_message). Raises ValueError if unpatchable."""
+    if GROUPS_MARKER in text:
+        return text, "GROUPS loader already patched"
+    start = text.find(GROUPS_START_ANCHOR)
+    end = text.find(GROUPS_END_ANCHOR)
+    if start == -1 or end == -1 or end <= start:
+        raise ValueError(
+            "GROUPS literal anchors not found. The design upload changed the "
+            "surrounding code shape; re-derive the GROUPS_START_ANCHOR / "
+            "GROUPS_END_ANCHOR in tools/patch_standalone.py."
+        )
+    # span: from `const GROUPS = [\n` through the closing `];\n` (inclusive),
+    # leaving the next-section comment untouched.
+    span_start = start
+    span_end = end + len(GROUPS_END_ANCHOR)
+    return text[:span_start] + GROUPS_REPLACEMENT + text[span_end:], "patched GROUPS loader"
+
 
 def main() -> int:
     if not TARGET.exists():
         print(f"error: {TARGET} not found", file=sys.stderr)
         return 2
     text = TARGET.read_text(encoding="utf-8")
+    original_text = text
 
-    if PATCHED in text and not any(m in text for m in CANNED_MARKERS):
-        print(f"already patched: {TARGET.name}")
-        return 0
-
-    matches = text.count(ORIGINAL)
-    if matches == 0:
-        # Either the design tool changed the function, or someone edited it
-        # by hand. Either way, the patch is no longer mechanical.
-        canned = [m for m in CANNED_MARKERS if m in text]
-        if canned:
-            print(
-                "error: canned alts present but original regenAi() block not found.\n"
-                "       The design upload changed the surrounding code; re-derive "
-                "the patch by hand and update tools/patch_standalone.py.\n"
-                f"       Canned strings still in file: {canned}",
-                file=sys.stderr,
-            )
-            return 1
-        print("error: nothing to patch (no original block, no canned alts).", file=sys.stderr)
-        return 1
-    if matches > 1:
-        print(f"error: original regenAi() block found {matches} times; expected 1", file=sys.stderr)
+    try:
+        text, msg1 = _patch_regen_ai(text)
+        print(msg1)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
         return 1
 
-    text = text.replace(ORIGINAL, PATCHED, 1)
-    TARGET.write_text(text, encoding="utf-8")
-    print(f"patched {TARGET.name}")
+    try:
+        text, msg2 = _patch_groups(text)
+        print(msg2)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    if text != original_text:
+        TARGET.write_text(text, encoding="utf-8")
+        print(f"wrote {TARGET.name}")
+    else:
+        print(f"no changes: {TARGET.name}")
     return 0
 
 

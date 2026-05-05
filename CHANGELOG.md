@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-05-05 — Move group-chat demo data into a real, editable JSON file
+- Added `data/group_chats_demo.json` as the source of truth for the four group chats shown when the **Group chats** rail chip is clicked in the Inbox iframe: Pawnee Planning Committee, Burn Book Editorial Board, Coffee Emergency, The Crows Have Texted. Each group now has 6–8 messages from 3+ members so the right panel actually shows multiple people texting (with sender names and the existing per-name color palette), not just a 2-bubble stub.
+- Patched `docs/standalone.html` so its hardcoded `const GROUPS = [...]` literal is replaced with `let GROUPS = []` plus an async loader that fetches the JSON at runtime and re-renders the inbox if the user is already on the Group chats filter. Edits to `data/group_chats_demo.json` no longer require any rebuild — refresh the iframe and they're live.
+- Extended `tools/patch_standalone.py` to apply both patches (regenAi + GROUPS loader) idempotently. Re-run after every standalone re-upload.
+
 ### 2026-05-05 — Adopt new standalone (5) design as the canonical bundle
 - Replaced `docs/standalone.html` contents with the newly uploaded `Reply or Die _standalone_ (5).html` design and removed the duplicate upload now that its contents live in the canonical filename.
 - New design adds real archive + group datasets behind the rail chips: 4 group chats (with per-sender labels and stable color palette), 14 "Replied this week" rows, 2 "Dismissed" threads, and 70 generated "Auto-filtered" entries (2FA / delivery / spam buckets). Filter chips are wired up via `data-filter`, with adaptive header sublines, dynamic chip counts, dimmed archive rows, and a thread panel that swaps its head / CTA / AI-card mode per filter (dashed disabled AI card for archive items; "Mark unread" / "Restore to inbox" / "Mark as not spam" footers; group sender labels above first-of-streak bubbles).
