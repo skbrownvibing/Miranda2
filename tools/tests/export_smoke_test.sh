@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 TMP_DIR="$(mktemp -d)"
 DB_PATH="$TMP_DIR/chat_fixture.db"
-OUT_PATH="$TMP_DIR/miranda2_messages.json"
+OUT_PATH="$TMP_DIR/replyordie_messages.json"
 
 cleanup() {
   rm -rf "$TMP_DIR"
@@ -72,7 +72,7 @@ conn.commit()
 conn.close()
 PY
 
-MIRANDA2_CHAT_DB_PATH="$DB_PATH" MIRANDA2_OUTPUT_PATH="$OUT_PATH" bash "$ROOT_DIR/export.command" >/dev/null
+REPLYORDIE_CHAT_DB_PATH="$DB_PATH" REPLYORDIE_OUTPUT_PATH="$OUT_PATH" bash "$ROOT_DIR/export.command" >/dev/null
 
 python3 - "$OUT_PATH" <<'PY'
 import json
@@ -82,7 +82,7 @@ path = sys.argv[1]
 with open(path, 'r', encoding='utf-8') as f:
     payload = json.load(f)
 
-assert payload.get('app') == 'Miranda2', 'Missing app key'
+assert payload.get('app') == 'Reply or Die', 'Missing app key'
 assert isinstance(payload.get('conversations'), list), 'conversations must be a list'
 assert payload['conversations'], 'expected at least one conversation in fixture export'
 print('ok')

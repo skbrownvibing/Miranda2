@@ -28,7 +28,7 @@ Optional add-ons:
 
 ## Privacy
 
-- All your iMessage data stays on your Mac (browser `localStorage` plus `~/Desktop/miranda2_messages.json`).
+- All your iMessage data stays on your Mac (browser `localStorage` plus `~/Desktop/replyordie_messages.json`).
 - The web app does not upload your conversations anywhere.
 - The local export runner binds to `127.0.0.1` only; nothing on your network can reach it.
 - The AI Suggest Reply feature is opt-in. When you use it, only the prompt text you choose is sent to OpenAI through your own deployed function.
@@ -43,7 +43,7 @@ Open https://replyordie.vercel.app/ and click **Try demo**. Or clone the repo an
 ### Run on your real iMessage data
 
 1. Grant **Full Disk Access** to Terminal (System Settings → Privacy & Security → Full Disk Access).
-2. Double-click `export.command`. It will write `~/Desktop/miranda2_messages.json`.
+2. Double-click `export.command`. It will write `~/Desktop/replyordie_messages.json`.
 3. Open `index.html` (or the deployed URL) and drop the JSON file onto the start screen.
 
 ### Optional: one-click refresh
