@@ -652,6 +652,1421 @@
           "date": "2026-04-14T05:39:46.846815+00:00"
         }
       ]
+    },
+    {
+      "id": "iMessage;+;chat1005",
+      "contact_name": "Phoebe Buffay",
+      "phone": "+13125550105",
+      "is_group": true,
+      "group_name": "Sunday Roast Crew",
+      "category": "personal",
+      "last_message_at": "2026-04-14T17:42:46.846815+00:00",
+      "last_message_text": "Thank you, the only person at this table with taste.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-14T17:42:46.846815+00:00",
+      "message_count_30d": 41,
+      "messages": [
+        {"text": "Smelly Cat is officially the brunch playlist now.", "from_me": false, "sender": "Phoebe Buffay", "date": "2026-04-14T17:35:46.846815+00:00"},
+        {"text": "Phoebs you cannot keep doing this to us at 9am.", "from_me": false, "sender": "Joey Tribbiani", "date": "2026-04-14T17:36:46.846815+00:00"},
+        {"text": "It builds character. And appetite.", "from_me": false, "sender": "Phoebe Buffay", "date": "2026-04-14T17:38:46.846815+00:00"},
+        {"text": "It builds nausea.", "from_me": false, "sender": "Joey Tribbiani", "date": "2026-04-14T17:39:46.846815+00:00"},
+        {"text": "I'll allow it.", "from_me": true, "date": "2026-04-14T17:40:46.846815+00:00"},
+        {"text": "Thank you, the only person at this table with taste.", "from_me": false, "sender": "Phoebe Buffay", "date": "2026-04-14T17:42:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "iMessage;+;chat1006",
+      "contact_name": "Barney Stinson",
+      "phone": "+13125550106",
+      "is_group": true,
+      "group_name": "The Bad Idea Bears",
+      "category": "personal",
+      "last_message_at": "2026-04-14T19:12:46.846815+00:00",
+      "last_message_text": "This is the best chat I am in.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-14T19:12:46.846815+00:00",
+      "message_count_30d": 58,
+      "messages": [
+        {"text": "What if — hear me out — we wear suits. To the beach.", "from_me": false, "sender": "Barney Stinson", "date": "2026-04-14T19:04:46.846815+00:00"},
+        {"text": "Absolutely not.", "from_me": false, "sender": "Robin Scherbatsky", "date": "2026-04-14T19:05:46.846815+00:00"},
+        {"text": "Robin. Robin. Beach suits.", "from_me": false, "sender": "Barney Stinson", "date": "2026-04-14T19:06:46.846815+00:00"},
+        {"text": "I'd actually consider it.", "from_me": false, "sender": "Ted Mosby", "date": "2026-04-14T19:08:46.846815+00:00"},
+        {"text": "Of course you would.", "from_me": false, "sender": "Robin Scherbatsky", "date": "2026-04-14T19:09:46.846815+00:00"},
+        {"text": "Suit up.", "from_me": true, "date": "2026-04-14T19:11:46.846815+00:00"},
+        {"text": "This is the best chat I am in.", "from_me": false, "sender": "Barney Stinson", "date": "2026-04-14T19:12:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "iMessage;+;chat1007",
+      "contact_name": "Roger Sterling",
+      "phone": "+13125550107",
+      "is_group": true,
+      "group_name": "Closer Energy ⚓️",
+      "category": "personal",
+      "last_message_at": "2026-04-14T16:08:46.846815+00:00",
+      "last_message_text": "Best wrong group I've been in this year.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-14T16:08:46.846815+00:00",
+      "message_count_30d": 33,
+      "messages": [
+        {"text": "We don't sell coffee. We sell mornings.", "from_me": false, "sender": "Don Draper", "date": "2026-04-14T16:00:46.846815+00:00"},
+        {"text": "Don. We literally sell coffee.", "from_me": false, "sender": "Peggy Olson", "date": "2026-04-14T16:02:46.846815+00:00"},
+        {"text": "I'd buy a morning. Two if they came with bourbon.", "from_me": false, "sender": "Roger Sterling", "date": "2026-04-14T16:04:46.846815+00:00"},
+        {"text": "See.", "from_me": false, "sender": "Don Draper", "date": "2026-04-14T16:05:46.846815+00:00"},
+        {"text": "Wrong group.", "from_me": true, "date": "2026-04-14T16:07:46.846815+00:00"},
+        {"text": "Best wrong group I've been in this year.", "from_me": false, "sender": "Roger Sterling", "date": "2026-04-14T16:08:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "iMessage;+;chat1008",
+      "contact_name": "Stanley Hudson",
+      "phone": "+13125550108",
+      "is_group": true,
+      "group_name": "WFH Survivors",
+      "category": "personal",
+      "last_message_at": "2026-04-14T13:55:46.846815+00:00",
+      "last_message_text": "I am not on this chat.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-14T13:55:46.846815+00:00",
+      "message_count_30d": 27,
+      "messages": [
+        {"text": "Anyone else hiding from a 'quick sync'?", "from_me": false, "sender": "Pam Beesly", "date": "2026-04-14T13:48:46.846815+00:00"},
+        {"text": "Hiding is the sync.", "from_me": false, "sender": "Jim Halpert", "date": "2026-04-14T13:49:46.846815+00:00"},
+        {"text": "Stanley you better not be on mute.", "from_me": false, "sender": "Pam Beesly", "date": "2026-04-14T13:51:46.846815+00:00"},
+        {"text": "Solidarity.", "from_me": true, "date": "2026-04-14T13:53:46.846815+00:00"},
+        {"text": "I am not on this chat.", "from_me": false, "sender": "Stanley Hudson", "date": "2026-04-14T13:55:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "iMessage;+;chat1009",
+      "contact_name": "Charlotte York",
+      "phone": "+13125550109",
+      "is_group": true,
+      "group_name": "Wedding Logistics 9000",
+      "category": "personal",
+      "last_message_at": "2026-04-14T20:48:46.846815+00:00",
+      "last_message_text": "I love a willing soldier. Spreadsheet incoming.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-14T20:48:46.846815+00:00",
+      "message_count_30d": 89,
+      "messages": [
+        {"text": "We need a backup officiant. And a backup backup.", "from_me": false, "sender": "Charlotte York", "date": "2026-04-14T20:40:46.846815+00:00"},
+        {"text": "Why does this feel like a hostage negotiation.", "from_me": false, "sender": "Carrie Bradshaw", "date": "2026-04-14T20:42:46.846815+00:00"},
+        {"text": "Because it is one. With centerpieces.", "from_me": false, "sender": "Miranda Hobbes", "date": "2026-04-14T20:44:46.846815+00:00"},
+        {"text": "On it.", "from_me": true, "date": "2026-04-14T20:46:46.846815+00:00"},
+        {"text": "I love a willing soldier. Spreadsheet incoming.", "from_me": false, "sender": "Charlotte York", "date": "2026-04-14T20:48:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "iMessage;+;chat1010",
+      "contact_name": "Phoebe Buffay",
+      "phone": "+13125550110",
+      "is_group": true,
+      "group_name": "The Group Chat That Refuses To Die",
+      "category": "personal",
+      "last_message_at": "2026-04-14T11:24:46.846815+00:00",
+      "last_message_text": "Thank you. Mute the paleontologist.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-14T11:24:46.846815+00:00",
+      "message_count_30d": 64,
+      "messages": [
+        {"text": "Story time: how I met your dinosaurs.", "from_me": false, "sender": "Ross Geller", "date": "2026-04-14T11:18:46.846815+00:00"},
+        {"text": "Could you BE more historical.", "from_me": false, "sender": "Chandler Bing", "date": "2026-04-14T11:19:46.846815+00:00"},
+        {"text": "It's RELEVANT.", "from_me": false, "sender": "Ross Geller", "date": "2026-04-14T11:21:46.846815+00:00"},
+        {"text": "It is never relevant.", "from_me": true, "date": "2026-04-14T11:23:46.846815+00:00"},
+        {"text": "Thank you. Mute the paleontologist.", "from_me": false, "sender": "Phoebe Buffay", "date": "2026-04-14T11:24:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "iMessage;+;chat1011",
+      "contact_name": "Samantha Jones",
+      "phone": "+13125550111",
+      "is_group": true,
+      "group_name": "Bachelorette Recon",
+      "category": "personal",
+      "last_message_at": "2026-04-14T21:08:46.846815+00:00",
+      "last_message_text": "Bring the skepticism, leave the cardigan.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-14T21:08:46.846815+00:00",
+      "message_count_30d": 73,
+      "messages": [
+        {"text": "Vegas penthouse confirmed. Mood: feral but classy.", "from_me": false, "sender": "Samantha Jones", "date": "2026-04-14T20:58:46.846815+00:00"},
+        {"text": "Define classy.", "from_me": false, "sender": "Carrie Bradshaw", "date": "2026-04-14T21:00:46.846815+00:00"},
+        {"text": "Heels and fuzzy slippers, I assume.", "from_me": false, "sender": "Charlotte York", "date": "2026-04-14T21:02:46.846815+00:00"},
+        {"text": "I'm bringing snacks and skepticism.", "from_me": false, "sender": "Miranda Hobbes", "date": "2026-04-14T21:04:46.846815+00:00"},
+        {"text": "Both required.", "from_me": true, "date": "2026-04-14T21:06:46.846815+00:00"},
+        {"text": "Bring the skepticism, leave the cardigan.", "from_me": false, "sender": "Samantha Jones", "date": "2026-04-14T21:08:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "iMessage;+;chat1012",
+      "contact_name": "Liz Lemon",
+      "phone": "+13125550112",
+      "is_group": true,
+      "group_name": "Fantasy League: Layoff Survivors",
+      "category": "personal",
+      "last_message_at": "2026-04-14T18:32:46.846815+00:00",
+      "last_message_text": "It's been cooked since week two.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-14T18:32:46.846815+00:00",
+      "message_count_30d": 22,
+      "messages": [
+        {"text": "I traded my best player for a bag of chips and dignity.", "from_me": false, "sender": "Liz Lemon", "date": "2026-04-14T18:24:46.846815+00:00"},
+        {"text": "You should have called me first, Lemon.", "from_me": false, "sender": "Jack Donaghy", "date": "2026-04-14T18:26:46.846815+00:00"},
+        {"text": "I drafted myself. Twice.", "from_me": false, "sender": "Tracy Jordan", "date": "2026-04-14T18:28:46.846815+00:00"},
+        {"text": "This league is cooked.", "from_me": true, "date": "2026-04-14T18:30:46.846815+00:00"},
+        {"text": "It's been cooked since week two.", "from_me": false, "sender": "Liz Lemon", "date": "2026-04-14T18:32:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550117",
+      "contact_name": "Rory Gilmore",
+      "phone": "+12125550117",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-14T18:32:46.846815+00:00",
+      "last_message_text": "Honestly proud of you.",
+      "i_replied_last": true,
+      "latest_inbound_at": "2026-04-14T18:30:46.846815+00:00",
+      "message_count_30d": 38,
+      "messages": [
+        {"text": "Read four books this weekend. Am I okay.", "from_me": false, "date": "2026-04-14T18:26:46.846815+00:00"},
+        {"text": "Define okay.", "from_me": true, "date": "2026-04-14T18:28:46.846815+00:00"},
+        {"text": "Touché.", "from_me": false, "date": "2026-04-14T18:30:46.846815+00:00"},
+        {"text": "Honestly proud of you.", "from_me": true, "date": "2026-04-14T18:32:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550118",
+      "contact_name": "Hannah Horvath",
+      "phone": "+12125550118",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-13T22:14:46.846815+00:00",
+      "last_message_text": "I see you.",
+      "i_replied_last": true,
+      "latest_inbound_at": "2026-04-13T22:12:46.846815+00:00",
+      "message_count_30d": 45,
+      "messages": [
+        {"text": "I think I'm having a Feeling about a cheese plate.", "from_me": false, "date": "2026-04-13T22:08:46.846815+00:00"},
+        {"text": "Validating.", "from_me": true, "date": "2026-04-13T22:10:46.846815+00:00"},
+        {"text": "Thank you for seeing me.", "from_me": false, "date": "2026-04-13T22:12:46.846815+00:00"},
+        {"text": "I see you.", "from_me": true, "date": "2026-04-13T22:14:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550119",
+      "contact_name": "Andy Dwyer",
+      "phone": "+12125550119",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-13T15:42:46.846815+00:00",
+      "last_message_text": "Banger title.",
+      "i_replied_last": true,
+      "latest_inbound_at": "2026-04-13T15:40:46.846815+00:00",
+      "message_count_30d": 51,
+      "messages": [
+        {"text": "I named my new song 'The Pit, Revisited.' Thoughts.", "from_me": false, "date": "2026-04-13T15:40:46.846815+00:00"},
+        {"text": "Banger title.", "from_me": true, "date": "2026-04-13T15:42:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550120",
+      "contact_name": "Mindy Lahiri",
+      "phone": "+12125550120",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-12T20:18:46.846815+00:00",
+      "last_message_text": "Bangs first.",
+      "i_replied_last": true,
+      "latest_inbound_at": "2026-04-12T20:16:46.846815+00:00",
+      "message_count_30d": 67,
+      "messages": [
+        {"text": "Should I get bangs or a divorce.", "from_me": false, "date": "2026-04-12T20:16:46.846815+00:00"},
+        {"text": "Bangs first.", "from_me": true, "date": "2026-04-12T20:18:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550121",
+      "contact_name": "Olivia Pope",
+      "phone": "+12125550121",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-11T09:22:46.846815+00:00",
+      "last_message_text": "It always is.",
+      "i_replied_last": true,
+      "latest_inbound_at": "2026-04-11T09:20:46.846815+00:00",
+      "message_count_30d": 19,
+      "messages": [
+        {"text": "It's handled.", "from_me": false, "date": "2026-04-11T09:20:46.846815+00:00"},
+        {"text": "It always is.", "from_me": true, "date": "2026-04-11T09:22:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550122",
+      "contact_name": "Ron Swanson",
+      "phone": "+12125550122",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-10T11:42:46.846815+00:00",
+      "last_message_text": "Sending now.",
+      "i_replied_last": true,
+      "latest_inbound_at": "2026-04-10T11:40:46.846815+00:00",
+      "message_count_30d": 12,
+      "messages": [
+        {"text": "I require a recommendation for a reliable belt. Leather. American. No nonsense.", "from_me": false, "date": "2026-04-10T11:40:46.846815+00:00"},
+        {"text": "Sending now.", "from_me": true, "date": "2026-04-10T11:42:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550123",
+      "contact_name": "Pam Beesly",
+      "phone": "+12125550123",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-09T15:38:46.846815+00:00",
+      "last_message_text": "Worth it.",
+      "i_replied_last": true,
+      "latest_inbound_at": "2026-04-09T15:36:46.846815+00:00",
+      "message_count_30d": 48,
+      "messages": [
+        {"text": "Update from accounting: I drew a cat on the toner request.", "from_me": false, "date": "2026-04-09T15:30:46.846815+00:00"},
+        {"text": "Iconic.", "from_me": true, "date": "2026-04-09T15:32:46.846815+00:00"},
+        {"text": "Kevin laughed. Toby filed a complaint.", "from_me": false, "date": "2026-04-09T15:36:46.846815+00:00"},
+        {"text": "Worth it.", "from_me": true, "date": "2026-04-09T15:38:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550124",
+      "contact_name": "Nick Miller",
+      "phone": "+12125550124",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-08T19:46:46.846815+00:00",
+      "last_message_text": "Send pics.",
+      "i_replied_last": true,
+      "latest_inbound_at": "2026-04-08T19:44:46.846815+00:00",
+      "message_count_30d": 31,
+      "messages": [
+        {"text": "I bought a fish. The fish has opinions.", "from_me": false, "date": "2026-04-08T19:40:46.846815+00:00"},
+        {"text": "What kind of opinions.", "from_me": true, "date": "2026-04-08T19:42:46.846815+00:00"},
+        {"text": "Loud ones.", "from_me": false, "date": "2026-04-08T19:44:46.846815+00:00"},
+        {"text": "Send pics.", "from_me": true, "date": "2026-04-08T19:46:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550127",
+      "contact_name": "Dwight Schrute",
+      "phone": "+12125550127",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-11T06:02:46.846815+00:00",
+      "last_message_text": "Reminder: we have not yet scheduled the quarterly beet inventory. This is unacceptable. Confirm availability Tuesday 0600.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-11T06:02:46.846815+00:00",
+      "message_count_30d": 17,
+      "dismissed": true,
+      "messages": [
+        {"text": "Reminder: we have not yet scheduled the quarterly beet inventory. This is unacceptable. Confirm availability Tuesday 0600.", "from_me": false, "date": "2026-04-11T06:02:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "iMessage;-;+12125550129",
+      "contact_name": "Phil Dunphy",
+      "phone": "+12125550129",
+      "is_group": false,
+      "group_name": null,
+      "category": "personal",
+      "last_message_at": "2026-04-09T13:32:46.846815+00:00",
+      "last_message_text": "Trampoline arrived. Claire said no. I said yes. Need a tiebreaker. You're it. No pressure but kind of a lot of pressure.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-09T13:32:46.846815+00:00",
+      "message_count_30d": 21,
+      "dismissed": true,
+      "messages": [
+        {"text": "Trampoline arrived. Claire said no. I said yes. Need a tiebreaker. You're it. No pressure but kind of a lot of pressure.", "from_me": false, "date": "2026-04-09T13:32:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881101",
+      "contact_name": null,
+      "phone": "+13478881101",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-04-14T20:14:46.846815+00:00",
+      "last_message_text": "Your DoorDash order from Joe's Pizza is 4 minutes away. Your Dasher's name is also Joe. Coincidence?",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-14T20:14:46.846815+00:00",
+      "message_count_30d": 12,
+      "messages": [
+        {"text": "Your DoorDash order from Joe's Pizza is 4 minutes away. Your Dasher's name is also Joe. Coincidence?", "from_me": false, "date": "2026-04-14T20:14:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881102",
+      "contact_name": null,
+      "phone": "+13478881102",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-04-14T13:42:46.846815+00:00",
+      "last_message_text": "Uber Eats: your order from Sweetgreen has arrived. The kale is judging you.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-14T13:42:46.846815+00:00",
+      "message_count_30d": 9,
+      "messages": [
+        {"text": "Uber Eats: your order from Sweetgreen has arrived. The kale is judging you.", "from_me": false, "date": "2026-04-14T13:42:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881103",
+      "contact_name": null,
+      "phone": "+13478881103",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-04-13T19:18:46.846815+00:00",
+      "last_message_text": "Grubhub: your order from Bagel Pub is being prepared. ETA 22 min, give or take a bagel.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-13T19:18:46.846815+00:00",
+      "message_count_30d": 7,
+      "messages": [
+        {"text": "Grubhub: your order from Bagel Pub is being prepared. ETA 22 min, give or take a bagel.", "from_me": false, "date": "2026-04-13T19:18:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881104",
+      "contact_name": null,
+      "phone": "+13478881104",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-04-13T11:08:46.846815+00:00",
+      "last_message_text": "Instacart: your shopper is at Trader Joe's. They cannot find the chili crisp. Suggest substitution?",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-13T11:08:46.846815+00:00",
+      "message_count_30d": 14,
+      "messages": [
+        {"text": "Instacart: your shopper is at Trader Joe's. They cannot find the chili crisp. Suggest substitution?", "from_me": false, "date": "2026-04-13T11:08:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881105",
+      "contact_name": null,
+      "phone": "+13478881105",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-04-12T16:24:46.846815+00:00",
+      "last_message_text": "Your Amazon package was delivered. Hidden behind a planter, like a treat.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-12T16:24:46.846815+00:00",
+      "message_count_30d": 22,
+      "messages": [
+        {"text": "Your Amazon package was delivered. Hidden behind a planter, like a treat.", "from_me": false, "date": "2026-04-12T16:24:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881106",
+      "contact_name": null,
+      "phone": "+13478881106",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-04-12T09:42:46.846815+00:00",
+      "last_message_text": "USPS Tracking: your package is now 'In Transit, Arriving Late' which is also a state of mind.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-12T09:42:46.846815+00:00",
+      "message_count_30d": 5,
+      "messages": [
+        {"text": "USPS Tracking: your package is now 'In Transit, Arriving Late' which is also a state of mind.", "from_me": false, "date": "2026-04-12T09:42:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881107",
+      "contact_name": null,
+      "phone": "+13478881107",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-04-11T14:18:46.846815+00:00",
+      "last_message_text": "FedEx: signature required tomorrow between 8am and the heat death of the universe.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-11T14:18:46.846815+00:00",
+      "message_count_30d": 4,
+      "messages": [
+        {"text": "FedEx: signature required tomorrow between 8am and the heat death of the universe.", "from_me": false, "date": "2026-04-11T14:18:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881108",
+      "contact_name": null,
+      "phone": "+13478881108",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-04-11T08:02:46.846815+00:00",
+      "last_message_text": "UPS Choice: your driver is 4 stops away and looking aggressive.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-11T08:02:46.846815+00:00",
+      "message_count_30d": 6,
+      "messages": [
+        {"text": "UPS Choice: your driver is 4 stops away and looking aggressive.", "from_me": false, "date": "2026-04-11T08:02:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881109",
+      "contact_name": null,
+      "phone": "+13478881109",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-04-10T17:54:46.846815+00:00",
+      "last_message_text": "DHL Express: customs cleared. You are now legally responsible for whatever is in box 3.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-10T17:54:46.846815+00:00",
+      "message_count_30d": 3,
+      "messages": [
+        {"text": "DHL Express: customs cleared. You are now legally responsible for whatever is in box 3.", "from_me": false, "date": "2026-04-10T17:54:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881110",
+      "contact_name": null,
+      "phone": "+13478881110",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-04-10T12:38:46.846815+00:00",
+      "last_message_text": "Caviar: your order from Lucali has been picked up. ETA 38 min, vibes intact.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-10T12:38:46.846815+00:00",
+      "message_count_30d": 8,
+      "messages": [
+        {"text": "Caviar: your order from Lucali has been picked up. ETA 38 min, vibes intact.", "from_me": false, "date": "2026-04-10T12:38:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881111",
+      "contact_name": null,
+      "phone": "+13478881111",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-04-09T22:08:46.846815+00:00",
+      "last_message_text": "Seamless: your order from Joe's Shanghai is on the way. The dumplings are a moral commitment.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-09T22:08:46.846815+00:00",
+      "message_count_30d": 11,
+      "messages": [
+        {"text": "Seamless: your order from Joe's Shanghai is on the way. The dumplings are a moral commitment.", "from_me": false, "date": "2026-04-09T22:08:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881112",
+      "contact_name": null,
+      "phone": "+13478881112",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-04-09T13:42:46.846815+00:00",
+      "last_message_text": "DoorDash: your Dasher Andre has arrived. He is waving. Please wave back.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-09T13:42:46.846815+00:00",
+      "message_count_30d": 18,
+      "messages": [
+        {"text": "DoorDash: your Dasher Andre has arrived. He is waving. Please wave back.", "from_me": false, "date": "2026-04-09T13:42:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881113",
+      "contact_name": null,
+      "phone": "+13478881113",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-04-08T18:24:46.846815+00:00",
+      "last_message_text": "Uber: your driver Maria is arriving in a 2019 Toyota Camry. License plate: a vibe.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-08T18:24:46.846815+00:00",
+      "message_count_30d": 26,
+      "messages": [
+        {"text": "Uber: your driver Maria is arriving in a 2019 Toyota Camry. License plate: a vibe.", "from_me": false, "date": "2026-04-08T18:24:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881114",
+      "contact_name": null,
+      "phone": "+13478881114",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-04-07T20:18:46.846815+00:00",
+      "last_message_text": "Lyft: your driver Kyle is here. Kyle would like to discuss the sound system.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-07T20:18:46.846815+00:00",
+      "message_count_30d": 19,
+      "messages": [
+        {"text": "Lyft: your driver Kyle is here. Kyle would like to discuss the sound system.", "from_me": false, "date": "2026-04-07T20:18:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881115",
+      "contact_name": null,
+      "phone": "+13478881115",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-04-07T11:48:46.846815+00:00",
+      "last_message_text": "Postmates: your order from El Mitote arrived. Salsa: yes. Chips: questionable count.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-07T11:48:46.846815+00:00",
+      "message_count_30d": 7,
+      "messages": [
+        {"text": "Postmates: your order from El Mitote arrived. Salsa: yes. Chips: questionable count.", "from_me": false, "date": "2026-04-07T11:48:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881116",
+      "contact_name": null,
+      "phone": "+13478881116",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-04-06T16:32:46.846815+00:00",
+      "last_message_text": "Walmart Pickup: your order is ready. Lane 3. The only person there will be confused but kind.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-06T16:32:46.846815+00:00",
+      "message_count_30d": 5,
+      "messages": [
+        {"text": "Walmart Pickup: your order is ready. Lane 3. The only person there will be confused but kind.", "from_me": false, "date": "2026-04-06T16:32:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881117",
+      "contact_name": null,
+      "phone": "+13478881117",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-04-05T10:14:46.846815+00:00",
+      "last_message_text": "Target Drive Up: we're 3 minutes away. Open your trunk and your heart.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-05T10:14:46.846815+00:00",
+      "message_count_30d": 9,
+      "messages": [
+        {"text": "Target Drive Up: we're 3 minutes away. Open your trunk and your heart.", "from_me": false, "date": "2026-04-05T10:14:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881118",
+      "contact_name": null,
+      "phone": "+13478881118",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-04-04T15:08:46.846815+00:00",
+      "last_message_text": "Whole Foods Market: your order is being shopped. They are out of mushrooms (again).",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-04T15:08:46.846815+00:00",
+      "message_count_30d": 4,
+      "messages": [
+        {"text": "Whole Foods Market: your order is being shopped. They are out of mushrooms (again).", "from_me": false, "date": "2026-04-04T15:08:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881119",
+      "contact_name": null,
+      "phone": "+13478881119",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-04-03T11:38:46.846815+00:00",
+      "last_message_text": "Chewy: your dog's food arrived. He has not yet noticed.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-03T11:38:46.846815+00:00",
+      "message_count_30d": 3,
+      "messages": [
+        {"text": "Chewy: your dog's food arrived. He has not yet noticed.", "from_me": false, "date": "2026-04-03T11:38:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881120",
+      "contact_name": null,
+      "phone": "+13478881120",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-04-02T18:58:46.846815+00:00",
+      "last_message_text": "Wayfair: your bookshelf shipped. Estimated assembly time: a small marriage.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-02T18:58:46.846815+00:00",
+      "message_count_30d": 2,
+      "messages": [
+        {"text": "Wayfair: your bookshelf shipped. Estimated assembly time: a small marriage.", "from_me": false, "date": "2026-04-02T18:58:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881121",
+      "contact_name": null,
+      "phone": "+13478881121",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-04-01T13:24:46.846815+00:00",
+      "last_message_text": "Apple Store: your order is ready for pickup. Bring ID, patience, and small talk.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-01T13:24:46.846815+00:00",
+      "message_count_30d": 4,
+      "messages": [
+        {"text": "Apple Store: your order is ready for pickup. Bring ID, patience, and small talk.", "from_me": false, "date": "2026-04-01T13:24:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881122",
+      "contact_name": null,
+      "phone": "+13478881122",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-03-31T17:14:46.846815+00:00",
+      "last_message_text": "Best Buy: your order is ready. Door 2. Look for the lanyard.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-03-31T17:14:46.846815+00:00",
+      "message_count_30d": 3,
+      "messages": [
+        {"text": "Best Buy: your order is ready. Door 2. Look for the lanyard.", "from_me": false, "date": "2026-03-31T17:14:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881123",
+      "contact_name": null,
+      "phone": "+13478881123",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-03-30T19:42:46.846815+00:00",
+      "last_message_text": "Resy: your reservation at Don Angie tomorrow at 7:30. The pinwheel awaits.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-03-30T19:42:46.846815+00:00",
+      "message_count_30d": 6,
+      "messages": [
+        {"text": "Resy: your reservation at Don Angie tomorrow at 7:30. The pinwheel awaits.", "from_me": false, "date": "2026-03-30T19:42:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881124",
+      "contact_name": null,
+      "phone": "+13478881124",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-03-29T20:18:46.846815+00:00",
+      "last_message_text": "OpenTable: your reservation at Carbone is confirmed. Tipping is mandatory and so is silence.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-03-29T20:18:46.846815+00:00",
+      "message_count_30d": 4,
+      "messages": [
+        {"text": "OpenTable: your reservation at Carbone is confirmed. Tipping is mandatory and so is silence.", "from_me": false, "date": "2026-03-29T20:18:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881125",
+      "contact_name": null,
+      "phone": "+13478881125",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-03-28T07:48:46.846815+00:00",
+      "last_message_text": "Delta: your flight DL422 is now boarding at gate B17. Group 8, as always.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-03-28T07:48:46.846815+00:00",
+      "message_count_30d": 7,
+      "messages": [
+        {"text": "Delta: your flight DL422 is now boarding at gate B17. Group 8, as always.", "from_me": false, "date": "2026-03-28T07:48:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881126",
+      "contact_name": null,
+      "phone": "+13478881126",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-03-27T16:12:46.846815+00:00",
+      "last_message_text": "United: flight UA1106 is delayed 47 min. Concourse pretzels stand ready.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-03-27T16:12:46.846815+00:00",
+      "message_count_30d": 5,
+      "messages": [
+        {"text": "United: flight UA1106 is delayed 47 min. Concourse pretzels stand ready.", "from_me": false, "date": "2026-03-27T16:12:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;+13478881127",
+      "contact_name": null,
+      "phone": "+13478881127",
+      "is_group": false,
+      "group_name": null,
+      "category": "delivery",
+      "last_message_at": "2026-03-26T08:02:46.846815+00:00",
+      "last_message_text": "American: your boarding pass is ready. Window seat, middle row, regret.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-03-26T08:02:46.846815+00:00",
+      "message_count_30d": 4,
+      "messages": [
+        {"text": "American: your boarding pass is ready. Window seat, middle row, regret.", "from_me": false, "date": "2026-03-26T08:02:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88701",
+      "contact_name": null,
+      "phone": "88701",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-14T09:32:46.846815+00:00",
+      "last_message_text": "URGENT: Spencer Pratt for Senate needs $3 by midnight. The crystals are telling him it's close. Reply YES to donate.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-14T09:32:46.846815+00:00",
+      "message_count_30d": 11,
+      "messages": [
+        {"text": "URGENT: Spencer Pratt for Senate needs $3 by midnight. The crystals are telling him it's close. Reply YES to donate.", "from_me": false, "date": "2026-04-14T09:32:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88702",
+      "contact_name": null,
+      "phone": "88702",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-13T17:18:46.846815+00:00",
+      "last_message_text": "Bryan Johnson 2028: vote for the man who has not aged since 2019. Reply YES to donate $7 and 12 minutes of your circadian rhythm.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-13T17:18:46.846815+00:00",
+      "message_count_30d": 14,
+      "messages": [
+        {"text": "Bryan Johnson 2028: vote for the man who has not aged since 2019. Reply YES to donate $7 and 12 minutes of your circadian rhythm.", "from_me": false, "date": "2026-04-13T17:18:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88703",
+      "contact_name": null,
+      "phone": "88703",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-13T08:14:46.846815+00:00",
+      "last_message_text": "MR BEAST FOR GOVERNOR: help us give away one (1) state to a deserving subscriber. Reply YES to enter.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-13T08:14:46.846815+00:00",
+      "message_count_30d": 9,
+      "messages": [
+        {"text": "MR BEAST FOR GOVERNOR: help us give away one (1) state to a deserving subscriber. Reply YES to enter.", "from_me": false, "date": "2026-04-13T08:14:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88704",
+      "contact_name": null,
+      "phone": "88704",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-12T22:42:46.846815+00:00",
+      "last_message_text": "Logan Paul 2028 — A Vote For Logan Is A Vote For Maverick. Reply STOP to end texts (you can't).",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-12T22:42:46.846815+00:00",
+      "message_count_30d": 13,
+      "messages": [
+        {"text": "Logan Paul 2028 — A Vote For Logan Is A Vote For Maverick. Reply STOP to end texts (you can't).", "from_me": false, "date": "2026-04-12T22:42:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88705",
+      "contact_name": null,
+      "phone": "88705",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-12T11:08:46.846815+00:00",
+      "last_message_text": "Gary Vee for Comptroller. Hustle. Vote. Hustle. Vote. Reply YES to hustle.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-12T11:08:46.846815+00:00",
+      "message_count_30d": 8,
+      "messages": [
+        {"text": "Gary Vee for Comptroller. Hustle. Vote. Hustle. Vote. Reply YES to hustle.", "from_me": false, "date": "2026-04-12T11:08:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88706",
+      "contact_name": null,
+      "phone": "88706",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-11T20:24:46.846815+00:00",
+      "last_message_text": "Spencer Pratt campaign update: he's pivoting to crystals-only fiscal policy. We need $5 by Tuesday.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-11T20:24:46.846815+00:00",
+      "message_count_30d": 7,
+      "messages": [
+        {"text": "Spencer Pratt campaign update: he's pivoting to crystals-only fiscal policy. We need $5 by Tuesday.", "from_me": false, "date": "2026-04-11T20:24:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88707",
+      "contact_name": null,
+      "phone": "88707",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-11T13:52:46.846815+00:00",
+      "last_message_text": "Gwyneth Paltrow for Surgeon General: she will personally steam your problems away. Donate $11.11.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-11T13:52:46.846815+00:00",
+      "message_count_30d": 6,
+      "messages": [
+        {"text": "Gwyneth Paltrow for Surgeon General: she will personally steam your problems away. Donate $11.11.", "from_me": false, "date": "2026-04-11T13:52:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88708",
+      "contact_name": null,
+      "phone": "88708",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-10T18:32:46.846815+00:00",
+      "last_message_text": "Joe Rogan Independent 2028: it's gonna be a thing, man. Reply YES to support open dialogue.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-10T18:32:46.846815+00:00",
+      "message_count_30d": 12,
+      "messages": [
+        {"text": "Joe Rogan Independent 2028: it's gonna be a thing, man. Reply YES to support open dialogue.", "from_me": false, "date": "2026-04-10T18:32:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88709",
+      "contact_name": null,
+      "phone": "88709",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-10T07:18:46.846815+00:00",
+      "last_message_text": "Bryan Johnson 2028: the platform is simple. Sleep, don't die. Donate $77.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-10T07:18:46.846815+00:00",
+      "message_count_30d": 10,
+      "messages": [
+        {"text": "Bryan Johnson 2028: the platform is simple. Sleep, don't die. Donate $77.", "from_me": false, "date": "2026-04-10T07:18:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88710",
+      "contact_name": null,
+      "phone": "88710",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-09T19:14:46.846815+00:00",
+      "last_message_text": "Friends of Caitlyn Jenner for Mayor: she has opinions about traffic. Reply YES.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-09T19:14:46.846815+00:00",
+      "message_count_30d": 5,
+      "messages": [
+        {"text": "Friends of Caitlyn Jenner for Mayor: she has opinions about traffic. Reply YES.", "from_me": false, "date": "2026-04-09T19:14:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88711",
+      "contact_name": null,
+      "phone": "88711",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-09T11:42:46.846815+00:00",
+      "last_message_text": "URGENT POLL: do you support Kim Kardashian's run for Attorney General? Reply YES/NO/MAYBE.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-09T11:42:46.846815+00:00",
+      "message_count_30d": 8,
+      "messages": [
+        {"text": "URGENT POLL: do you support Kim Kardashian's run for Attorney General? Reply YES/NO/MAYBE.", "from_me": false, "date": "2026-04-09T11:42:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88712",
+      "contact_name": null,
+      "phone": "88712",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-08T16:08:46.846815+00:00",
+      "last_message_text": "EXCLUSIVE OFFER: 70% off luxury watches that are not, strictly speaking, watches. Limited time, act now.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-08T16:08:46.846815+00:00",
+      "message_count_30d": 4,
+      "messages": [
+        {"text": "EXCLUSIVE OFFER: 70% off luxury watches that are not, strictly speaking, watches. Limited time, act now.", "from_me": false, "date": "2026-04-08T16:08:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88713",
+      "contact_name": null,
+      "phone": "88713",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-08T09:32:46.846815+00:00",
+      "last_message_text": "Free Trial: Sarah, you've been selected for a 7-day free trial of something we won't name. Reply YES.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-08T09:32:46.846815+00:00",
+      "message_count_30d": 3,
+      "messages": [
+        {"text": "Free Trial: Sarah, you've been selected for a 7-day free trial of something we won't name. Reply YES.", "from_me": false, "date": "2026-04-08T09:32:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88714",
+      "contact_name": null,
+      "phone": "88714",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-07T18:48:46.846815+00:00",
+      "last_message_text": "Sale ends tonight at Kohl's. Spend $500, save $20. Math is fake.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-07T18:48:46.846815+00:00",
+      "message_count_30d": 6,
+      "messages": [
+        {"text": "Sale ends tonight at Kohl's. Spend $500, save $20. Math is fake.", "from_me": false, "date": "2026-04-07T18:48:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88715",
+      "contact_name": null,
+      "phone": "88715",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-07T10:18:46.846815+00:00",
+      "last_message_text": "We've cleared a spot for you in our Premium Membership Program. Reply YES to fill it.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-07T10:18:46.846815+00:00",
+      "message_count_30d": 4,
+      "messages": [
+        {"text": "We've cleared a spot for you in our Premium Membership Program. Reply YES to fill it.", "from_me": false, "date": "2026-04-07T10:18:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88716",
+      "contact_name": null,
+      "phone": "88716",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-06T20:42:46.846815+00:00",
+      "last_message_text": "Promo code BAGELRAGE for 15% off. Yes, we know. Yes, it's our brand.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-06T20:42:46.846815+00:00",
+      "message_count_30d": 5,
+      "messages": [
+        {"text": "Promo code BAGELRAGE for 15% off. Yes, we know. Yes, it's our brand.", "from_me": false, "date": "2026-04-06T20:42:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88717",
+      "contact_name": null,
+      "phone": "88717",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-06T14:08:46.846815+00:00",
+      "last_message_text": "Hi Sarah, this is Jen from Randstad. I'd love to chat about your career goals over a quick 15-min call.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-06T14:08:46.846815+00:00",
+      "message_count_30d": 3,
+      "messages": [
+        {"text": "Hi Sarah, this is Jen from Randstad. I'd love to chat about your career goals over a quick 15-min call.", "from_me": false, "date": "2026-04-06T14:08:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88718",
+      "contact_name": null,
+      "phone": "88718",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-05T19:32:46.846815+00:00",
+      "last_message_text": "From Indeed: a recruiter found your resume. They'd like to share a job opportunity with you.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-05T19:32:46.846815+00:00",
+      "message_count_30d": 4,
+      "messages": [
+        {"text": "From Indeed: a recruiter found your resume. They'd like to share a job opportunity with you.", "from_me": false, "date": "2026-04-05T19:32:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88719",
+      "contact_name": null,
+      "phone": "88719",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-05T11:14:46.846815+00:00",
+      "last_message_text": "Kelly Services: we have an open role that matches your background. Reply YES for details.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-05T11:14:46.846815+00:00",
+      "message_count_30d": 2,
+      "messages": [
+        {"text": "Kelly Services: we have an open role that matches your background. Reply YES for details.", "from_me": false, "date": "2026-04-05T11:14:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88720",
+      "contact_name": null,
+      "phone": "88720",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-04T17:42:46.846815+00:00",
+      "last_message_text": "Hi! I came across your profile and I think you'd be perfect for a role I'm hiring manager on.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-04T17:42:46.846815+00:00",
+      "message_count_30d": 3,
+      "messages": [
+        {"text": "Hi! I came across your profile and I think you'd be perfect for a role I'm hiring manager on.", "from_me": false, "date": "2026-04-04T17:42:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88721",
+      "contact_name": null,
+      "phone": "88721",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-04T08:24:46.846815+00:00",
+      "last_message_text": "Match.com: 4 new singles in your area home solo this Saturday. Reply YES to view.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-04T08:24:46.846815+00:00",
+      "message_count_30d": 5,
+      "messages": [
+        {"text": "Match.com: 4 new singles in your area home solo this Saturday. Reply YES to view.", "from_me": false, "date": "2026-04-04T08:24:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88722",
+      "contact_name": null,
+      "phone": "88722",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-03T14:58:46.846815+00:00",
+      "last_message_text": "First introduction: your dating profile has been viewed 23 times this week. Reply YES to see who.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-03T14:58:46.846815+00:00",
+      "message_count_30d": 4,
+      "messages": [
+        {"text": "First introduction: your dating profile has been viewed 23 times this week. Reply YES to see who.", "from_me": false, "date": "2026-04-03T14:58:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88723",
+      "contact_name": null,
+      "phone": "88723",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-02T15:32:46.846815+00:00",
+      "last_message_text": "Family Smiles Dental: it's time for your check-up & cleaning. Reply YES to book.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-02T15:32:46.846815+00:00",
+      "message_count_30d": 3,
+      "messages": [
+        {"text": "Family Smiles Dental: it's time for your check-up & cleaning. Reply YES to book.", "from_me": false, "date": "2026-04-02T15:32:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88724",
+      "contact_name": null,
+      "phone": "88724",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-01T19:48:46.846815+00:00",
+      "last_message_text": "Your dental appointment is overdue. Teeth whitening special 50% off. Reply YES.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-01T19:48:46.846815+00:00",
+      "message_count_30d": 2,
+      "messages": [
+        {"text": "Your dental appointment is overdue. Teeth whitening special 50% off. Reply YES.", "from_me": false, "date": "2026-04-01T19:48:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88725",
+      "contact_name": null,
+      "phone": "88725",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-03-31T09:18:46.846815+00:00",
+      "last_message_text": "OPEN HOUSE Saturday 1-3pm: 4bd/3ba 2,400 sqft just listed in Park Slope. Price reduced.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-03-31T09:18:46.846815+00:00",
+      "message_count_30d": 2,
+      "messages": [
+        {"text": "OPEN HOUSE Saturday 1-3pm: 4bd/3ba 2,400 sqft just listed in Park Slope. Price reduced.", "from_me": false, "date": "2026-03-31T09:18:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88726",
+      "contact_name": null,
+      "phone": "88726",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-03-30T13:44:46.846815+00:00",
+      "last_message_text": "MLS# 4019822: home for sale in your zip. Buyers needed. Reply YES for tour.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-03-30T13:44:46.846815+00:00",
+      "message_count_30d": 3,
+      "messages": [
+        {"text": "MLS# 4019822: home for sale in your zip. Buyers needed. Reply YES for tour.", "from_me": false, "date": "2026-03-30T13:44:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88727",
+      "contact_name": null,
+      "phone": "88727",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-03-29T17:08:46.846815+00:00",
+      "last_message_text": "Reaching out about purchasing 1031 real estate properties in your area. Quick conversation?",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-03-29T17:08:46.846815+00:00",
+      "message_count_30d": 4,
+      "messages": [
+        {"text": "Reaching out about purchasing 1031 real estate properties in your area. Quick conversation?", "from_me": false, "date": "2026-03-29T17:08:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88728",
+      "contact_name": null,
+      "phone": "88728",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-03-28T12:32:46.846815+00:00",
+      "last_message_text": "Sarah: we noticed you haven't claimed your rewards. We selected you for a $500 gift card. Reply YES.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-03-28T12:32:46.846815+00:00",
+      "message_count_30d": 6,
+      "messages": [
+        {"text": "Sarah: we noticed you haven't claimed your rewards. We selected you for a $500 gift card. Reply YES.", "from_me": false, "date": "2026-03-28T12:32:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88729",
+      "contact_name": null,
+      "phone": "88729",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-03-27T20:18:46.846815+00:00",
+      "last_message_text": "We made room in our VIP investor program. Locking in a stock with 47% return potential. Paid opportunity.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-03-27T20:18:46.846815+00:00",
+      "message_count_30d": 3,
+      "messages": [
+        {"text": "We made room in our VIP investor program. Locking in a stock with 47% return potential. Paid opportunity.", "from_me": false, "date": "2026-03-27T20:18:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;88730",
+      "contact_name": null,
+      "phone": "88730",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-03-26T10:04:46.846815+00:00",
+      "last_message_text": "Quick paid survey: share your opinion on current issues in California. $3 in 3 minutes.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-03-26T10:04:46.846815+00:00",
+      "message_count_30d": 5,
+      "messages": [
+        {"text": "Quick paid survey: share your opinion on current issues in California. $3 in 3 minutes.", "from_me": false, "date": "2026-03-26T10:04:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;692111",
+      "contact_name": null,
+      "phone": "692111",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-14T08:14:46.846815+00:00",
+      "last_message_text": "Your Google verification code is 884201. Do not share.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-14T08:14:46.846815+00:00",
+      "message_count_30d": 6,
+      "messages": [
+        {"text": "Your Google verification code is 884201. Do not share.", "from_me": false, "date": "2026-04-14T08:14:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;692112",
+      "contact_name": null,
+      "phone": "692112",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-13T20:48:46.846815+00:00",
+      "last_message_text": "Your Discord login code is 339712. If this wasn't you, ignore this.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-13T20:48:46.846815+00:00",
+      "message_count_30d": 4,
+      "messages": [
+        {"text": "Your Discord login code is 339712. If this wasn't you, ignore this.", "from_me": false, "date": "2026-04-13T20:48:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;692113",
+      "contact_name": null,
+      "phone": "692113",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-12T09:02:46.846815+00:00",
+      "last_message_text": "Your Venmo verification code is 110482. Use code: 110482",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-12T09:02:46.846815+00:00",
+      "message_count_30d": 3,
+      "messages": [
+        {"text": "Your Venmo verification code is 110482. Use code: 110482", "from_me": false, "date": "2026-04-12T09:02:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;692114",
+      "contact_name": null,
+      "phone": "692114",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-11T16:38:46.846815+00:00",
+      "last_message_text": "Your Robinhood one-time code is 552014. Don't share even with your accountant.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-11T16:38:46.846815+00:00",
+      "message_count_30d": 2,
+      "messages": [
+        {"text": "Your Robinhood one-time code is 552014. Don't share even with your accountant.", "from_me": false, "date": "2026-04-11T16:38:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;692115",
+      "contact_name": null,
+      "phone": "692115",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-10T13:24:46.846815+00:00",
+      "last_message_text": "Your Chase verification code is 884201. Do not share. Do not screenshot. Do not even think about it.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-10T13:24:46.846815+00:00",
+      "message_count_30d": 5,
+      "messages": [
+        {"text": "Your Chase verification code is 884201. Do not share. Do not screenshot. Do not even think about it.", "from_me": false, "date": "2026-04-10T13:24:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;692116",
+      "contact_name": null,
+      "phone": "692116",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-09T07:42:46.846815+00:00",
+      "last_message_text": "Your Instagram security code is 711305.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-09T07:42:46.846815+00:00",
+      "message_count_30d": 3,
+      "messages": [
+        {"text": "Your Instagram security code is 711305.", "from_me": false, "date": "2026-04-09T07:42:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;692117",
+      "contact_name": null,
+      "phone": "692117",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-07T22:14:46.846815+00:00",
+      "last_message_text": "Your code is 290411 for Coinbase. Do not share with anyone.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-07T22:14:46.846815+00:00",
+      "message_count_30d": 2,
+      "messages": [
+        {"text": "Your code is 290411 for Coinbase. Do not share with anyone.", "from_me": false, "date": "2026-04-07T22:14:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;692118",
+      "contact_name": null,
+      "phone": "692118",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-05T15:48:46.846815+00:00",
+      "last_message_text": "Your Slack one-time password is 412909. Expires in 5 minutes, like joy.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-05T15:48:46.846815+00:00",
+      "message_count_30d": 4,
+      "messages": [
+        {"text": "Your Slack one-time password is 412909. Expires in 5 minutes, like joy.", "from_me": false, "date": "2026-04-05T15:48:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;692119",
+      "contact_name": null,
+      "phone": "692119",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-03T17:32:46.846815+00:00",
+      "last_message_text": "Use code: 187224 to authorize a login to your account.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-03T17:32:46.846815+00:00",
+      "message_count_30d": 2,
+      "messages": [
+        {"text": "Use code: 187224 to authorize a login to your account.", "from_me": false, "date": "2026-04-03T17:32:46.846815+00:00"}
+      ]
+    },
+    {
+      "id": "SMS;-;692120",
+      "contact_name": null,
+      "phone": "692120",
+      "is_group": false,
+      "group_name": null,
+      "category": "spam",
+      "last_message_at": "2026-04-01T11:18:46.846815+00:00",
+      "last_message_text": "Your Apple ID code is 512908. Don't share.",
+      "i_replied_last": false,
+      "latest_inbound_at": "2026-04-01T11:18:46.846815+00:00",
+      "message_count_30d": 3,
+      "messages": [
+        {"text": "Your Apple ID code is 512908. Don't share.", "from_me": false, "date": "2026-04-01T11:18:46.846815+00:00"}
+      ]
     }
   ]
 }
