@@ -1450,6 +1450,7 @@ function renderActions(){
         <div class="detail-messages">${textRows?textRows:'<div style="color:var(--text3);font-size:12px;text-align:center;padding:12px 0">No messages in export window</div>'}</div>
         <div class="detail-actions">
           ${phone?`<a class="btn-reply" href="${smsHref}">Reply in Messages ↗</a>`:''}
+          <button class="btn-spam" onclick="reclassify('${esc(c.id)}','spam')">Spam</button>
           <button class="btn-dismiss" onclick="dismissConvo('${esc(c.id)}')">No reply needed</button>
           ${renderFilterOutMenu(c.id)}
           ${renderSuggestedReplyUI(c)}
@@ -1495,6 +1496,7 @@ function renderOtherTexts(){
         <div class="detail-messages">${textRows?textRows:'<div style="color:var(--text3);font-size:12px;text-align:center;padding:12px 0">No messages in export window</div>'}</div>
         <div class="detail-actions">
           ${phone?`<a class="btn-reply" href="${smsHref}">Reply in Messages ↗</a>`:''}
+          <button class="btn-spam" onclick="reclassify('${esc(c.id)}','spam')">Spam</button>
           <button class="btn-dismiss" onclick="dismissConvo('${esc(c.id)}')">No reply needed</button>
           ${renderFilterOutMenu(c.id)}
           ${renderSuggestedReplyUI(c)}
