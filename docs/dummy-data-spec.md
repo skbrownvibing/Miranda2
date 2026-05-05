@@ -15,7 +15,7 @@ The buckets, in the order they appear in the rail:
   - Group chats — **8 new**
 - **Archive**
   - Replied this week — **14** (6 existing + 8 new)
-  - Dismissed — **6 new** (replaces the static "2")
+  - Dismissed — **2** (Dwight Schrute, Phil Dunphy)
   - Auto-filtered — **24** representative entries (12 delivery + 8 spam + 4 codes)
 
 Style rules (apply to every new entry):
@@ -338,42 +338,22 @@ The first 6 are existing threads from `data/miranda_demo.json` and
 
 ---
 
-## 3. Dismissed (6 entries)
+## 3. Dismissed (2 entries)
 
 The user has actively waved these away — the cards land here on first load.
 Each is a single inbound message; the user has not replied and intentionally
 won't. (When a *new* inbound arrives on a dismissed thread, it should re-pop
 back into Triage per the existing dismissal logic.)
 
-#### D1 · Gretchen Wieners
-
-- **waitH:** 24
-- **Last text:** "So like, are we doing a group costume or are we doing chaos again. Last year was chaos and Karen still hasn't apologized."
-
-#### D2 · Schmidt
-
-- **waitH:** 48
-- **Last text:** "Quick favor: rate this cologne in one word. Be honest. Be kind. Be specific. Three nouns max. I'm not above bribery."
-
-#### D3 · Dwight Schrute
+#### D1 · Dwight Schrute
 
 - **waitH:** 72
 - **Last text:** "Reminder: we have not yet scheduled the quarterly beet inventory. This is unacceptable. Confirm availability Tuesday 0600."
 
-#### D4 · Niles Crane
-
-- **waitH:** 96
-- **Last text:** "I find myself in possession of two opera tickets and an unwillingness to attend alone. I'm not above pity company."
-
-#### D5 · Phil Dunphy
+#### D2 · Phil Dunphy
 
 - **waitH:** 120
 - **Last text:** "Trampoline arrived. Claire said no. I said yes. Need a tiebreaker. You're it. No pressure but kind of a lot of pressure."
-
-#### D6 · Hank Moody
-
-- **waitH:** 144
-- **Last text:** "You up? (For a thoughtful, mutually beneficial exchange of ideas. Not a booty call. Unless.)"
 
 ---
 
@@ -499,7 +479,7 @@ phone field — these arrive from short codes or random long numbers.
 | Today only | 4 | 4 |
 | Group chats | 1 | 8 |
 | Replied this week | 14 | 14 |
-| Dismissed | 2 | 6 |
+| Dismissed | 2 | 2 |
 | Auto-filtered | 70 | 24 |
 
 Note on **Auto-filtered**: original static label said 70. The actual underlying
