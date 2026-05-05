@@ -2,6 +2,9 @@
 
 ## Current development cycle
 
+### 2026-05-05 — Emphasize privacy on the Setup hero with a lock + trust panel
+- Restructured the Setup screen header in `docs/standalone.html` into a two-column grid: existing eyebrow / title / lede on the left, a new `setup-trust` aside on the right with a lock icon, a "Your texts stay yours." headline, plain-English copy about how sensitive message history is, and a three-bullet guarantee list (local reads, no server/account/analytics, read-only access). The progress rail stays full-width below. The right side of the setup hero used to be blank; now security is communicated above the fold without pushing the existing flow down. Collapses to a single column under 880px.
+
 ### 2026-05-04 — Pull thread-foot buttons up so they're visible without scrolling
 - Re-applied the `.thread-body` flex fix to the new standalone design: switched from `flex: 1` to `flex: 0 1 auto` with `min-height: 0` so the body sizes to its content. This pulls the Dismiss / Copy & open iMessage buttons back above the fold for short conversations while still letting the body shrink and scroll for long threads.
 
