@@ -2,6 +2,13 @@
 
 ## Current development cycle
 
+### 2026-05-05 — Adopt new standalone (5) design as the canonical bundle
+- Replaced `docs/standalone.html` contents with the newly uploaded `Reply or Die _standalone_ (5).html` design and removed the duplicate upload now that its contents live in the canonical filename.
+- New design adds real archive + group datasets behind the rail chips: 4 group chats (with per-sender labels and stable color palette), 14 "Replied this week" rows, 2 "Dismissed" threads, and 70 generated "Auto-filtered" entries (2FA / delivery / spam buckets). Filter chips are wired up via `data-filter`, with adaptive header sublines, dynamic chip counts, dimmed archive rows, and a thread panel that swaps its head / CTA / AI-card mode per filter (dashed disabled AI card for archive items; "Mark unread" / "Restore to inbox" / "Mark as not spam" footers; group sender labels above first-of-streak bubbles).
+- Re-applied the `regenAi()` patch via `tools/patch_standalone.py` so the Inbox AI Regenerate button keeps calling `window.parent.miranda2RegenAi(...)` and the real `/api/ai-suggest-reply` backend instead of the design tool's hardcoded random alts.
+- Re-applied the `.thread-body` flex polish (`flex: 0 1 auto` + `min-height: 0`) so the Dismiss / Copy & open iMessage buttons stay above the fold for short threads — the new design had reverted it to `flex: 1`.
+- Re-applied the tour CTA polish: final-step button reads `Go to inbox` (not `Take me to my inbox`), and `Got it` uses a non-breaking space so it stays on one line in the tour button.
+
 ### 2026-05-04 — Pull thread-foot buttons up so they're visible without scrolling
 - Re-applied the `.thread-body` flex fix to the new standalone design: switched from `flex: 1` to `flex: 0 1 auto` with `min-height: 0` so the body sizes to its content. This pulls the Dismiss / Copy & open iMessage buttons back above the fold for short conversations while still letting the body shrink and scroll for long threads.
 
