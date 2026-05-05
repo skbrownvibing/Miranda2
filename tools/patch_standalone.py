@@ -227,6 +227,97 @@ def _patch_fda_terminal(text: str) -> tuple[str, str]:
     return out, "patched FDA step around Terminal"
 
 
+# ---- Patch 4: Replace fake "Scanning your inbox" with real exporter step ----
+# The design ships Step 3 as a fake animated scan and a "See my score" CTA.
+# The actual app needs the user to download export.command, run it (which
+# writes ~/Desktop/miranda2_messages.json), and pick that file. This patch
+# replaces the entire step-3 panel body with a download-and-run flow whose
+# Continue button (id="scanContinue") is then wired by app.js to open the
+# file picker via connectExportFile().
+
+import json as _json
+
+SCAN_PANEL_DONE_MARKER = "Run the exporter."
+
+SCAN_PANEL_START_ANCHOR = (
+    '<section class=\\"step-panel\\" data-panel=\\"3\\">'
+)
+SCAN_PANEL_END_ANCHOR = (
+    '<\\u002Fsection>\\n\\n      <!-- STEP 4: DONE / FIRST SCORE -->'
+)
+
+
+def _build_scan_panel_body() -> str:
+    """Returns the JSON-encoded inner HTML for the new step-3 panel.
+
+    The standalone HTML body lives inside a JSON-string bundler template,
+    so we author the panel as plain HTML and then encode it the same way
+    the surrounding template is encoded (json.dumps without the wrapping
+    quotes).
+    """
+    html = (
+        '<section class="step-panel" data-panel="3">\n'
+        '        <div class="panel-head">\n'
+        '          <div class="panel-num">Step 3 of 4</div>\n'
+        '          <h2>Run the exporter.</h2>\n'
+        '          <p class="panel-sub">Download the exporter, double-click it in Finder, then come back when it\'s done.</p>\n'
+        '        </div>\n'
+        '\n'
+        '        <div class="fda-wrap">\n'
+        '          <ol class="fda-steps">\n'
+        '            <li>\n'
+        '              <span class="fda-num">1</span>\n'
+        '              <div>\n'
+        '                <div class="fda-head">Download the exporter</div>\n'
+        '                <div class="fda-sub">A small shell script that runs locally on your Mac.</div>\n'
+        '                <a class="btn btn-primary" href="/export.command" download="export.command" style="margin-top:10px;display:inline-flex"><span>Download export.command</span><span class="arrow">↓</span></a>\n'
+        '              </div>\n'
+        '            </li>\n'
+        '            <li>\n'
+        '              <span class="fda-num">2</span>\n'
+        '              <div>\n'
+        '                <div class="fda-head">Double-click it in Finder</div>\n'
+        '                <div class="fda-sub">Terminal opens and reads your Messages database. Takes a few seconds. If macOS blocks it, right-click → Open.</div>\n'
+        '              </div>\n'
+        '            </li>\n'
+        '            <li>\n'
+        '              <span class="fda-num">3</span>\n'
+        '              <div>\n'
+        '                <div class="fda-head">Come back when it\'s done</div>\n'
+        '                <div class="fda-sub">It writes <span class="chip">~/Desktop/miranda2_messages.json</span>. Click below and pick that file.</div>\n'
+        '              </div>\n'
+        '            </li>\n'
+        '          </ol>\n'
+        '        </div>\n'
+        '\n'
+        '        <div class="panel-actions">\n'
+        '          <button class="btn btn-ghost" onclick="setupGo(2)"><span class="arrow">←</span><span>Back</span></button>\n'
+        '          <button class="btn btn-primary" id="scanContinue" onclick="setupGo(4)"><span>I’ve run the exporter</span><span class="arrow">→</span></button>\n'
+        '        </div>\n'
+        '      </section>'
+    )
+    encoded = _json.dumps(html)
+    # Strip the surrounding double quotes that json.dumps adds.
+    return encoded[1:-1]
+
+
+def _patch_scan_to_export(text: str) -> tuple[str, str]:
+    """Returns (new_text, status_message). Raises ValueError if unpatchable."""
+    if SCAN_PANEL_DONE_MARKER in text:
+        return text, "scan-to-export already patched"
+    start = text.find(SCAN_PANEL_START_ANCHOR)
+    if start == -1:
+        raise ValueError("scan-to-export: step-3 section anchor not found")
+    end = text.find(SCAN_PANEL_END_ANCHOR, start)
+    if end == -1:
+        raise ValueError("scan-to-export: end-of-step-3 anchor not found")
+    # Replace from `<section data-panel="3">` through `</section>` (inclusive).
+    section_end = end + len("<\\u002Fsection>")
+    replacement = _build_scan_panel_body()
+    new_text = text[:start] + replacement + text[section_end:]
+    return new_text, "patched scan step into download-the-exporter"
+
+
 def main() -> int:
     if not TARGET.exists():
         print(f"error: {TARGET} not found", file=sys.stderr)
@@ -234,7 +325,12 @@ def main() -> int:
     text = TARGET.read_text(encoding="utf-8")
     original_text = text
 
-    for patcher in (_patch_regen_ai, _patch_cut_groups, _patch_fda_terminal):
+    for patcher in (
+        _patch_regen_ai,
+        _patch_cut_groups,
+        _patch_fda_terminal,
+        _patch_scan_to_export,
+    ):
         try:
             text, msg = patcher(text)
             print(msg)
