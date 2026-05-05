@@ -2,6 +2,10 @@
 
 ## Current development cycle
 
+### 2026-05-05 — Setup hero: drop remaining text labels, leave just the visual
+- Removed the "Local-first · nothing leaves your Mac" tag under the lock and the "Setup · about 30 seconds" eyebrow above the title. Right column is now a pure animated lock visual; left column starts straight at the "Let's get you set up." title.
+- Tweaked the lede from "Four small steps. Nothing leaves your Mac — not now, not ever." to "Security first. Everything is local — nothing leaves your Mac." so the security frame leads.
+
 ### 2026-05-05 — Setup hero: visual-first animated lock instead of trust copy
 - Stripped the wordy "Your texts stay yours" headline, paragraph, and three-bullet list from the Setup hero's right column. Replaced with a big SVG padlock that loops through an open → click-shut animation (shackle drops with a slight overshoot, body flashes a chartreuse glow on the click) plus a single uppercase mono tag underneath: "Local-first · nothing leaves your Mac". Honors `prefers-reduced-motion`.
 
