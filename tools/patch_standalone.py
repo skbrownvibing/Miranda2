@@ -150,6 +150,74 @@ def _patch_regen_ai(text: str) -> tuple[str, str]:
     return text.replace(ORIGINAL, PATCHED, 1), "patched regenAi"
 
 
+# ---- Patch 3: Group-thread UI fix ----
+# We don't generate AI suggestions for group chats, so hide the AI card and
+# rename "Copy & open iMessage" to just "Open iMessage" for that mode. Also
+# guard copyAndOpenImessage() against non-numeric phone strings (group threads
+# carry a synthetic "Group · N people" label, not a phone number, which would
+# turn into an invalid sms: URL).
+#
+# Three narrow string-replacements; the marker GROUP_UI_FIX makes the patch
+# idempotent on re-runs.
+
+GROUP_UI_MARKER = "GROUP_UI_FIX (Reply or Die)"
+
+# 3a — live AI card branch: insert an `isGroup ?` arm before the live card so
+# group threads show a dashed "no AI for groups" placeholder instead.
+GROUP_UI_AI_OLD = (
+    "      ` : `\\n"
+    "        <div class=\\\"ai-card\\\">\\n"
+    "          <div class=\\\"ai-head\\\">\\n"
+    "            <span>✦ ${isGroup?'Suggested reply to the group':'Suggested reply'} · editable<\\u002Fspan>"
+)
+GROUP_UI_AI_NEW = (
+    "      ` : isGroup ? `\\n"
+    "        <div class=\\\"ai-card\\\" style=\\\"opacity:.55;border-style:dashed\\\">\\n"
+    "          <div class=\\\"ai-head\\\">\\n"
+    "            <span style=\\\"opacity:.7\\\">\U0001F465 group chat — no AI draft<\\u002Fspan>\\n"
+    "          <\\u002Fdiv>\\n"
+    "          <div class=\\\"ai-body\\\" style=\\\"font-style:italic;color:var(--text-2)\\\">"
+    "we don't draft replies for group chats. open Messages and jump in.<\\u002Fdiv>\\n"
+    "        <\\u002Fdiv>\\n"
+    "      ` : `\\n"
+    "        <div class=\\\"ai-card\\\">\\n"
+    "          <div class=\\\"ai-head\\\">\\n"
+    "            <span>✦ Suggested reply · editable<\\u002Fspan>"
+)
+
+# 3b — live footer send-btn: branch the label and onclick on isGroup.
+GROUP_UI_BTN_OLD = (
+    "<button class=\\\"send-btn\\\" onclick=\\\"copyAndOpenImessage()\\\">"
+    "Copy &amp; open iMessage →<\\u002Fbutton>"
+)
+GROUP_UI_BTN_NEW = (
+    "<button class=\\\"send-btn\\\" onclick=\\\"${isGroup?'openImessage()':'copyAndOpenImessage()'}\\\">"
+    "${isGroup?'Open iMessage':'Copy &amp; open iMessage'} →<\\u002Fbutton>"
+)
+
+# 3c — phone-URL guard + add openImessage(). Replace the sms:-builder so it
+# only fires for numeric phones, and slot in openImessage() right after.
+GROUP_UI_FN_OLD = (
+    "  if (phone) {\\n"
+    "    window.location.href = 'sms:' + phone;\\n"
+    "  }\\n"
+    "}\\n\\n"
+    "function regenAi() {"
+)
+GROUP_UI_FN_NEW = (
+    "  // GROUP_UI_FIX (Reply or Die): only follow sms: for numeric phones.\\n"
+    "  if (phone && /^[+\\\\d]/.test(phone)) {\\n"
+    "    window.location.href = 'sms:' + phone;\\n"
+    "  }\\n"
+    "}\\n\\n"
+    "function openImessage() {\\n"
+    "  // GROUP_UI_FIX: used for group chats (no phone to deep-link). Opens Messages.\\n"
+    "  window.location.href = 'imessage:';\\n"
+    "}\\n\\n"
+    "function regenAi() {"
+)
+
+
 def _patch_groups(text: str) -> tuple[str, str]:
     """Returns (new_text, status_message). Raises ValueError if unpatchable."""
     if GROUPS_MARKER in text:
@@ -169,6 +237,32 @@ def _patch_groups(text: str) -> tuple[str, str]:
     return text[:span_start] + GROUPS_REPLACEMENT + text[span_end:], "patched GROUPS loader"
 
 
+def _patch_group_ui(text: str) -> tuple[str, str]:
+    """Returns (new_text, status_message). Raises ValueError if unpatchable."""
+    if GROUP_UI_MARKER in text:
+        return text, "group-thread UI already patched"
+
+    new_text = text
+    for old, new, label in (
+        (GROUP_UI_AI_OLD, GROUP_UI_AI_NEW, "live AI card head"),
+        (GROUP_UI_BTN_OLD, GROUP_UI_BTN_NEW, "live send-btn"),
+        (GROUP_UI_FN_OLD, GROUP_UI_FN_NEW, "copyAndOpenImessage / openImessage"),
+    ):
+        n = new_text.count(old)
+        if n == 0:
+            raise ValueError(
+                f"group-thread UI: anchor for '{label}' not found. "
+                "The design upload changed the surrounding code; re-derive "
+                "the GROUP_UI_*_OLD/NEW constants in tools/patch_standalone.py."
+            )
+        if n > 1:
+            raise ValueError(
+                f"group-thread UI: anchor for '{label}' found {n} times; expected 1"
+            )
+        new_text = new_text.replace(old, new, 1)
+    return new_text, "patched group-thread UI"
+
+
 def main() -> int:
     if not TARGET.exists():
         print(f"error: {TARGET} not found", file=sys.stderr)
@@ -186,6 +280,13 @@ def main() -> int:
     try:
         text, msg2 = _patch_groups(text)
         print(msg2)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    try:
+        text, msg3 = _patch_group_ui(text)
+        print(msg3)
     except ValueError as e:
         print(f"error: {e}", file=sys.stderr)
         return 1

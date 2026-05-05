@@ -2,6 +2,13 @@
 
 ## Current development cycle
 
+### 2026-05-05 — Drop AI draft + "Copy" wording on group threads
+- Group chats no longer show the suggested-reply card. Since we don't generate AI drafts for groups, the right panel now shows a dashed "group chat — no AI draft" placeholder where the editable card used to be.
+- Send button text changes per mode: 1:1 threads still say "Copy & open iMessage →"; group threads now say just "Open iMessage →" (no copy step) and call a new `openImessage()` that opens the Messages app without a deep-link.
+- Hardened `copyAndOpenImessage()` so it only follows an `sms:` URL when the contact's phone field starts with `+` or a digit. Group threads carry a synthetic "Group · N people" label that would otherwise have produced an invalid `sms:` URL.
+- Mute group still has no behavior — it's a visual placeholder. Wiring deferred until you say what it should do (drop from list, persistent mute, etc.).
+- All three changes live behind a new `GROUP_UI_FIX` patch step in `tools/patch_standalone.py`.
+
 ### 2026-05-05 — Move group-chat demo data into a real, editable JSON file
 - Added `data/group_chats_demo.json` as the source of truth for the four group chats shown when the **Group chats** rail chip is clicked in the Inbox iframe: Pawnee Planning Committee, Burn Book Editorial Board, Coffee Emergency, The Crows Have Texted. Each group now has 6–8 messages from 3+ members so the right panel actually shows multiple people texting (with sender names and the existing per-name color palette), not just a 2-bubble stub.
 - Patched `docs/standalone.html` so its hardcoded `const GROUPS = [...]` literal is replaced with `let GROUPS = []` plus an async loader that fetches the JSON at runtime and re-renders the inbox if the user is already on the Group chats filter. Edits to `data/group_chats_demo.json` no longer require any rebuild — refresh the iframe and they're live.
