@@ -134,10 +134,14 @@ function wireStartDesignIframe(){
     const scanContinue=doc.getElementById('scanContinue');
     if(scanContinue){
       scanContinue.disabled=false;
+      const scanLabel=Array.from(scanContinue.querySelectorAll('span')).find(s=>!s.classList.contains('arrow'));
+      if(scanLabel)scanLabel.textContent='Upload exporter file';
       scanContinue.onclick=async (e)=>{
         e.preventDefault();
+        // On success, loadFile() inside connectExportFile() already hides
+        // #drop-screen and shows the real #app, so we never navigate to the
+        // mock "first score" panel. On cancel/failure, stay on step 3.
         await connectExportFile();
-        try{ if(win&&typeof win.setupGo==='function')win.setupGo(4); }catch(_){}
       };
     }
 
