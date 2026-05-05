@@ -974,7 +974,7 @@
       "i_replied_last": false,
       "latest_inbound_at": "2026-04-13T18:14:46.846815+00:00",
       "message_count_30d": 24,
-      "dismissed": true,
+      "dismissed": false,
       "messages": [
         {"text": "So like, are we doing a group costume or are we doing chaos again. Last year was chaos and Karen still hasn't apologized.", "from_me": false, "date": "2026-04-13T18:14:46.846815+00:00"}
       ]
@@ -991,7 +991,7 @@
       "i_replied_last": false,
       "latest_inbound_at": "2026-04-12T14:08:46.846815+00:00",
       "message_count_30d": 39,
-      "dismissed": true,
+      "dismissed": false,
       "messages": [
         {"text": "Quick favor: rate this cologne in one word. Be honest. Be kind. Be specific. Three nouns max. I'm not above bribery.", "from_me": false, "date": "2026-04-12T14:08:46.846815+00:00"}
       ]
@@ -1025,7 +1025,7 @@
       "i_replied_last": false,
       "latest_inbound_at": "2026-04-10T19:48:46.846815+00:00",
       "message_count_30d": 8,
-      "dismissed": true,
+      "dismissed": false,
       "messages": [
         {"text": "I find myself in possession of two opera tickets and an unwillingness to attend alone. I'm not above pity company.", "from_me": false, "date": "2026-04-10T19:48:46.846815+00:00"}
       ]
@@ -1059,7 +1059,7 @@
       "i_replied_last": false,
       "latest_inbound_at": "2026-04-08T23:58:46.846815+00:00",
       "message_count_30d": 14,
-      "dismissed": true,
+      "dismissed": false,
       "messages": [
         {"text": "You up? (For a thoughtful, mutually beneficial exchange of ideas. Not a booty call. Unless.)", "from_me": false, "date": "2026-04-08T23:58:46.846815+00:00"}
       ]

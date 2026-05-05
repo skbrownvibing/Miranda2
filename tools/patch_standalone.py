@@ -312,7 +312,12 @@ def _build_dismissed_js() -> str:
 
 
 def _patch_dismissed_real(text: str) -> tuple[str, str]:
-    """Returns (new_text, status_message). Raises ValueError if unpatchable."""
+    """Returns (new_text, status_message). Raises ValueError if unpatchable.
+
+    Idempotency is by content equality, not marker presence — so flipping
+    `dismissed:true/false` flags in miranda_demo.json triggers a re-emit even
+    though the marker is already in place from a previous run.
+    """
     start = text.find(DISMISSED_LITERAL_START)
     end = text.find(DISMISSED_LITERAL_END)
     if start == -1 or end == -1 or end <= start:
@@ -322,14 +327,13 @@ def _patch_dismissed_real(text: str) -> tuple[str, str]:
             "DISMISSED_LITERAL_END in tools/patch_standalone.py."
         )
     span_end = end + len(DISMISSED_LITERAL_END)
-    block = text[start:span_end]
-    if DISMISSED_REAL_MARKER in block and "msgs:[" in block:
-        return text, "DISMISSED already real-populated"
     js_source = _build_dismissed_js()
     embedded = _embed_in_template(js_source)
     replacement = embedded + "\\n\\n// ───── AUTO-FILTERED"
     new_text = text[:start] + replacement + text[span_end:]
-    return new_text, "patched: DISMISSED → real D1–D6 from JSON"
+    if new_text == text:
+        return text, "DISMISSED already matches JSON"
+    return new_text, "patched: DISMISSED → real entries from JSON"
 
 
 def _patch_cut_groups(text: str) -> tuple[str, str]:
