@@ -15,7 +15,7 @@ from pathlib import Path
 
 HOST = "127.0.0.1"
 PORT = 8765
-OUTPUT_PATH = Path(os.path.expanduser(os.environ.get("MIRANDA2_OUTPUT_PATH", "~/Desktop/miranda2_messages.json")))
+OUTPUT_PATH = Path(os.path.expanduser(os.environ.get("REPLYORDIE_OUTPUT_PATH", "~/Desktop/replyordie_messages.json")))
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EXPORT_CMD = REPO_ROOT / "export.command"
 
