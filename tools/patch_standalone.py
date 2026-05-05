@@ -694,6 +694,86 @@ def _patch_replied_ui(text: str) -> tuple[str, str]:
     return text, "patched: replied-thread UI compacted"
 
 
+# ---- Patch 8: Readable Step-2 troubleshooting list ----
+# Two issues with the design tool's "If macOS blocks it" sub-list:
+#   8a — `.fda-steps li { display: grid; ... }` is a descendant selector,
+#        so it also applies to the nested <li>s in the troubleshooting
+#        <ol>. Each text node and <strong>/<em> becomes its own grid
+#        cell, so words like "Click" wrap inside a 36px column. Scope
+#        the rule to direct children only and add normal flow for the
+#        nested list.
+#   8b — the inline font on that <ol> is `13px/1.5`, which is too small
+#        and too cramped. Bump to `15px/1.6` for readability.
+
+READABLE_TROUBLESHOOT_MARKER = ".fda-steps > li {"
+
+_READABLE_OLD_CSS = (
+    ".fda-steps li {\n"
+    "    display: grid;\n"
+    "    grid-template-columns: 36px 1fr;\n"
+    "    gap: 14px;\n"
+    "    align-items: start;\n"
+    "  }"
+)
+
+_READABLE_NEW_CSS = (
+    ".fda-steps > li {\n"
+    "    display: grid;\n"
+    "    grid-template-columns: 36px 1fr;\n"
+    "    gap: 14px;\n"
+    "    align-items: start;\n"
+    "  }\n"
+    "  .fda-steps ol {\n"
+    "    margin: 8px 0 0 22px;\n"
+    "    padding: 0;\n"
+    "    font: 15px/1.6 -apple-system,BlinkMacSystemFont,sans-serif;\n"
+    "    color: var(--ink-soft,#666);\n"
+    "  }\n"
+    "  .fda-steps ol li {\n"
+    "    display: list-item;\n"
+    "    margin-bottom: 6px;\n"
+    "  }"
+)
+
+_READABLE_OLD_INLINE = (
+    "<ol style=\"margin:6px 0 0 22px;padding:0;"
+    "font:13px/1.5 -apple-system,BlinkMacSystemFont,sans-serif;"
+    "color:var(--ink-soft,#666)\">"
+)
+
+_READABLE_NEW_INLINE = (
+    "<ol style=\"margin:8px 0 0 22px;padding:0;"
+    "font:15px/1.6 -apple-system,BlinkMacSystemFont,sans-serif;"
+    "color:var(--ink-soft,#666)\">"
+)
+
+
+def _patch_readable_troubleshoot(text: str) -> tuple[str, str]:
+    """Returns (new_text, status_message). Raises ValueError if unpatchable."""
+    if READABLE_TROUBLESHOOT_MARKER in text:
+        return text, "Step-2 troubleshooting list already readable"
+    css_old = _embed_in_template(_READABLE_OLD_CSS)
+    css_new = _embed_in_template(_READABLE_NEW_CSS)
+    inline_old = _embed_in_template(_READABLE_OLD_INLINE)
+    inline_new = _embed_in_template(_READABLE_NEW_INLINE)
+
+    if text.count(css_old) != 1:
+        raise ValueError(
+            ".fda-steps li grid rule not found exactly once. The design "
+            "upload changed its shape; re-derive _READABLE_OLD_CSS in "
+            "tools/patch_standalone.py."
+        )
+    if text.count(inline_old) != 1:
+        raise ValueError(
+            "Step-2 troubleshooting <ol> inline style not found exactly "
+            "once. The design upload changed its shape; re-derive "
+            "_READABLE_OLD_INLINE in tools/patch_standalone.py."
+        )
+    text = text.replace(css_old, css_new, 1)
+    text = text.replace(inline_old, inline_new, 1)
+    return text, "patched: Step-2 troubleshooting list readable"
+
+
 def main() -> int:
     if not TARGET.exists():
         print(f"error: {TARGET} not found", file=sys.stderr)
@@ -709,6 +789,7 @@ def main() -> int:
         _patch_scan_to_export,
         _patch_auto_spec,
         _patch_replied_ui,
+        _patch_readable_troubleshoot,
     ):
         try:
             text, msg = patcher(text)
