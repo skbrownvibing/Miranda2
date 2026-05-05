@@ -137,6 +137,16 @@ REPLIED_TV_MARKER = "REPLIED_TV (Reply or Die)"
 REPLIED_LITERAL_START = "const REPLIED = [\\n"
 REPLIED_LITERAL_END = "\\n];\\n\\n// ───── DISMISSED"
 
+# ---- Patch 4: Repopulate DISMISSED from JSON ----
+# The design tool ships two fake dismissed entries (Garrett / unknown-415).
+# Replace them with the real D1–D6 set from data/miranda_demo.json (entries
+# flagged dismissed:true). Mirrors the REPLIED patch.
+
+DISMISSED_REAL_MARKER = "DISMISSED_REAL (Reply or Die)"
+
+DISMISSED_LITERAL_START = "const DISMISSED = [\\n"
+DISMISSED_LITERAL_END = "\\n];\\n\\n// ───── AUTO-FILTERED"
+
 
 def _ago_label(then: datetime, now: datetime) -> str:
     """Compact relative-time label, matches CONTACTS msgs ago format ('6d', '14h', '40m')."""
@@ -156,20 +166,24 @@ def _ago_label(then: datetime, now: datetime) -> str:
 
 def _when_label(then: datetime, now: datetime) -> str:
     """Right-side label on the archive list ('Replied 5h ago', 'Replied 2d ago')."""
+    return _prefixed_when_label(then, now, "Replied")
+
+
+def _prefixed_when_label(then: datetime, now: datetime, prefix: str) -> str:
     delta = now - then
     secs = max(0, int(delta.total_seconds()))
     mins = secs // 60
     hours = mins // 60
     days = hours // 24
     if days == 1:
-        return "Replied yesterday"
+        return f"{prefix} yesterday"
     if days >= 2:
-        return f"Replied {days}d ago"
+        return f"{prefix} {days}d ago"
     if hours >= 1:
-        return f"Replied {hours}h ago"
+        return f"{prefix} {hours}h ago"
     if mins >= 1:
-        return f"Replied {mins}m ago"
-    return "Replied just now"
+        return f"{prefix} {mins}m ago"
+    return f"{prefix} just now"
 
 
 def _build_replied_js() -> str:
@@ -254,6 +268,70 @@ def _patch_replied_tv(text: str) -> tuple[str, str]:
     return new_text, "patched: REPLIED → TV characters (with msgs)"
 
 
+def _build_dismissed_js() -> str:
+    """Render the DISMISSED literal as JS source.
+
+    Source is data/miranda_demo.json filtered to non-group conversations with
+    dismissed:true. `now` is the file's exported_at — fixed snapshot, not
+    wall-clock — so the 'Dismissed Xd ago' label is stable across runs.
+    """
+    payload = json.loads(DEMO_DATA.read_text(encoding="utf-8"))
+    now = datetime.fromisoformat(payload["exported_at"])
+    convos = [
+        c for c in payload["conversations"]
+        if c.get("dismissed") and not c.get("is_group")
+    ]
+    convos.sort(key=lambda c: c["last_message_at"], reverse=True)
+
+    lines: list[str] = ["const DISMISSED = ["]
+    lines.append(
+        "  /* DISMISSED_REAL (Reply or Die): generated from "
+        "data/miranda_demo.json (dismissed:true) — re-run "
+        "tools/patch_standalone.py after design uploads. */"
+    )
+    for i, c in enumerate(convos, start=1):
+        last_at = datetime.fromisoformat(c["last_message_at"])
+        when = _prefixed_when_label(last_at, now, "Dismissed")
+        name = _js_str(c["contact_name"])
+        phone = _js_str(c["phone"])
+        last_text = _js_str(c["last_message_text"])
+        lines.append(f"  {{ id:'d{i}', name:{name}, phone:{phone},")
+        lines.append(f"    lastText:{last_text},")
+        lines.append(f"    whenLabel:'{when}',")
+        lines.append("    reason:'You marked: let it go',")
+        lines.append("    msgs:[")
+        for m in c["messages"]:
+            t_dt = datetime.fromisoformat(m["date"])
+            ago = _ago_label(t_dt, now)
+            me = "true " if m["from_me"] else "false"
+            txt = _js_str(m["text"])
+            lines.append(f"      {{ me:{me}, t:{txt}, ago:'{ago}' }},")
+        lines.append("    ] },")
+    lines.append("];")
+    return "\n".join(lines)
+
+
+def _patch_dismissed_real(text: str) -> tuple[str, str]:
+    """Returns (new_text, status_message). Raises ValueError if unpatchable."""
+    start = text.find(DISMISSED_LITERAL_START)
+    end = text.find(DISMISSED_LITERAL_END)
+    if start == -1 or end == -1 or end <= start:
+        raise ValueError(
+            "DISMISSED literal anchors not found. The design upload changed the "
+            "surrounding code shape; re-derive DISMISSED_LITERAL_START / "
+            "DISMISSED_LITERAL_END in tools/patch_standalone.py."
+        )
+    span_end = end + len(DISMISSED_LITERAL_END)
+    block = text[start:span_end]
+    if DISMISSED_REAL_MARKER in block and "msgs:[" in block:
+        return text, "DISMISSED already real-populated"
+    js_source = _build_dismissed_js()
+    embedded = _embed_in_template(js_source)
+    replacement = embedded + "\\n\\n// ───── AUTO-FILTERED"
+    new_text = text[:start] + replacement + text[span_end:]
+    return new_text, "patched: DISMISSED → real D1–D6 from JSON"
+
+
 def _patch_cut_groups(text: str) -> tuple[str, str]:
     """Returns (new_text, status_message). Raises ValueError if unpatchable."""
     if GROUPS_CUT_MARKER in text:
@@ -292,7 +370,7 @@ def main() -> int:
     text = TARGET.read_text(encoding="utf-8")
     original_text = text
 
-    for patcher in (_patch_regen_ai, _patch_cut_groups, _patch_replied_tv):
+    for patcher in (_patch_regen_ai, _patch_cut_groups, _patch_replied_tv, _patch_dismissed_real):
         try:
             text, msg = patcher(text)
             print(msg)
