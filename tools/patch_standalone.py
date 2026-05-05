@@ -17,6 +17,10 @@ design tool and ships with hardcoded demo behavior that we override:
      bubble). We repopulate from data/miranda_demo.json's i_replied_last
      conversations and emit full `msgs` arrays so the panel shows the real
      back-and-forth.
+  4. Archive AUTO-FILTERED list — the design tool ships a generic
+     templates dict + rotation IIFE. Replace with the 70 entries spelled
+     out in docs/dummy-data-spec.md §4 (delivery / spam-with-fake-pols /
+     2FA), each with explicit waitH.
 
 Whenever the standalone file is re-uploaded, run:
 
@@ -30,6 +34,7 @@ needs to be revisited).
 from __future__ import annotations
 
 import json
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -37,6 +42,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "docs" / "standalone.html"
 DEMO_DATA = ROOT / "data" / "miranda_demo.json"
+DATA_SPEC = ROOT / "docs" / "dummy-data-spec.md"
 
 # ---- Patch 1: regenAi → backend bridge ----
 
@@ -254,6 +260,122 @@ def _patch_replied_tv(text: str) -> tuple[str, str]:
     return new_text, "patched: REPLIED → TV characters (with msgs)"
 
 
+# ---- Patch 4: Repopulate AUTO-FILTERED from docs/dummy-data-spec.md §4 ----
+# The design tool ships AUTO_TEMPLATES + an IIFE that rotates 70 generic
+# entries out of the templates. Replace the whole thing with a flat AUTO
+# array sourced from the spec — explicit sender, kind, waitH, lastText.
+
+AUTO_SPEC_MARKER = "AUTO_SPEC (Reply or Die)"
+
+AUTO_LITERAL_START = "const AUTO_TEMPLATES = {\\n"
+AUTO_LITERAL_END = "\\n})();\\n\\n// Stylized contact portraits"
+
+
+def _parse_auto_spec() -> list[dict]:
+    """Parse §4 of docs/dummy-data-spec.md into [{n, kind, sender, waitH, text}].
+
+    Bucket → kind mapping is driven by the section headers (### …),
+    so reordering or relabeling the spec sections won't silently break.
+    """
+    if not DATA_SPEC.exists():
+        raise ValueError(
+            f"{DATA_SPEC} not found. Add the spec doc before running this patch."
+        )
+    text = DATA_SPEC.read_text(encoding="utf-8")
+    # Find the start of section 4.
+    sec4 = re.search(r"^## 4\.\s+Auto-filtered.*$", text, flags=re.MULTILINE)
+    if not sec4:
+        raise ValueError("Section '## 4. Auto-filtered' not found in data spec.")
+    body = text[sec4.end():]
+    # Stop at the next H2.
+    next_h2 = re.search(r"^## ", body, flags=re.MULTILINE)
+    if next_h2:
+        body = body[:next_h2.start()]
+
+    # Walk lines, tracking the current kind by H3 heading.
+    kind = None
+    entries: list[dict] = []
+    row = re.compile(
+        r"\|\s*F(\d+)\s*\|\s*([^|]+?)\s*\|\s*(\d+)\s*\|\s*(.+?)\s*\|\s*$"
+    )
+    for line in body.splitlines():
+        if line.startswith("### "):
+            head = line[4:].lower()
+            if "delivery" in head or "order" in head:
+                kind = "delivery"
+            elif "spam" in head:
+                kind = "spam"
+            elif "verification" in head or "2fa" in head:
+                kind = "2fa"
+            else:
+                kind = None
+            continue
+        m = row.match(line)
+        if not m or kind is None:
+            continue
+        entries.append({
+            "n": int(m.group(1)),
+            "kind": kind,
+            "sender": m.group(2).strip(),
+            "waitH": int(m.group(3)),
+            "text": m.group(4).strip(),
+        })
+
+    if len(entries) != 70:
+        raise ValueError(
+            f"Expected 70 auto-filtered entries in spec, got {len(entries)}."
+        )
+    return entries
+
+
+def _build_auto_js() -> str:
+    """Render AUTO_TEMPLATES + AUTO as JS source, sourced from the spec."""
+    entries = _parse_auto_spec()
+    lines: list[str] = []
+    lines.append(
+        "const AUTO_TEMPLATES = {}; "
+        "/* AUTO_SPEC (Reply or Die): unused — AUTO is generated directly "
+        "from docs/dummy-data-spec.md §4. See tools/patch_standalone.py. */"
+    )
+    lines.append("const AUTO = [")
+    for e in entries:
+        sender = json.dumps(e["sender"], ensure_ascii=False)
+        body = json.dumps(e["text"], ensure_ascii=False)
+        lines.append(
+            f"  {{ id:'a{e['n']}', kind:'{e['kind']}', "
+            f"name:{sender}, phone:'—', "
+            f"lastText:{body}, waitH:{e['waitH']} }},"
+        )
+    lines.append("]")
+    return "\n".join(lines)
+
+
+def _patch_auto_spec(text: str) -> tuple[str, str]:
+    """Returns (new_text, status_message). Raises ValueError if unpatchable."""
+    start = text.find(AUTO_LITERAL_START)
+    end = text.find(AUTO_LITERAL_END)
+    if start == -1 or end == -1 or end <= start:
+        # If the marker is already there but the END anchor isn't, it
+        # means we've already replaced the IIFE block (so the anchor
+        # naturally won't match). Treat that as up-to-date.
+        if AUTO_SPEC_MARKER in text:
+            return text, "AUTO already populated from spec"
+        raise ValueError(
+            "AUTO literal anchors not found. The design upload changed the "
+            "surrounding code shape; re-derive AUTO_LITERAL_START / "
+            "AUTO_LITERAL_END in tools/patch_standalone.py."
+        )
+    span_end = end + len(AUTO_LITERAL_END)
+    block = text[start:span_end]
+    if AUTO_SPEC_MARKER in block:
+        return text, "AUTO already populated from spec"
+    js_source = _build_auto_js()
+    embedded = _embed_in_template(js_source)
+    replacement = embedded + "\\n\\n// Stylized contact portraits"
+    new_text = text[:start] + replacement + text[span_end:]
+    return new_text, "patched: AUTO → spec (70 entries)"
+
+
 def _patch_cut_groups(text: str) -> tuple[str, str]:
     """Returns (new_text, status_message). Raises ValueError if unpatchable."""
     if GROUPS_CUT_MARKER in text:
@@ -292,7 +414,12 @@ def main() -> int:
     text = TARGET.read_text(encoding="utf-8")
     original_text = text
 
-    for patcher in (_patch_regen_ai, _patch_cut_groups, _patch_replied_tv):
+    for patcher in (
+        _patch_regen_ai,
+        _patch_cut_groups,
+        _patch_replied_tv,
+        _patch_auto_spec,
+    ):
         try:
             text, msg = patcher(text)
             print(msg)
