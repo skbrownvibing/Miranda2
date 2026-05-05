@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-05-05 — Cut group chats from the inbox entirely
+- Removed the **Group chats** rail chip from the inbox iframe and zeroed out the hardcoded GROUPS dataset. Reasoning: every chip on the rail is an implicit promise that clicking it leads to something the product does, and we don't generate AI drafts for groups — so the chip was a dead end. We can re-add it once there's an actual group-chat feature behind it (catch-me-up summary, mute timer, etc.).
+- Reverted the GROUPS-loader and GROUP_UI_FIX patches that built up around the now-cut feature; `tools/patch_standalone.py` is back down to two patches (regenAi backend bridge + a single "cut group chats" step that strips the rail chip and replaces `const GROUPS = [...]` with `const GROUPS = []`).
+- Deleted `data/group_chats_demo.json` since nothing reads it anymore.
+
 ### 2026-05-05 — Drop AI draft + "Copy" wording on group threads
 - Group chats no longer show the suggested-reply card. Since we don't generate AI drafts for groups, the right panel now shows a dashed "group chat — no AI draft" placeholder where the editable card used to be.
 - Send button text changes per mode: 1:1 threads still say "Copy & open iMessage →"; group threads now say just "Open iMessage →" (no copy step) and call a new `openImessage()` that opens the Messages app without a deep-link.
