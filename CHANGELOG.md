@@ -2,6 +2,10 @@
 
 ## Current development cycle
 
+### 2026-05-05 — Setup copy: tighter security lede + reframe scan card as voice-learning
+- Lede now reads "Security first. No servers, no accounts, no uploads — your messages never leave your Mac." Three concrete negatives instead of vague "everything is local."
+- Reframed the Step-1 welcome card from "We'll do an initial scan / Takes about 15 seconds. We filter out spam…" to "We'll learn how you text / We analyze your conversations to pick up your tone and rhythm, so AI-generated replies sound like you — not a chatbot." This sets the AI-reply value prop earlier in the flow rather than selling spam filtering.
+
 ### 2026-05-05 — Setup hero: drop remaining text labels, leave just the visual
 - Removed the "Local-first · nothing leaves your Mac" tag under the lock and the "Setup · about 30 seconds" eyebrow above the title. Right column is now a pure animated lock visual; left column starts straight at the "Let's get you set up." title.
 - Tweaked the lede from "Four small steps. Nothing leaves your Mac — not now, not ever." to "Security first. Everything is local — nothing leaves your Mac." so the security frame leads.
