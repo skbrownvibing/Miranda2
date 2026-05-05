@@ -2,6 +2,12 @@
 
 ## Current development cycle
 
+### 2026-05-05 — Exporter download switched to ZIP + clearer macOS troubleshooting
+- Setup Step 3 now points users to `export.zip` (instead of downloading `export.command` directly) and explains that the exporter is zipped so macOS keeps the permissions it needs.
+- Updated Step 3 run instructions to explicitly tell users to unzip first, then double-click `export.command`.
+- Added a second troubleshooting branch for the specific macOS error: “could not be executed because you do not have appropriate access privileges,” including a fallback `chmod +x` command for users who still hit permission issues.
+- Added `tools/make_export_zip.sh` so `export.zip` can be generated locally for distribution without committing a binary file to git.
+
 ### 2026-05-05 — Setup hero: animated lock + security-led copy (re-applied to standalone (5))
 - Re-applied the Setup-page security treatment after MAIN's standalone (5) re-export reverted it. Setup hero is now a two-column grid: title + lede on the left, a big SVG padlock on the right that loops open → click-shut (shackle drops with a slight overshoot, body flashes a chartreuse glow on the click). No tag below the lock; "Setup · about 30 seconds" eyebrow is gone above the title. Honors `prefers-reduced-motion`. Collapses to a single column under 880px.
 - Lede: "Security first. No servers, no accounts, no uploads — your messages never leave your Mac." (concrete negatives instead of vague "everything is local").

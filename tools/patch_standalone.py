@@ -484,10 +484,15 @@ SCAN_PANEL_START_ANCHOR = (
 # up with either after a previous patch run.
 SCAN_PANEL_END_ANCHORS = (
     '<\\u002Fsection>\\n\\n      <!-- STEP 4: DONE / FIRST SCORE -->',
-    '<\\/section>\\n\\n      <!-- STEP 4: DONE / FIRST SCORE -->',
-    '</section>\\n\\n      <!-- STEP 4: DONE / FIRST SCORE -->',
-)
-
+        '                <div class="fda-head">Download the exporter (.zip)</div>\n'
+        '                <div class="fda-sub">A small local script, zipped so macOS keeps the permissions it needs.</div>\n'
+        '                <a class="btn btn-primary" href="/export.zip" download="export.zip" style="margin-top:10px;display:inline-flex"><span>Download export.zip</span><span class="arrow">↓</span></a>\n'
+        '                <div class="fda-head">Unzip, then double-click export.command in Finder</div>\n'
+        '                <div class="fda-sub" style="margin-top:8px"><strong>If you see</strong> <em>"could not be executed because you do not have appropriate access privileges"</em>:</div>\n'
+        '                <ol style="margin:6px 0 0 22px;padding:0;font:13px/1.5 -apple-system,BlinkMacSystemFont,sans-serif;color:var(--ink-soft,#666)">\n'
+        '                  <li>Make sure you opened the file from inside the unzipped folder (not an older download copy).</li>\n'
+        '                  <li>If needed, open Terminal and run <code>chmod +x ~/Downloads/export.command</code>, then try again.</li>\n'
+        '                </ol>\n'
 
 def _build_scan_panel_body() -> str:
     """Returns the JSON-encoded inner HTML for the new step-3 panel.
