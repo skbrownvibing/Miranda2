@@ -11,6 +11,12 @@ design tool and ships with hardcoded demo behavior that we override:
      hardcoded GROUPS dataset. We don't generate AI drafts for groups, so
      a Group-chats filter on the inbox rail is a dead end. Patch removes
      the rail chip and zeroes out the GROUPS array.
+  3. Archive REPLIED list — the design tool ships placeholder names like
+     Mom / Wesley / Bea, with only `lastText` per entry (which makes the
+     thread-panel renderer synthesize a fake "(earlier in this thread...)"
+     bubble). We repopulate from data/miranda_demo.json's i_replied_last
+     conversations and emit full `msgs` arrays so the panel shows the real
+     back-and-forth.
 
 Whenever the standalone file is re-uploaded, run:
 
@@ -23,11 +29,14 @@ needs to be revisited).
 """
 from __future__ import annotations
 
+import json
 import sys
+from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "docs" / "standalone.html"
+DEMO_DATA = ROOT / "data" / "miranda_demo.json"
 
 # ---- Patch 1: regenAi → backend bridge ----
 
@@ -116,6 +125,135 @@ def _patch_regen_ai(text: str) -> tuple[str, str]:
     return text.replace(ORIGINAL, PATCHED, 1), "patched regenAi"
 
 
+# ---- Patch 3: Repopulate REPLIED with TV characters ----
+# The design tool ships REPLIED entries with only `lastText`, which trips
+# the thread-panel synthesizer that prepends a fake "(earlier in this
+# thread...)" bubble. Build full entries (with `msgs` arrays) from the
+# i_replied_last:true conversations in data/miranda_demo.json so the panel
+# shows the real exchanges.
+
+REPLIED_TV_MARKER = "REPLIED_TV (Reply or Die)"
+
+REPLIED_LITERAL_START = "const REPLIED = [\\n"
+REPLIED_LITERAL_END = "\\n];\\n\\n// ───── DISMISSED"
+
+
+def _ago_label(then: datetime, now: datetime) -> str:
+    """Compact relative-time label, matches CONTACTS msgs ago format ('6d', '14h', '40m')."""
+    delta = now - then
+    secs = max(0, int(delta.total_seconds()))
+    mins = secs // 60
+    hours = mins // 60
+    days = hours // 24
+    if days >= 1:
+        return f"{days}d"
+    if hours >= 1:
+        return f"{hours}h"
+    if mins >= 1:
+        return f"{mins}m"
+    return "just now"
+
+
+def _when_label(then: datetime, now: datetime) -> str:
+    """Right-side label on the archive list ('Replied 5h ago', 'Replied 2d ago')."""
+    delta = now - then
+    secs = max(0, int(delta.total_seconds()))
+    mins = secs // 60
+    hours = mins // 60
+    days = hours // 24
+    if days == 1:
+        return "Replied yesterday"
+    if days >= 2:
+        return f"Replied {days}d ago"
+    if hours >= 1:
+        return f"Replied {hours}h ago"
+    if mins >= 1:
+        return f"Replied {mins}m ago"
+    return "Replied just now"
+
+
+def _build_replied_js() -> str:
+    """Render the REPLIED literal as JS source (real newlines, JS-escaped strings).
+
+    Source is data/miranda_demo.json filtered to non-group conversations with
+    i_replied_last:true. `now` for relative-time labels is the file's
+    exported_at — the demo is a fixed snapshot, not wall-clock.
+    """
+    payload = json.loads(DEMO_DATA.read_text(encoding="utf-8"))
+    now = datetime.fromisoformat(payload["exported_at"])
+    convos = [
+        c for c in payload["conversations"]
+        if c.get("i_replied_last") and not c.get("is_group")
+    ]
+    # Sort newest-first so the archive list reads top-down by recency.
+    convos.sort(key=lambda c: c["last_message_at"], reverse=True)
+
+    lines: list[str] = ["const REPLIED = ["]
+    lines.append(
+        "  /* REPLIED_TV (Reply or Die): generated from "
+        "data/miranda_demo.json (i_replied_last:true) — re-run "
+        "tools/patch_standalone.py after design uploads. */"
+    )
+    for i, c in enumerate(convos, start=1):
+        last_at = datetime.fromisoformat(c["last_message_at"])
+        when = _when_label(last_at, now)
+        name = _js_str(c["contact_name"])
+        phone = _js_str(c["phone"])
+        last_text = _js_str(c["last_message_text"])
+        lines.append(f"  {{ id:'r{i}', name:{name}, phone:{phone},")
+        lines.append(f"    lastText:{last_text},")
+        lines.append(f"    whenLabel:'{when}',")
+        lines.append("    msgs:[")
+        for m in c["messages"]:
+            t_dt = datetime.fromisoformat(m["date"])
+            ago = _ago_label(t_dt, now)
+            me = "true " if m["from_me"] else "false"
+            txt = _js_str(m["text"])
+            lines.append(f"      {{ me:{me}, t:{txt}, ago:'{ago}' }},")
+        lines.append("    ] },")
+    lines.append("];")
+    return "\n".join(lines)
+
+
+def _js_str(s: str) -> str:
+    """Encode a Python string as a JS double-quoted string literal."""
+    # json.dumps gives valid JS for plain strings (no `</`, no ` ` issues here).
+    return json.dumps(s, ensure_ascii=False)
+
+
+def _embed_in_template(js_source: str) -> str:
+    """JSON-string-encode `js_source` for embedding in the bundler template.
+
+    The whole HTML lives inside a JSON string in <script type="__bundler/template">,
+    so we need real newlines as `\\n`, double quotes as `\\"`, backslashes as `\\\\`.
+    """
+    # json.dumps produces e.g. `"foo\\nbar"`; strip the wrapping quotes.
+    return json.dumps(js_source, ensure_ascii=False)[1:-1]
+
+
+def _patch_replied_tv(text: str) -> tuple[str, str]:
+    """Returns (new_text, status_message). Raises ValueError if unpatchable."""
+    start = text.find(REPLIED_LITERAL_START)
+    end = text.find(REPLIED_LITERAL_END)
+    if start == -1 or end == -1 or end <= start:
+        raise ValueError(
+            "REPLIED literal anchors not found. The design upload changed the "
+            "surrounding code shape; re-derive REPLIED_LITERAL_START / "
+            "REPLIED_LITERAL_END in tools/patch_standalone.py."
+        )
+    span_end = end + len(REPLIED_LITERAL_END)
+    block = text[start:span_end]
+    # Treat as up-to-date only if the marker is present AND the full-msgs
+    # shape has been generated (older runs of this patch only emitted lastText).
+    if REPLIED_TV_MARKER in block and "msgs:[" in block:
+        return text, "REPLIED already TV-populated"
+    js_source = _build_replied_js()
+    embedded = _embed_in_template(js_source)
+    replacement = embedded + "\\n\\n// ───── DISMISSED"
+    new_text = text[:start] + replacement + text[span_end:]
+    return new_text, "patched: REPLIED → TV characters (with msgs)"
+
+
 def _patch_cut_groups(text: str) -> tuple[str, str]:
     """Returns (new_text, status_message). Raises ValueError if unpatchable."""
     if GROUPS_CUT_MARKER in text:
@@ -154,7 +292,7 @@ def main() -> int:
     text = TARGET.read_text(encoding="utf-8")
     original_text = text
 
-    for patcher in (_patch_regen_ai, _patch_cut_groups):
+    for patcher in (_patch_regen_ai, _patch_cut_groups, _patch_replied_tv):
         try:
             text, msg = patcher(text)
             print(msg)
