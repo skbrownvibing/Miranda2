@@ -116,6 +116,57 @@ def _patch_regen_ai(text: str) -> tuple[str, str]:
     return text.replace(ORIGINAL, PATCHED, 1), "patched regenAi"
 
 
+# ---- Patch 3: Voice-forward microcopy for AI drafts ----
+# Reframes the AI reply card from generic "Suggested reply / Regenerate" to
+# language that makes it clear the draft echoes the user's own voice.
+
+VOICE_LABEL_OLD = (
+    "${isGroup?'Suggested reply to the group':'Suggested reply'} · editable"
+)
+VOICE_LABEL_NEW = (
+    "${isGroup?'Drafted as you (group)':'Drafted as you'} "
+    "· modeled on your texts · editable"
+)
+
+REGEN_BTN_OLD = " Regenerate<\\u002Fbutton>"
+REGEN_BTN_NEW = " Try again<\\u002Fbutton>"
+
+
+def _patch_voice_microcopy(text: str) -> tuple[str, str]:
+    """Returns (new_text, status_message). Raises ValueError if unpatchable."""
+    already_label = VOICE_LABEL_NEW in text
+    already_btn = REGEN_BTN_NEW in text
+    if already_label and already_btn:
+        return text, "voice microcopy already patched"
+
+    new_text = text
+    if not already_label:
+        n = new_text.count(VOICE_LABEL_OLD)
+        if n == 0:
+            raise ValueError(
+                "AI-card label not found. The design upload changed the "
+                "'Suggested reply' header; re-derive VOICE_LABEL_OLD in "
+                "tools/patch_standalone.py."
+            )
+        if n > 1:
+            raise ValueError(f"AI-card label found {n} times; expected 1")
+        new_text = new_text.replace(VOICE_LABEL_OLD, VOICE_LABEL_NEW, 1)
+
+    if not already_btn:
+        n = new_text.count(REGEN_BTN_OLD)
+        if n == 0:
+            raise ValueError(
+                "Regenerate button not found. The design upload changed the "
+                "button markup; re-derive REGEN_BTN_OLD in "
+                "tools/patch_standalone.py."
+            )
+        if n > 1:
+            raise ValueError(f"Regenerate button found {n} times; expected 1")
+        new_text = new_text.replace(REGEN_BTN_OLD, REGEN_BTN_NEW, 1)
+
+    return new_text, "patched: voice microcopy"
+
+
 def _patch_cut_groups(text: str) -> tuple[str, str]:
     """Returns (new_text, status_message). Raises ValueError if unpatchable."""
     if GROUPS_CUT_MARKER in text:
@@ -154,7 +205,7 @@ def main() -> int:
     text = TARGET.read_text(encoding="utf-8")
     original_text = text
 
-    for patcher in (_patch_regen_ai, _patch_cut_groups):
+    for patcher in (_patch_regen_ai, _patch_cut_groups, _patch_voice_microcopy):
         try:
             text, msg = patcher(text)
             print(msg)
