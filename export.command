@@ -6,14 +6,14 @@ SCRIPT_VERSION="2.1.0"
 
 show_help() {
   cat <<'HELP'
-Miranda2 message export
+Reply or Die message export
 
 Usage:
   ./export.command [--help] [--version]
 
 Environment overrides:
-  MIRANDA2_OUTPUT_PATH   Output JSON path (default: ~/Desktop/miranda2_messages.json)
-  MIRANDA2_CHAT_DB_PATH  Chat DB path for export (default: ~/Library/Messages/chat.db)
+  REPLYORDIE_OUTPUT_PATH   Output JSON path (default: ~/Desktop/replyordie_messages.json)
+  REPLYORDIE_CHAT_DB_PATH  Chat DB path for export (default: ~/Library/Messages/chat.db)
 
 Exit codes:
   0  Export completed successfully
@@ -60,7 +60,7 @@ from datetime import datetime, timezone, timedelta
 
 LOOKBACK_DAYS   = 90    # How far back to pull messages
 PERSONAL_THRESH = 3     # Min messages in window to classify as personal (no contact)
-OUTPUT_PATH     = os.path.expanduser(os.environ.get('MIRANDA2_OUTPUT_PATH', '~/Desktop/miranda2_messages.json'))
+OUTPUT_PATH     = os.path.expanduser(os.environ.get('REPLYORDIE_OUTPUT_PATH', '~/Desktop/replyordie_messages.json'))
 APPLE_EPOCH     = datetime(2001, 1, 1, tzinfo=timezone.utc)
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -362,7 +362,7 @@ def is_substantive(row):
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
-    db_path = os.path.expanduser(os.environ.get('MIRANDA2_CHAT_DB_PATH', '~/Library/Messages/chat.db'))
+    db_path = os.path.expanduser(os.environ.get('REPLYORDIE_CHAT_DB_PATH', '~/Library/Messages/chat.db'))
     if not os.path.exists(db_path):
         print("  ERROR: iMessage database not found.")
         print(f"  Expected: {db_path}")
@@ -525,7 +525,7 @@ if [ $STATUS -eq 0 ]; then
     if curl -sf --max-time 1 http://127.0.0.1:8765 >/dev/null 2>&1; then
       echo "  Refresh runner already running — Refresh button is ready."
     else
-      nohup python3 "$RUNNER_PY" >/tmp/miranda2_runner.log 2>&1 &
+      nohup python3 "$RUNNER_PY" >/tmp/replyordie_runner.log 2>&1 &
       echo "  Refresh runner started (pid $!). The Refresh button will now work."
     fi
   fi
