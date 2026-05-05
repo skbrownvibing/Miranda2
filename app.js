@@ -122,9 +122,8 @@ function wireStartDesignIframe(){
     const fdaContinue=doc.getElementById('fdaContinue');
     if(fdaContinue){
       fdaContinue.disabled=false;
-      fdaContinue.onclick=async (e)=>{
+      fdaContinue.onclick=(e)=>{
         e.preventDefault();
-        await connectExportFile();
         try{ if(win&&typeof win.setupGo==='function')win.setupGo(3); }catch(_){}
       };
     }
@@ -132,8 +131,9 @@ function wireStartDesignIframe(){
     const scanContinue=doc.getElementById('scanContinue');
     if(scanContinue){
       scanContinue.disabled=false;
-      scanContinue.onclick=(e)=>{
+      scanContinue.onclick=async (e)=>{
         e.preventDefault();
+        await connectExportFile();
         try{ if(win&&typeof win.setupGo==='function')win.setupGo(4); }catch(_){}
       };
     }

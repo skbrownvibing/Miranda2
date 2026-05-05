@@ -11,6 +11,12 @@ design tool and ships with hardcoded demo behavior that we override:
      hardcoded GROUPS dataset. We don't generate AI drafts for groups, so
      a Group-chats filter on the inbox rail is a dead end. Patch removes
      the rail chip and zeroes out the GROUPS array.
+  3. FDA step framing — the design ships a Step 2 that asks the user to
+     toggle "Reply or Die" in Full Disk Access and claims the app will
+     auto-detect. The real flow needs Terminal (the app the export.command
+     runs in) to have FDA, and there is no auto-detection — the user must
+     confirm. Patch rewrites the instruction copy, the highlighted mock
+     row, and the Continue button label.
 
 Whenever the standalone file is re-uploaded, run:
 
@@ -147,6 +153,80 @@ def _patch_cut_groups(text: str) -> tuple[str, str]:
     return new_text, "patched: cut group chats"
 
 
+# ---- Patch 3: Reframe FDA step around Terminal ----
+# The design ships Step 2 telling the user to toggle "Reply or Die" in
+# Full Disk Access and claims the app will auto-detect the change. The
+# real flow grants FDA to Terminal (the app the export.command uses).
+# This patch:
+#   - rewrites instruction copy ("Toggle Reply or Die on" -> "Toggle Terminal on",
+#     "Find Reply or Die" -> "Find Terminal", and replaces the auto-detect
+#     promise with a click-to-confirm sentence)
+#   - removes the pre-granted "Terminal on" mock row
+#   - renames the highlighted mock row "Reply or Die" -> "Terminal"
+#   - relabels the disabled Continue button to "I've given Terminal access"
+#     and removes the disabled attribute
+
+FDA_PATCHES = [
+    (
+        "Toggle Reply or Die on",
+        "Toggle Terminal on",
+    ),
+    (
+        "Find <em>Reply or Die<\\u002Fem> in the list and flip the switch.",
+        "Find <em>Terminal<\\u002Fem> in the list and flip the switch.",
+    ),
+    (
+        "We'll detect the change automatically. Then click continue.",
+        # The standalone HTML body lives inside a JSON-string bundler
+        # template, so embedded double quotes must stay JSON-escaped.
+        "Once it's flipped, click the \\\"I've given Terminal access\\\" button below.",
+    ),
+    (
+        "Waiting for permission…",
+        "Flip the Terminal switch in System Settings",
+    ),
+    (
+        "<div class=\\\"mock-row\\\"><div class=\\\"mock-dot g\\\"><\\u002Fdiv><span>Terminal<\\u002Fspan>"
+        "<div class=\\\"mock-switch on\\\"><span><\\u002Fspan><\\u002Fdiv><\\u002Fdiv>\\n                  ",
+        "",
+    ),
+    (
+        "<div class=\\\"mock-row highlight\\\"><div class=\\\"mock-dot a\\\"><\\u002Fdiv>"
+        "<span>Reply or Die<\\u002Fspan><div class=\\\"mock-switch\\\" id=\\\"fdaSwitch\\\">",
+        "<div class=\\\"mock-row highlight\\\"><div class=\\\"mock-dot a\\\"><\\u002Fdiv>"
+        "<span>Terminal<\\u002Fspan><div class=\\\"mock-switch\\\" id=\\\"fdaSwitch\\\">",
+    ),
+    (
+        "<button class=\\\"btn btn-primary\\\" id=\\\"fdaContinue\\\" disabled=\\\"\\\" onclick=\\\"setupGo(3)\\\">"
+        "<span>Continue<\\u002Fspan><span class=\\\"arrow\\\">→<\\u002Fspan><\\u002Fbutton>",
+        "<button class=\\\"btn btn-primary\\\" id=\\\"fdaContinue\\\" onclick=\\\"setupGo(3)\\\">"
+        "<span>I’ve given Terminal access<\\u002Fspan><span class=\\\"arrow\\\">→<\\u002Fspan><\\u002Fbutton>",
+    ),
+]
+
+
+FDA_DONE_MARKER = "I’ve given Terminal access"
+
+
+def _patch_fda_terminal(text: str) -> tuple[str, str]:
+    """Returns (new_text, status_message). Raises ValueError if unpatchable."""
+    if FDA_DONE_MARKER in text and not any(old in text for old, _ in FDA_PATCHES):
+        return text, "FDA-terminal already patched"
+    out = text
+    for old, new in FDA_PATCHES:
+        n = out.count(old)
+        if n == 0:
+            # Already-patched anchor: skip if the target state is present
+            # (or, for deletions, the old text being absent is enough).
+            if not new or new in out:
+                continue
+            raise ValueError(f"FDA-terminal anchor not found: {old[:80]!r}")
+        if n > 1:
+            raise ValueError(f"FDA-terminal anchor found {n} times: {old[:80]!r}")
+        out = out.replace(old, new, 1)
+    return out, "patched FDA step around Terminal"
+
+
 def main() -> int:
     if not TARGET.exists():
         print(f"error: {TARGET} not found", file=sys.stderr)
@@ -154,7 +234,7 @@ def main() -> int:
     text = TARGET.read_text(encoding="utf-8")
     original_text = text
 
-    for patcher in (_patch_regen_ai, _patch_cut_groups):
+    for patcher in (_patch_regen_ai, _patch_cut_groups, _patch_fda_terminal):
         try:
             text, msg = patcher(text)
             print(msg)
