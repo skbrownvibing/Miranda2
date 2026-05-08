@@ -1,11 +1,13 @@
-const OPENAI_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
+const ANTHROPIC_ENDPOINT = 'https://api.anthropic.com/v1/messages';
+const ANTHROPIC_VERSION = '2023-06-01';
 
 const MAX_PROMPT_CHARS = Number(process.env.MIRANDA2_MAX_PROMPT_CHARS || 2500);
 const MAX_BODY_BYTES = Number(process.env.MIRANDA2_MAX_BODY_BYTES || 12_000);
 const RATE_LIMIT_WINDOW_SECONDS = Number(process.env.MIRANDA2_RATE_LIMIT_WINDOW_SECONDS || 60);
 const RATE_LIMIT_MAX_REQUESTS = Number(process.env.MIRANDA2_RATE_LIMIT_MAX_REQUESTS || 20);
-const FALLBACK_MODEL = 'gpt-4.1-mini';
+const FALLBACK_MODEL = 'claude-sonnet-4-6';
 const DEFAULT_MODEL = String(process.env.MIRANDA2_AI_MODEL || FALLBACK_MODEL).trim();
+const MAX_OUTPUT_TOKENS = Number(process.env.MIRANDA2_MAX_OUTPUT_TOKENS || 512);
 const ALLOWED_MODELS = String(process.env.MIRANDA2_ALLOWED_MODELS || DEFAULT_MODEL)
   .split(',')
   .map((m) => m.trim())
@@ -120,7 +122,7 @@ module.exports = async (req, res) => {
     return res.status(429).json({ ok: false, error: 'Too many requests. Try again shortly.' });
   }
 
-  const apiKey = (process.env.OPENAI_API_KEY || '').trim();
+  const apiKey = (process.env.ANTHROPIC_API_KEY || '').trim();
   if (!apiKey) {
     return res.status(500).json({ ok: false, error: 'AI service is not configured on server' });
   }
@@ -143,20 +145,19 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const upstream = await fetch(OPENAI_ENDPOINT, {
+    const upstream = await fetch(ANTHROPIC_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`
+        'x-api-key': apiKey,
+        'anthropic-version': ANTHROPIC_VERSION
       },
       body: JSON.stringify({
         model,
+        max_tokens: MAX_OUTPUT_TOKENS,
         temperature: 0.9,
+        system: 'You draft short, sendable text replies. Return only the reply text.',
         messages: [
-          {
-            role: 'system',
-            content: 'You draft short, sendable text replies. Return only the reply text.'
-          },
           { role: 'user', content: prompt }
         ]
       })
@@ -171,7 +172,11 @@ module.exports = async (req, res) => {
     }
 
     const data = await upstream.json();
-    const reply = String(data?.choices?.[0]?.message?.content || '').trim();
+    const reply = String(
+      Array.isArray(data?.content)
+        ? data.content.filter((b) => b?.type === 'text').map((b) => b.text).join('')
+        : ''
+    ).trim();
     if (!reply) {
       return res.status(502).json({ ok: false, error: 'AI provider returned empty reply' });
     }

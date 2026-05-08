@@ -24,14 +24,14 @@ Two pieces, both local:
 Optional add-ons:
 
 - A tiny Python helper (`tools/runner/local_export_runner.py`) exposes a `127.0.0.1` endpoint so the web app can re-run the export with one click.
-- A serverless function (`api/ai-suggest-reply.js`) drafts short replies via OpenAI. Opt-in only.
+- A serverless function (`api/ai-suggest-reply.js`) drafts short replies via Anthropic Claude. Opt-in only.
 
 ## Privacy
 
 - All your iMessage data stays on your Mac (browser `localStorage` plus `~/Desktop/replyordie_messages.json`).
 - The web app does not upload your conversations anywhere.
 - The local export runner binds to `127.0.0.1` only; nothing on your network can reach it.
-- The AI Suggest Reply feature is opt-in. When you use it, only the prompt text you choose is sent to OpenAI through your own deployed function.
+- The AI Suggest Reply feature is opt-in. When you use it, only the prompt text you choose is sent to Anthropic Claude through your own deployed function.
 - Demo mode uses synthetic data bundled in `data/miranda_demo.json` — no Mac or Full Disk Access required.
 
 ## Getting started
@@ -58,7 +58,7 @@ Keep that terminal open. The app's **Run export + reload** button will then re-r
 
 ### Optional: AI Suggest Reply
 
-Deploy `api/ai-suggest-reply.js` to Vercel with `OPENAI_API_KEY` set in the project's environment variables. The deployed endpoint is the one the app calls when you click **Suggest reply**.
+Deploy `api/ai-suggest-reply.js` to Vercel with `ANTHROPIC_API_KEY` set in the project's environment variables (get a key from https://console.anthropic.com/settings/keys). The deployed endpoint is the one the app calls when you click **Suggest reply**. Override the default model by setting `MIRANDA2_AI_MODEL` (defaults to `claude-sonnet-4-6`).
 
 ## Project layout
 
