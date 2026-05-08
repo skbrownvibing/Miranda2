@@ -1037,45 +1037,66 @@ function getAiEndpoint(){
   return AI_SUGGEST_ROUTE;
 }
 
+const REPLY_ANGLES=[
+  'dry and observational, like the obvious answer is funny on its own',
+  'mock-philosophical, treat the question as bigger than it actually is',
+  'slightly self-deprecating, throw yourself under the bus a little',
+  'confidently absurd, commit to a strong opinion about something tiny',
+  'deadpan agreement that quietly escalates the premise',
+  'reluctant honesty, mildly defeated',
+  'unbothered, treat the question as if the answer is obvious',
+  'over-specific, anchor the reply to one weirdly precise detail'
+];
+
+function pickReplyAngle(){
+  return REPLY_ANGLES[Math.floor(Math.random()*REPLY_ANGLES.length)];
+}
+
 function buildAiPrompt(context, latestInbound){
   const conversation=context.map(m=>`${m.speaker}: ${m.text}`).join('\n');
-  return `Write exactly one short text reply to the latest inbound message.
+  const angle=pickReplyAngle();
+  return `You are drafting one short text reply. Match the voice of the samples below — dry, witty, slightly absurd, lowercase, like a clever friend who refuses to answer earnestly. The samples ARE the style; do not drift toward neutral, supportive, or polite phrasing.
 
-Examples of good replies:
+Voice samples (match this tone exactly):
 
 Input: “I saw you across the street and you did not acknowledge me. Don’t act like you were looking at a bird.”
-Reply: “no fake bird, just poor situational awareness on my end”
+Reply: no fake bird, just poor situational awareness on my end
 
 Input: “Need yes/no. Is this outfit saying ‘charity lunch’ or ‘minor European princess’?”
-Reply: “minor european princess, but like approachable”
+Reply: minor european princess, but like approachable
 
 Input: “I have an idea. It’s about longing.”
-Reply: “no idea what that means, which is probably the problem”
+Reply: no idea what that means, which is probably the problem
 
 Input: “I couldn’t help but wonder: is replying late a red flag or a branding exercise?”
-Reply: “branding exercise, obviously”
+Reply: branding exercise, obviously
 
 Input: “Hypothetically, how bad is it to ignore a parking ticket for emotional reasons?”
-Reply: “emotionally valid, financially inadvisable”
+Reply: emotionally valid, financially inadvisable
 
 Input: “We gotta discuss dinner. Nobody knows where to eat anymore. Society’s collapsing.”
-Reply: “agreed, we’ve lost the plot. where are we going?”
+Reply: agreed, we’ve lost the plot. where are we going?
 
 Input: “Here’s the phrase: ‘Hyperlocal media disruption engine.’ Too small?”
-Reply: “that’s either a poem or a problem”
+Reply: that’s either a poem or a problem
+
+For this reply specifically, lean ${angle}. Pick a different joke than the obvious one — surprise me.
 
 Constraints:
-- write it like a normal text message
-- respond directly to the latest messages
-- avoid overly polished or formal phrasing
+- write it like a casual text, lowercase
+- respond directly to the latest inbound message
+- must be funny: a punchline, observation, or dry quip
+- no greetings, signoffs, hedges, or "happy to..." phrasing
 - do not use em dashes
-- be witty and funny
+- do not wrap the reply in quotes
+
+Recent text context:
+${conversation}
 
 Latest inbound message:
 ${latestInbound}
 
-Recent text context:
-${conversation}`;
+Reply:`;
 }
 
 function stripWrappingQuotes(text){
@@ -1144,7 +1165,6 @@ function validateAiReply(output, thread){
   if(!text)return { valid:false, reason:'empty' };
   const words=text.split(/\s+/).filter(Boolean);
   if(words.length<2)return { valid:false, reason:'near-empty' };
-  if(words.length>20)return { valid:false, reason:'too-long' };
   if(text.includes('—'))return { valid:false, reason:'em-dash' };
   if(/["“”]/.test(text))return { valid:false, reason:'quotes' };
   if(containsBannedPreamble(text))return { valid:false, reason:'preamble' };
