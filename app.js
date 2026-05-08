@@ -1084,7 +1084,6 @@ For this reply specifically, lean ${angle}. Pick a different joke than the obvio
 
 Constraints:
 - write it like a casual text, lowercase
-- under 15 words
 - respond directly to the latest inbound message
 - must be funny: a punchline, observation, or dry quip
 - no greetings, signoffs, hedges, or "happy to..." phrasing
@@ -1166,7 +1165,6 @@ function validateAiReply(output, thread){
   if(!text)return { valid:false, reason:'empty' };
   const words=text.split(/\s+/).filter(Boolean);
   if(words.length<2)return { valid:false, reason:'near-empty' };
-  if(words.length>20)return { valid:false, reason:'too-long' };
   if(text.includes('—'))return { valid:false, reason:'em-dash' };
   if(/["“”]/.test(text))return { valid:false, reason:'quotes' };
   if(containsBannedPreamble(text))return { valid:false, reason:'preamble' };
