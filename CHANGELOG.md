@@ -2,6 +2,13 @@
 
 ## Current development cycle
 
+### 2026-05-14 — TimeSuggest: a sibling tool for email time-suggestions from Google Calendar
+- Added `timesuggest.html` at repo root: a single-page tool that reads your Google Calendar via in-browser OAuth and produces a copy-pasteable list of free meeting slots in a specific format (e.g. `Tuesday 3/3: 10am-12pm and 2-7pm PT`). Sibling to `index.html`, not wired into Reply or Die — same repo, same "open in browser / deploy to Vercel" pattern.
+- Settings (persisted in localStorage): timezone + output label, look-ahead days, working hours with a one-click "Extended hours" preset, minimum slot length, weekdays-only toggle, range-separator style ("and" for 2 / commas for 3+), and which Google calendars to include.
+- Auth is Google Identity Services in-browser, token in memory only. User supplies their own OAuth Client ID (one-time, ~5-min Google Cloud setup; in-page instructions included). No server.
+- Timezone math is done with `Intl.DateTimeFormat` (no library); free slots are computed per-day in the selected IANA TZ, DST-safe via a noon-anchored day walker.
+- Spec lives at `docs/timesuggest-spec.md`.
+
 ### 2026-05-05 — Setup hero: animated lock + security-led copy (re-applied to standalone (5))
 - Re-applied the Setup-page security treatment after MAIN's standalone (5) re-export reverted it. Setup hero is now a two-column grid: title + lede on the left, a big SVG padlock on the right that loops open → click-shut (shackle drops with a slight overshoot, body flashes a chartreuse glow on the click). No tag below the lock; "Setup · about 30 seconds" eyebrow is gone above the title. Honors `prefers-reduced-motion`. Collapses to a single column under 880px.
 - Lede: "Security first. No servers, no accounts, no uploads — your messages never leave your Mac." (concrete negatives instead of vague "everything is local").

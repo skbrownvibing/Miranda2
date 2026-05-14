@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TimeSuggest</title>
+  <style>
+    :root {
+      --bg: #fafaf7;
+      --fg: #1b1b1a;
+      --muted: #6b6b66;
+      --border: #e6e4dd;
+      --accent: #2b6cb0;
+      --accent-fg: #fff;
+      --card: #fff;
+      --ok: #2f855a;
+      --err: #c53030;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    html, body { background: var(--bg); color: var(--fg); }
+    body {
+      margin: 0;
+      font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      padding: 24px;
+      max-width: 880px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    h1 { margin: 0 0 4px; font-size: 22px; }
+    h2 { margin: 24px 0 8px; font-size: 15px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+    p.lede { color: var(--muted); margin: 0 0 20px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; }
+    .row > label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+    .row > label > span:first-child { font-weight: 500; color: var(--fg); }
+    input[type="text"], input[type="number"], select {
+      font: inherit;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+      min-width: 80px;
+    }
+    input[type="text"].wide { width: 360px; max-width: 100%; }
+    button {
+      font: inherit;
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #fff;
+      cursor: pointer;
+    }
+    button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .status { font-size: 13px; color: var(--muted); }
+    .status.ok { color: var(--ok); }
+    .status.err { color: var(--err); }
+    textarea {
+      font: 14px/1.5 var(--mono);
+      width: 100%;
+      min-height: 180px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fffdf7;
+      white-space: pre;
+      resize: vertical;
+    }
+    .checks { display: flex; flex-direction: column; gap: 4px; max-height: 160px; overflow: auto; }
+    .checks label { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+    details > summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+    details > summary:hover { color: var(--fg); }
+    code { font-family: var(--mono); background: #f1efe8; padding: 1px 4px; border-radius: 3px; }
+    .hint { font-size: 12px; color: var(--muted); }
+    .hidden { display: none !important; }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #eef3f9; color: var(--accent); font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>TimeSuggest</h1>
+  <p class="lede">Read your Google Calendar. Spit out free slots in a format you can paste into an email.</p>
+
+  <!-- Setup card (shown only until Client ID is set) -->
+  <section id="setupCard" class="card hidden">
+    <h2 style="margin-top:0">First-time setup</h2>
+    <p>You need a Google OAuth Client ID. One-time setup, ~5 minutes:</p>
+    <ol>
+      <li>Go to <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a> and create (or pick) a project.</li>
+      <li>Enable the <strong>Google Calendar API</strong> (APIs &amp; Services → Library).</li>
+      <li>Configure the <strong>OAuth consent screen</strong> as "External", add your Google email under "Test users".</li>
+      <li>Credentials → <strong>Create credentials → OAuth client ID</strong> → Web application.</li>
+      <li>Under <strong>Authorized JavaScript origins</strong> add the URL where you'll open this page (e.g. <code id="originHint">http://localhost</code> or your Vercel URL). No redirect URI needed.</li>
+      <li>Copy the Client ID below.</li>
+    </ol>
+    <div class="row">
+      <label style="flex:1; min-width: 300px;">
+        <span>OAuth Client ID</span>
+        <input id="clientIdInput" type="text" class="wide" placeholder="123456789-abc...apps.googleusercontent.com" />
+      </label>
+      <button id="saveClientIdBtn" class="primary">Save</button>
+    </div>
+  </section>
+
+  <!-- Main app -->
+  <section id="appCard" class="card hidden">
+    <div class="toolbar" style="justify-content: space-between;">
+      <div class="toolbar">
+        <button id="signInBtn" class="primary">Sign in with Google</button>
+        <button id="signOutBtn" class="hidden">Sign out</button>
+        <span id="signStatus" class="status"></span>
+      </div>
+      <div class="toolbar">
+        <button id="editClientIdBtn" title="Change OAuth Client ID">⚙</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="settingsCard" class="card hidden">
+    <h2 style="margin-top:0">Settings</h2>
+    <div class="row">
+      <label>
+        <span>Timezone</span>
+        <select id="tzSelect"></select>
+      </label>
+      <label>
+        <span>Custom IANA</span>
+        <input id="tzCustom" type="text" placeholder="e.g. America/Los_Angeles" />
+      </label>
+      <label>
+        <span>Label in output</span>
+        <input id="tzLabel" type="text" style="width:80px" placeholder="PT" />
+      </label>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <label>
+        <span>Look-ahead days</span>
+        <input id="daysAhead" type="number" min="1" max="30" />
+      </label>
+      <label>
+        <span>Working hours</span>
+        <span style="display:flex; gap:4px; align-items:center;">
+          <select id="workStart"></select>
+          <span>to</span>
+          <select id="workEnd"></select>
+        </span>
+      </label>
+      <label>
+        <span>Min slot</span>
+        <select id="minSlot">
+          <option value="15">15 min</option>
+          <option value="30">30 min</option>
+          <option value="45">45 min</option>
+          <option value="60">60 min</option>
+          <option value="90">90 min</option>
+        </select>
+      </label>
+      <label>
+        <span>Weekdays only</span>
+        <input id="weekdaysOnly" type="checkbox" style="width:auto" />
+      </label>
+      <label>
+        <span>Range separator</span>
+        <select id="sepStyle">
+          <option value="and">"and" for 2, commas for 3+</option>
+          <option value="commas">All commas</option>
+        </select>
+      </label>
+    </div>
+    <div style="margin-top:12px">
+      <button id="presetNormalBtn">Normal hours (9am–7pm)</button>
+      <button id="presetExtendedBtn">Extended hours (7am–10pm)</button>
+    </div>
+    <details style="margin-top:14px">
+      <summary>Calendars to include</summary>
+      <div id="calendarChecks" class="checks" style="margin-top:8px"></div>
+      <p class="hint">Defaults to your primary calendar. Sign in to see the full list.</p>
+    </details>
+  </section>
+
+  <section id="outputCard" class="card hidden">
+    <div class="toolbar" style="justify-content: space-between;">
+      <h2 style="margin:0">Free slots</h2>
+      <div class="toolbar">
+        <button id="refreshBtn">Refresh</button>
+        <button id="copyBtn" class="primary">Copy</button>
+        <span id="copyStatus" class="status"></span>
+      </div>
+    </div>
+    <textarea id="output" spellcheck="false" placeholder="Sign in and click Refresh to see your free slots here."></textarea>
+    <p class="hint" id="fetchedAt"></p>
+  </section>
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script>
+  // ---------- Storage ----------
+  const LS_KEY = "timesuggest.settings.v1";
+  const defaultSettings = {
+    clientId: "",
+    tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Los_Angeles",
+    tzLabel: "",
+    daysAhead: 7,
+    workStartHour: 9,
+    workEndHour: 19,
+    minSlotMin: 30,
+    weekdaysOnly: true,
+    sepStyle: "and",
+    calendarIds: ["primary"],
+  };
+  function loadSettings() {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return { ...defaultSettings };
+      return { ...defaultSettings, ...JSON.parse(raw) };
+    } catch { return { ...defaultSettings }; }
+  }
+  function saveSettings() { localStorage.setItem(LS_KEY, JSON.stringify(settings)); }
+  let settings = loadSettings();
+
+  // ---------- DOM refs ----------
+  const $ = (id) => document.getElementById(id);
+  const setupCard = $("setupCard"), appCard = $("appCard"), settingsCard = $("settingsCard"), outputCard = $("outputCard");
+  const clientIdInput = $("clientIdInput"), saveClientIdBtn = $("saveClientIdBtn"), editClientIdBtn = $("editClientIdBtn");
+  const signInBtn = $("signInBtn"), signOutBtn = $("signOutBtn"), signStatus = $("signStatus");
+  const tzSelect = $("tzSelect"), tzCustom = $("tzCustom"), tzLabelEl = $("tzLabel");
+  const daysAheadEl = $("daysAhead"), workStartEl = $("workStart"), workEndEl = $("workEnd"), minSlotEl = $("minSlot"), weekdaysOnlyEl = $("weekdaysOnly"), sepStyleEl = $("sepStyle");
+  const presetNormalBtn = $("presetNormalBtn"), presetExtendedBtn = $("presetExtendedBtn");
+  const calendarChecks = $("calendarChecks");
+  const refreshBtn = $("refreshBtn"), copyBtn = $("copyBtn"), copyStatus = $("copyStatus"), output = $("output"), fetchedAt = $("fetchedAt");
+
+  $("originHint").textContent = location.origin || "http://localhost";
+
+  // ---------- TZ presets ----------
+  const TZ_PRESETS = [
+    { iana: "America/Los_Angeles", label: "PT" },
+    { iana: "America/Denver",      label: "MT" },
+    { iana: "America/Chicago",     label: "CT" },
+    { iana: "America/New_York",    label: "ET" },
+    { iana: "Europe/London",       label: "GMT" },
+    { iana: "Europe/Paris",        label: "CET" },
+    { iana: "Europe/Berlin",       label: "CET" },
+    { iana: "Asia/Tokyo",          label: "JST" },
+    { iana: "Asia/Kolkata",        label: "IST" },
+    { iana: "Asia/Singapore",      label: "SGT" },
+    { iana: "Australia/Sydney",    label: "AET" },
+  ];
+  function defaultLabelFor(iana) {
+    const m = TZ_PRESETS.find(p => p.iana === iana);
+    return m ? m.label : "";
+  }
+
+  // ---------- Settings UI ----------
+  function populateTzSelect() {
+    tzSelect.innerHTML = "";
+    const opts = [...TZ_PRESETS];
+    if (!opts.find(p => p.iana === settings.tz)) opts.push({ iana: settings.tz, label: defaultLabelFor(settings.tz) || settings.tz });
+    opts.push({ iana: "__custom__", label: "Custom…" });
+    for (const o of opts) {
+      const el = document.createElement("option");
+      el.value = o.iana;
+      el.textContent = o.iana === "__custom__" ? "Custom…" : `${o.iana}${o.label ? ` (${o.label})` : ""}`;
+      tzSelect.appendChild(el);
+    }
+    tzSelect.value = settings.tz;
+  }
+  function populateHourSelects() {
+    for (const sel of [workStartEl, workEndEl]) {
+      sel.innerHTML = "";
+      for (let h = 0; h <= 24; h++) {
+        const el = document.createElement("option");
+        el.value = h;
+        el.textContent = formatHourLabel(h);
+        sel.appendChild(el);
+      }
+    }
+    workStartEl.value = settings.workStartHour;
+    workEndEl.value = settings.workEndHour;
+  }
+  function formatHourLabel(h) {
+    if (h === 0) return "12am";
+    if (h === 12) return "12pm";
+    if (h === 24) return "12am (next)";
+    return h < 12 ? `${h}am` : `${h - 12}pm`;
+  }
+  function applySettingsToUI() {
+    populateTzSelect();
+    tzCustom.value = settings.tz;
+    tzLabelEl.value = settings.tzLabel || defaultLabelFor(settings.tz) || "";
+    daysAheadEl.value = settings.daysAhead;
+    populateHourSelects();
+    minSlotEl.value = String(settings.minSlotMin);
+    weekdaysOnlyEl.checked = !!settings.weekdaysOnly;
+    sepStyleEl.value = settings.sepStyle;
+  }
+  function readSettingsFromUI() {
+    let tz = tzSelect.value;
+    if (tz === "__custom__") tz = tzCustom.value.trim() || settings.tz;
+    settings.tz = tz;
+    settings.tzLabel = tzLabelEl.value.trim();
+    settings.daysAhead = clamp(parseInt(daysAheadEl.value || "7", 10), 1, 30);
+    settings.workStartHour = parseInt(workStartEl.value, 10);
+    settings.workEndHour = parseInt(workEndEl.value, 10);
+    settings.minSlotMin = parseInt(minSlotEl.value, 10);
+    settings.weekdaysOnly = weekdaysOnlyEl.checked;
+    settings.sepStyle = sepStyleEl.value;
+    settings.calendarIds = Array.from(calendarChecks.querySelectorAll("input[type=checkbox]:checked")).map(i => i.value);
+    if (settings.calendarIds.length === 0) settings.calendarIds = ["primary"];
+    saveSettings();
+  }
+  function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, isNaN(n) ? lo : n)); }
+
+  // Wire up settings change → re-render
+  function onSettingsChanged() {
+    readSettingsFromUI();
+    if (lastFreeBusy) renderOutput();
+  }
+  for (const el of [tzSelect, tzCustom, tzLabelEl, daysAheadEl, workStartEl, workEndEl, minSlotEl, weekdaysOnlyEl, sepStyleEl]) {
+    el.addEventListener("change", onSettingsChanged);
+    el.addEventListener("input", () => {
+      // Auto-update label when TZ preset changes
+      if (el === tzSelect && tzSelect.value !== "__custom__") {
+        const def = defaultLabelFor(tzSelect.value);
+        if (def) tzLabelEl.value = def;
+        tzCustom.value = tzSelect.value;
+      }
+      onSettingsChanged();
+    });
+  }
+  presetNormalBtn.addEventListener("click", () => {
+    workStartEl.value = 9; workEndEl.value = 19; onSettingsChanged();
+  });
+  presetExtendedBtn.addEventListener("click", () => {
+    workStartEl.value = 7; workEndEl.value = 22; onSettingsChanged();
+  });
+
+  // ---------- Client ID setup ----------
+  function showSetup() {
+    setupCard.classList.remove("hidden");
+    appCard.classList.add("hidden");
+    settingsCard.classList.add("hidden");
+    outputCard.classList.add("hidden");
+    clientIdInput.value = settings.clientId || "";
+  }
+  function showApp() {
+    setupCard.classList.add("hidden");
+    appCard.classList.remove("hidden");
+    settingsCard.classList.remove("hidden");
+    outputCard.classList.remove("hidden");
+    applySettingsToUI();
+  }
+  saveClientIdBtn.addEventListener("click", () => {
+    const v = clientIdInput.value.trim();
+    if (!v) { alert("Please paste your OAuth Client ID."); return; }
+    settings.clientId = v;
+    saveSettings();
+    initTokenClient();
+    showApp();
+  });
+  editClientIdBtn.addEventListener("click", () => { showSetup(); });
+
+  // ---------- Google OAuth ----------
+  let tokenClient = null;
+  let accessToken = null;
+  let tokenExpiresAt = 0;
+
+  function initTokenClient() {
+    if (!settings.clientId) return;
+    // Wait until GIS is loaded
+    const tryInit = () => {
+      if (!window.google || !google.accounts || !google.accounts.oauth2) {
+        setTimeout(tryInit, 200); return;
+      }
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: settings.clientId,
+        scope: "https://www.googleapis.com/auth/calendar.readonly",
+        callback: (resp) => {
+          if (resp.error) {
+            setSignStatus(`Sign-in error: ${resp.error}`, "err");
+            return;
+          }
+          accessToken = resp.access_token;
+          tokenExpiresAt = Date.now() + (resp.expires_in - 60) * 1000;
+          setSignStatus("Signed in", "ok");
+          signInBtn.classList.add("hidden");
+          signOutBtn.classList.remove("hidden");
+          fetchCalendarList().then(() => refresh());
+        },
+      });
+    };
+    tryInit();
+  }
+
+  function setSignStatus(msg, kind) {
+    signStatus.textContent = msg;
+    signStatus.className = "status" + (kind ? " " + kind : "");
+  }
+
+  signInBtn.addEventListener("click", () => {
+    if (!tokenClient) { initTokenClient(); setTimeout(() => signInBtn.click(), 400); return; }
+    tokenClient.requestAccessToken({ prompt: "" });
+  });
+  signOutBtn.addEventListener("click", () => {
+    if (accessToken && window.google?.accounts?.oauth2) {
+      try { google.accounts.oauth2.revoke(accessToken, () => {}); } catch {}
+    }
+    accessToken = null; tokenExpiresAt = 0;
+    setSignStatus("");
+    signInBtn.classList.remove("hidden");
+    signOutBtn.classList.add("hidden");
+    output.value = "";
+    fetchedAt.textContent = "";
+    lastFreeBusy = null;
+    calendarChecks.innerHTML = "";
+  });
+
+  async function ensureToken() {
+    if (!accessToken || Date.now() > tokenExpiresAt) {
+      await new Promise((resolve) => {
+        const prev = tokenClient.callback;
+        tokenClient.callback = (resp) => { prev(resp); resolve(); };
+        tokenClient.requestAccessToken({ prompt: "" });
+      });
+    }
+    return accessToken;
+  }
+
+  // ---------- Calendar API ----------
+  async function gapiFetch(url, init = {}) {
+    const tok = await ensureToken();
+    const res = await fetch(url, {
+      ...init,
+      headers: { ...(init.headers || {}), Authorization: `Bearer ${tok}` },
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`${res.status} ${res.statusText}: ${body}`);
+    }
+    return res.json();
+  }
+
+  async function fetchCalendarList() {
+    try {
+      const data = await gapiFetch("https://www.googleapis.com/calendar/v3/users/me/calendarList?minAccessRole=reader");
+      const items = (data.items || []).sort((a, b) => (b.primary ? 1 : 0) - (a.primary ? 1 : 0) || a.summary.localeCompare(b.summary));
+      calendarChecks.innerHTML = "";
+      const previouslyChecked = new Set(settings.calendarIds);
+      for (const cal of items) {
+        const id = cal.primary ? "primary" : cal.id;
+        const wrap = document.createElement("label");
+        const cb = document.createElement("input");
+        cb.type = "checkbox"; cb.value = id;
+        cb.checked = previouslyChecked.has(id) || (previouslyChecked.size === 0 && cal.primary);
+        cb.addEventListener("change", onSettingsChanged);
+        wrap.appendChild(cb);
+        wrap.appendChild(document.createTextNode(` ${cal.summary}${cal.primary ? " (primary)" : ""}`));
+        calendarChecks.appendChild(wrap);
+      }
+      onSettingsChanged();
+    } catch (e) {
+      console.error(e);
+      setSignStatus("Couldn't list calendars: " + e.message, "err");
+    }
+  }
+
+  let lastFreeBusy = null; // { timeMin, timeMax, busyByCal: { [id]: [{start,end}] } }
+  async function fetchFreeBusy() {
+    const tz = settings.tz;
+    const now = new Date();
+    const timeMin = startOfDayInTZ(now, tz);
+    const timeMax = new Date(timeMin.getTime() + settings.daysAhead * 24 * 60 * 60 * 1000);
+    const body = {
+      timeMin: timeMin.toISOString(),
+      timeMax: timeMax.toISOString(),
+      timeZone: tz,
+      items: settings.calendarIds.map(id => ({ id })),
+    };
+    const data = await gapiFetch("https://www.googleapis.com/calendar/v3/freeBusy", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const busy = [];
+    for (const id of Object.keys(data.calendars || {})) {
+      const cal = data.calendars[id];
+      if (cal.errors && cal.errors.length) console.warn("Calendar error", id, cal.errors);
+      for (const b of cal.busy || []) busy.push({ start: new Date(b.start), end: new Date(b.end) });
+    }
+    busy.sort((a, b) => a.start - b.start);
+    lastFreeBusy = { timeMin, timeMax, busy };
+    return lastFreeBusy;
+  }
+
+  // ---------- Timezone math ----------
+  // Given a UTC Date, return the UTC offset (in minutes) at that instant for the given IANA tz.
+  function tzOffsetMinutes(utcDate, tz) {
+    const dtf = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz, hourCycle: "h23",
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+    });
+    const parts = dtf.formatToParts(utcDate);
+    const get = (t) => parts.find(p => p.type === t).value;
+    const asIfUTC = Date.UTC(+get("year"), +get("month") - 1, +get("day"), +get("hour"), +get("minute"), +get("second"));
+    return (asIfUTC - utcDate.getTime()) / 60000;
+  }
+  // Convert a wall-clock moment in the given TZ to an actual UTC Date.
+  function zonedToUTC(y, m, d, h, min, tz) {
+    const guess = new Date(Date.UTC(y, m - 1, d, h, min));
+    const off = tzOffsetMinutes(guess, tz);
+    return new Date(guess.getTime() - off * 60000);
+  }
+  // Parts of a UTC Date when viewed in the given TZ.
+  function partsInTZ(date, tz) {
+    const dtf = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz, hourCycle: "h23", weekday: "long",
+      year: "numeric", month: "numeric", day: "numeric",
+      hour: "2-digit", minute: "2-digit",
+    });
+    const parts = dtf.formatToParts(date);
+    const get = (t) => parts.find(p => p.type === t)?.value;
+    return {
+      year: +get("year"), month: +get("month"), day: +get("day"),
+      hour: +get("hour"), minute: +get("minute"),
+      weekday: get("weekday"),
+    };
+  }
+  function startOfDayInTZ(date, tz) {
+    const p = partsInTZ(date, tz);
+    return zonedToUTC(p.year, p.month, p.day, 0, 0, tz);
+  }
+  // ---------- Free-slot computation ----------
+  function computeFreeSlots() {
+    if (!lastFreeBusy) return [];
+    const tz = settings.tz;
+    const minMs = settings.minSlotMin * 60 * 1000;
+    const now = new Date();
+    const days = [];
+    // Walk calendar days in TZ. Use noon to dodge DST midnight edge cases.
+    const startParts = partsInTZ(now, tz);
+    let y = startParts.year, m = startParts.month, d = startParts.day;
+    for (let i = 0; i < settings.daysAhead; i++) {
+      const noonUtc = zonedToUTC(y, m, d, 12, 0, tz);
+      const weekday = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "long" }).format(noonUtc);
+      days.push({ y, m, d, weekday });
+      const tomorrowUtc = new Date(noonUtc.getTime() + 24 * 60 * 60 * 1000);
+      const tp = partsInTZ(tomorrowUtc, tz);
+      y = tp.year; m = tp.month; d = tp.day;
+    }
+    const results = [];
+    for (const day of days) {
+      const isWeekend = day.weekday === "Saturday" || day.weekday === "Sunday";
+      if (settings.weekdaysOnly && isWeekend) continue;
+      const dayStart = zonedToUTC(day.y, day.m, day.d, settings.workStartHour, 0, tz);
+      const dayEnd = settings.workEndHour >= 24
+        ? zonedToUTC(day.y, day.m, day.d + 1, 0, 0, tz)
+        : zonedToUTC(day.y, day.m, day.d, settings.workEndHour, 0, tz);
+      // Truncate to "now" if today
+      let windowStart = dayStart;
+      if (now > dayStart && now < dayEnd) {
+        // Round up to next 15 min
+        const rounded = new Date(Math.ceil(now.getTime() / (15 * 60 * 1000)) * 15 * 60 * 1000);
+        windowStart = rounded;
+      } else if (now >= dayEnd) {
+        continue;
+      }
+      // Subtract busy intervals overlapping this window
+      const free = [{ start: windowStart, end: dayEnd }];
+      for (const b of lastFreeBusy.busy) {
+        if (b.end <= windowStart || b.start >= dayEnd) continue;
+        for (let i = free.length - 1; i >= 0; i--) {
+          const f = free[i];
+          if (b.end <= f.start || b.start >= f.end) continue;
+          const newRanges = [];
+          if (b.start > f.start) newRanges.push({ start: f.start, end: b.start < f.end ? b.start : f.end });
+          if (b.end < f.end) newRanges.push({ start: b.end > f.start ? b.end : f.start, end: f.end });
+          free.splice(i, 1, ...newRanges);
+        }
+      }
+      const kept = free.filter(r => r.end - r.start >= minMs);
+      if (kept.length) results.push({ day, ranges: kept });
+    }
+    return results;
+  }
+
+  // ---------- Formatting ----------
+  function fmtTimeParts(date, tz) {
+    const dtf = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz, hour: "numeric", minute: "2-digit", hour12: true,
+    });
+    const parts = dtf.formatToParts(date);
+    const hour = parts.find(p => p.type === "hour").value;
+    const minute = parts.find(p => p.type === "minute").value;
+    const dayPeriod = (parts.find(p => p.type === "dayPeriod").value || "").toLowerCase();
+    return { hour, minute, dayPeriod };
+  }
+  function fmtTimeStandalone(t) {
+    return t.minute === "00" ? `${t.hour}${t.dayPeriod}` : `${t.hour}:${t.minute}${t.dayPeriod}`;
+  }
+  function fmtRange(start, end, tz) {
+    const s = fmtTimeParts(start, tz);
+    const e = fmtTimeParts(end, tz);
+    const startStr = s.dayPeriod === e.dayPeriod
+      ? (s.minute === "00" ? s.hour : `${s.hour}:${s.minute}`)
+      : fmtTimeStandalone(s);
+    const endStr = fmtTimeStandalone(e);
+    return `${startStr}-${endStr}`;
+  }
+  function joinRanges(rangesStr, style) {
+    if (rangesStr.length === 0) return "";
+    if (rangesStr.length === 1) return rangesStr[0];
+    if (style === "and" && rangesStr.length === 2) return `${rangesStr[0]} and ${rangesStr[1]}`;
+    return rangesStr.join(", ");
+  }
+  function fmtDayHeader(day, tz) {
+    // We need a Date that lives in this day-in-TZ. Use noon to be safe from DST edges.
+    const d = zonedToUTC(day.y, day.m, day.d, 12, 0, tz);
+    const weekday = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "long" }).format(d);
+    return `${weekday} ${day.m}/${day.d}`;
+  }
+  function renderOutput() {
+    const tz = settings.tz;
+    const label = (settings.tzLabel || defaultLabelFor(tz) || "").trim();
+    const days = computeFreeSlots();
+    const lines = [];
+    for (const { day, ranges } of days) {
+      const rstrs = ranges.map(r => fmtRange(r.start, r.end, tz));
+      const joined = joinRanges(rstrs, settings.sepStyle);
+      const labelSuffix = label ? ` ${label}` : "";
+      lines.push(`${fmtDayHeader(day, tz)}: ${joined}${labelSuffix}`);
+    }
+    output.value = lines.length ? lines.join("\n") : "(No free slots in the selected window. Try a longer look-ahead or wider working hours.)";
+    fetchedAt.textContent = lastFreeBusy ? `Calendar fetched ${new Date().toLocaleTimeString()}. ${countBusy()} busy intervals.` : "";
+  }
+  function countBusy() {
+    return lastFreeBusy && lastFreeBusy.busy ? lastFreeBusy.busy.length : 0;
+  }
+
+  // ---------- Refresh + Copy ----------
+  async function refresh() {
+    if (!accessToken) { setSignStatus("Sign in first.", "err"); return; }
+    refreshBtn.disabled = true;
+    try {
+      await fetchFreeBusy();
+      renderOutput();
+    } catch (e) {
+      console.error(e);
+      output.value = "Error: " + e.message;
+    } finally {
+      refreshBtn.disabled = false;
+    }
+  }
+  refreshBtn.addEventListener("click", refresh);
+  copyBtn.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(output.value);
+      copyStatus.textContent = "Copied";
+      copyStatus.className = "status ok";
+      setTimeout(() => { copyStatus.textContent = ""; }, 1500);
+    } catch (e) {
+      copyStatus.textContent = "Copy failed";
+      copyStatus.className = "status err";
+    }
+  });
+
+  // ---------- Boot ----------
+  if (settings.clientId) {
+    showApp();
+    initTokenClient();
+    setSignStatus("Click Sign in with Google to connect your calendar.");
+  } else {
+    showSetup();
+  }
+  </script>
+</body>
+</html>
