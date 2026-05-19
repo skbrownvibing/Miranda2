@@ -2,6 +2,12 @@
 
 ## Current development cycle
 
+### 2026-05-19 — Ship `export.command` as a zip so the download is actually runnable
+- Vercel serves static files over HTTPS, which strips the Unix execute bit. Users downloading `export.command` directly got macOS's misleading "you do not have appropriate access privileges" error on double-click — Gatekeeper's "Open Anyway" couldn't fix it because the cause was a missing execute bit, not quarantine. Workaround was Terminal (`chmod +x` or `bash export.command`), which defeats the redesign's goal of a non-technical onboarding.
+- Added `export.command.zip` at the repo root. The zip format preserves Unix permissions, so the file extracts with the execute bit intact and double-click works on the first try.
+- Updated the Setup-page download link in `docs/standalone.html` from `/export.command` to `/export.command.zip` (and the button label to match). Safari auto-unzips on download; Chrome/Firefox users get one extra double-click on the zip. No Terminal step required in any browser.
+- Added an AGENTS.md note: if `export.command` is edited, regenerate `export.command.zip` with `zip -X export.command.zip export.command` (the `-X` strips extra attributes; default zip already preserves the execute bit).
+
 ### 2026-05-05 — Setup hero: animated lock + security-led copy (re-applied to standalone (5))
 - Re-applied the Setup-page security treatment after MAIN's standalone (5) re-export reverted it. Setup hero is now a two-column grid: title + lede on the left, a big SVG padlock on the right that loops open → click-shut (shackle drops with a slight overshoot, body flashes a chartreuse glow on the click). No tag below the lock; "Setup · about 30 seconds" eyebrow is gone above the title. Honors `prefers-reduced-motion`. Collapses to a single column under 880px.
 - Lede: "Security first. No servers, no accounts, no uploads — your messages never leave your Mac." (concrete negatives instead of vague "everything is local").
