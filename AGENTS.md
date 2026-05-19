@@ -50,6 +50,20 @@ If a fresh export is uploaded, run `python3 tools/patch_standalone.py` to
 re-apply the patch. The script is idempotent and exits non-zero if the design
 shape changed enough that the patch needs to be re-derived by hand.
 
+### export.command zip
+The Setup-page download link points to `/export.command.zip`, not
+`/export.command`. Reason: HTTPS downloads strip the Unix execute bit, so a
+raw `.command` download fails with "you do not have appropriate access
+privileges" on double-click. Zipping preserves the execute bit.
+
+If you edit `export.command`, regenerate the zip:
+
+```bash
+zip -X export.command.zip export.command
+```
+
+Verify the entry shows `-rwxr-xr-x` with `unzip -Z export.command.zip`.
+
 ## Documentation
 After making a meaningful change:
 - update `CHANGELOG.md` for shipped behavior changes
