@@ -22,8 +22,8 @@ const DEMO_BUNDLE_ID='miranda-demo-2026-05-04-rev1';
 const PREVIEW_INCLUDE_ATTACHMENT=true; // set false to hide "📎 Attachment" rows in collapsed previews
 const DEFAULT_AI_MODEL='';
 const AI_SUGGEST_ROUTE='/api/ai-suggest-reply';
-const AI_SUGGEST_ROUTE_MODAL=''; // paste Modal URL here after `modal deploy modal_app.py`
-const USE_MODAL_AI=false; // flip to true once AI_SUGGEST_ROUTE_MODAL is filled in
+const AI_SUGGEST_ROUTE_MODAL='https://skbrownvibing--reply-or-die-ai-suggest-reply.modal.run';
+const USE_MODAL_AI=true;
 const AI_ALLOWED_DEMO_THREAD_IDS=new Set([
   'iMessage;-;+12125550101', // bird accusation
   'iMessage;-;+12125550102', // Michael Scott
