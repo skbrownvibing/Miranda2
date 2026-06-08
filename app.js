@@ -22,6 +22,8 @@ const DEMO_BUNDLE_ID='miranda-demo-2026-05-04-rev1';
 const PREVIEW_INCLUDE_ATTACHMENT=true; // set false to hide "📎 Attachment" rows in collapsed previews
 const DEFAULT_AI_MODEL='';
 const AI_SUGGEST_ROUTE='/api/ai-suggest-reply';
+const AI_SUGGEST_ROUTE_MODAL=''; // paste Modal URL here after `modal deploy modal_app.py`
+const USE_MODAL_AI=false; // flip to true once AI_SUGGEST_ROUTE_MODAL is filled in
 const AI_ALLOWED_DEMO_THREAD_IDS=new Set([
   'iMessage;-;+12125550101', // bird accusation
   'iMessage;-;+12125550102', // Michael Scott
@@ -1034,7 +1036,7 @@ function buildReplyContext(thread){
 }
 
 function getAiEndpoint(){
-  return AI_SUGGEST_ROUTE;
+  return USE_MODAL_AI && AI_SUGGEST_ROUTE_MODAL ? AI_SUGGEST_ROUTE_MODAL : AI_SUGGEST_ROUTE;
 }
 
 const REPLY_ANGLES=[
