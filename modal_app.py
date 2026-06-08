@@ -16,7 +16,7 @@ CORS_HEADERS = {
 }
 
 
-@app.function(secrets=[modal.Secret.from_name("anthropic-api-key")])
+@app.function(secrets=[modal.Secret.from_name("anthropic-secret")])
 @modal.fastapi_endpoint(method="POST")
 def suggest_reply(payload: dict):
     from fastapi.responses import JSONResponse
