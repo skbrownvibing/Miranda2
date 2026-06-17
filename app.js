@@ -738,7 +738,7 @@ function getCategory(c){
   if(c.phone&&S.overrides[c.phone])return S.overrides[c.phone];
   if(S.overrides[c.id])return S.overrides[c.id];
   const raw=c.category||'uncategorized';
-  if(c.contact_name&&(raw==='delivery'||raw==='spam'))return'personal';
+  if(c.contact_name&&!c.is_group&&(raw==='delivery'||raw==='spam'))return'personal';
   return raw;
 }
 
@@ -883,10 +883,28 @@ function reconcileDismissedState(){
 }
 
 // ── Core filters ─────────────────────────────────────────────────────────────
+function groupParticipantCount(c){
+  const count=Number(c?.participant_count);
+  if(Number.isFinite(count)&&count>0)return count;
+  if(Array.isArray(c?.participants)&&c.participants.length)return c.participants.length;
+  return null;
+}
+
+function isSmallGroupConversation(c){
+  if(!c?.is_group)return false;
+  const count=groupParticipantCount(c);
+  return count!==null&&count<5;
+}
+
+function isEligibleConversationShape(c){
+  if(!c?.is_group)return true;
+  return isSmallGroupConversation(c);
+}
+
 function needsResponse(c){
   const cat=getCategory(c);
   if(cat==='spam'||cat==='delivery')return false;
-  if(c.is_group)return false;
+  if(!isEligibleConversationShape(c))return false;
   if(c.i_replied_last)return false;
   if(isDismissed(c))return false;
   return true;
@@ -902,14 +920,14 @@ function inTimeline(c){
 function actionable(){return S.conversations.filter(c=>needsResponse(c)&&inTimeline(c)&&c.contact_name);}
 function allPersonalInTimeline(){return S.conversations.filter(c=>{
   const cat=getCategory(c);if(cat==='spam'||cat==='delivery')return false;
-  if(c.is_group)return false;return inTimeline(c);});}
+  if(!isEligibleConversationShape(c))return false;return inTimeline(c);});}
 function allPersonalInTrailingDays(days){
   const cutoff=new Date();
   cutoff.setDate(cutoff.getDate()-days);
   cutoff.setHours(0,0,0,0);
   return S.conversations.filter(c=>{
     const cat=getCategory(c);if(cat==='spam'||cat==='delivery')return false;
-    if(c.is_group)return false;
+    if(!isEligibleConversationShape(c))return false;
     if(!c.last_message_at)return false;
     return new Date(c.last_message_at)>=cutoff;
   });
