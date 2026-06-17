@@ -2,6 +2,11 @@
 
 ## Current development cycle
 
+### 2026-06-17 — Include small group chats in response tracking
+- Small group conversations with fewer than 5 participants are now eligible for the action list and responsiveness scoring when they otherwise look personal and are waiting on the user. Larger group chats remain excluded.
+- The exporter now writes `participant_count` so the frontend can tell small groups from large groups without guessing from preview messages.
+- Group conversations no longer become personal merely because they have a group display name; spam and Automated classification still exclude them.
+
 ### 2026-05-05 — Setup hero: animated lock + security-led copy (re-applied to standalone (5))
 - Re-applied the Setup-page security treatment after MAIN's standalone (5) re-export reverted it. Setup hero is now a two-column grid: title + lede on the left, a big SVG padlock on the right that loops open → click-shut (shackle drops with a slight overshoot, body flashes a chartreuse glow on the click). No tag below the lock; "Setup · about 30 seconds" eyebrow is gone above the title. Honors `prefers-reduced-motion`. Collapses to a single column under 880px.
 - Lede: "Security first. No servers, no accounts, no uploads — your messages never leave your Mac." (concrete negatives instead of vague "everything is local").
