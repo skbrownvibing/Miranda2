@@ -357,6 +357,11 @@ body[data-theme="dark"] #app {
   border-radius:10px;background:none;color:var(--text2);cursor:pointer;transition:all .12s;
 }
 .btn-dismiss:hover { border-color:var(--text3);color:var(--text); }
+.btn-spam {
+  font-family:inherit;font-size:12px;font-weight:500;padding:7px 12px;border:1px solid var(--border);
+  border-radius:10px;background:none;color:var(--text3);cursor:pointer;transition:all .12s;
+}
+.btn-spam:hover { border-color:var(--red);color:var(--red); }
 .ai-trigger-row { display:flex;justify-content:flex-start;margin-top:6px; }
 .ai-suggest-card {
   border:1px solid var(--blue);background:color-mix(in srgb, var(--blue) 8%, var(--surface));
