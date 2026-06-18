@@ -36,3 +36,4 @@ miranda2_messages.json
 # Build output
 dist/
 build/
+node_modules/
