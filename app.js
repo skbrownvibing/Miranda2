@@ -1511,7 +1511,7 @@ function renderActions(){
       <div class="action-item-top">
         <div class="action-avatar">${esc(initial(c))}</div>
         <div class="action-body">
-          <div class="action-name">${esc(name)}</div>
+          <div class="action-name">${esc(name)}${renderOverridePill(c)}</div>
           ${previewHtml}
         </div>
         <div class="action-right">
@@ -1557,7 +1557,7 @@ function renderOtherTexts(){
       <div class="action-item-top">
         <div class="action-avatar">${esc(initial(c))}</div>
         <div class="action-body">
-          <div class="action-name">${esc(name)}</div>
+          <div class="action-name">${esc(name)}${renderOverridePill(c)}</div>
           ${previewHtml}
         </div>
         <div class="action-right">
@@ -1575,6 +1575,14 @@ function renderOtherTexts(){
       </div>
     </div>`;
   }).join('');
+}
+
+function renderOverridePill(c){
+  const ov=(c.phone&&S.overrides[c.phone])||S.overrides[c.id];
+  if(!ov)return '';
+  const CAT_LABELS={personal:'Personal',delivery:'Logistics',spam:'Spam',uncategorized:'Other'};
+  const label=CAT_LABELS[ov]||ov;
+  return `<button class="override-pill" title="Reset to auto-filtered (you set: ${esc(label)})" onclick="event.stopPropagation();reclassify('${esc(c.id)}','auto')">↺</button>`;
 }
 
 function renderFilterOutMenu(id){
